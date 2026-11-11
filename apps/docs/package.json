@@ -1,0 +1,28 @@
+{
+  "name": "@yapmod/docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro sync && tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@astrojs/react": "^7.1.2",
+    "@fumadocs/astro": "^0.2.2",
+    "astro": "^7.4.8",
+    "fumadocs-core": "^16.18.4",
+    "fumadocs-ui": "^16.18.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/mdx": "^2.0.14",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2"
+  }
+}

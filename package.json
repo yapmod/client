@@ -1,0 +1,21 @@
+{
+  "name": "yapmod-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @yapmod/client dev",
+    "build": "pnpm --filter @yapmod/client build",
+    "typecheck": "pnpm --recursive --if-present run typecheck",
+    "lint": "oxlint",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "docs": "pnpm --filter @yapmod/docs dev",
+    "docs:build": "pnpm --filter @yapmod/docs build"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.10.1"
+}

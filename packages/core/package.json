@@ -1,0 +1,18 @@
+{
+  "name": "@yapmod/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@yapmod/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

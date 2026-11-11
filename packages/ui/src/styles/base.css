@@ -1,0 +1,219 @@
+/*
+ * Yapmod's component stylesheet.
+ *
+ * The file is bundled into the JavaScript and injected into the document.
+ * Components render in the light DOM so the host page's layout and theme
+ * apply to them; the rules here only style the `yp-` classes that make up
+ * those components.
+ *
+ * Every token prefers the variable Yapin already defines (`--bg-side`,
+ * `--text`, `--accent`, …) and falls back to the same palette when the
+ * stylesheet is used outside Yapin. The fallbacks follow the operating
+ * system's light/dark preference, while a host theme always wins.
+ *
+ * `mountIsolated` can still mount a view into a shadow root; the same file
+ * is copied there, where `:host` provides the reset and base typography.
+ */
+
+/* --------------------------------------------------------------- base -- */
+
+/* `all: initial` severs every inherited value coming from the page around
+   the host element; the tokens and typography are then laid on top (the
+   tokens must be declared after it, since `all` resets custom properties
+   too). This only applies inside a shadow root. */
+:host {
+  all: initial;
+  display: block;
+  box-sizing: border-box;
+  color: var(--yp-text);
+  background: var(--yp-bg-main);
+  font-family: var(--yp-font);
+  font-size: 15px;
+  line-height: 1.4;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: light) {
+  :host {
+    color-scheme: light;
+  }
+}
+
+.yp-card,
+.yp-card *,
+.yp-btn,
+.yp-btn *,
+.yp-hint {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------- tokens -- */
+
+:host,
+:root,
+.settings,
+.yp-panel {
+  --yp-bg-main: var(--bg-main, #222329);
+  --yp-bg-side: var(--bg-side, #1b1c21);
+  --yp-bg-elev: var(--bg-elev, #2b2c33);
+  --yp-bg-hover: var(--bg-hover, #2f3038);
+  --yp-bg-active: var(--bg-active, #383944);
+  --yp-bg-input: var(--bg-input, #2d2e36);
+  --yp-text: var(--text, #ececf1);
+  --yp-text-muted: var(--text-muted, #a6a7b4);
+  --yp-text-faint: var(--text-faint, #9a9ca9);
+  --yp-border: var(--border, #ffffff12);
+  --yp-accent: var(--accent, #ff6b4a);
+  --yp-accent-hover: var(--accent-hover, #ff5a35);
+  --yp-accent-soft: var(--accent-soft, #ff6b4a29);
+  --yp-on-accent: var(--on-accent, #ffffff);
+  --yp-accent-fill: var(--accent-fill, #d4401e);
+  --yp-accent-fill-hover: var(--accent-fill-hover, #bf3618);
+  --yp-danger: var(--danger, #f2555a);
+  --yp-success: var(--success, #3fcf82);
+  --yp-warning: var(--warning, #f5b544);
+  --yp-radius: var(--radius, 10px);
+  --yp-row-radius: var(--row-radius, 8px);
+  --yp-press-ms: var(--press-ms, 60ms);
+  --yp-hover-dim: var(--hover-dim, 0.92);
+  --yp-press-dim: var(--press-dim, 0.84);
+  --yp-font: var(
+    --font,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif
+  );
+}
+
+@media (prefers-color-scheme: light) {
+  :host,
+  :root,
+  .settings,
+  .yp-panel {
+    --yp-bg-main: var(--bg-main, #ffffff);
+    --yp-bg-side: var(--bg-side, #ffffff);
+    --yp-bg-elev: var(--bg-elev, #ebedef);
+    --yp-bg-hover: var(--bg-hover, #e6e7ea);
+    --yp-bg-active: var(--bg-active, #e0e1e5);
+    --yp-bg-input: var(--bg-input, #ffffff);
+    --yp-text: var(--text, #1d1f23);
+    --yp-text-muted: var(--text-muted, #5b5d66);
+    --yp-text-faint: var(--text-faint, #7a7c88);
+    --yp-border: var(--border, #00000017);
+    --yp-accent: var(--accent, #ff6b4a);
+    --yp-accent-hover: var(--accent-hover, #ff5a35);
+    --yp-accent-soft: var(--accent-soft, #ff6b4a24);
+    --yp-on-accent: var(--on-accent, #ffffff);
+    --yp-accent-fill: var(--accent-fill, #d4401e);
+    --yp-accent-fill-hover: var(--accent-fill-hover, #bf3618);
+    --yp-danger: var(--danger, #f2555a);
+    --yp-success: var(--success, #3fcf82);
+    --yp-warning: var(--warning, #f5b544);
+    --yp-radius: var(--radius, 10px);
+    --yp-row-radius: var(--row-radius, 8px);
+  }
+}
+
+/* --------------------------------------------------------------- card -- */
+
+/* Mirrors Yapin's `.ss2-card`. */
+.yp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--yp-border);
+  border-radius: 12px;
+  background: var(--yp-bg-side);
+}
+
+/* --------------------------------------------------------------- hint -- */
+
+/* Mirrors Yapin's `.hint`. */
+.yp-hint {
+  color: var(--yp-text-muted);
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------- button -- */
+
+/* Mirrors Yapin's `.btn`. */
+.yp-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--yp-row-radius);
+  background: var(--yp-accent-fill);
+  color: var(--yp-on-accent);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--yp-press-ms) linear,
+    color var(--yp-press-ms) linear,
+    filter var(--yp-press-ms) linear,
+    opacity 120ms ease;
+}
+
+.yp-btn:hover:not(:disabled) {
+  filter: brightness(var(--yp-hover-dim));
+}
+
+.yp-btn:active:not(:disabled) {
+  filter: brightness(var(--yp-press-dim));
+}
+
+.yp-btn:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+
+.yp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.yp-btn--secondary {
+  background: var(--yp-bg-active);
+  color: var(--yp-text);
+}
+
+.yp-btn--ghost {
+  background: transparent;
+  color: var(--yp-text-muted);
+}
+
+.yp-btn--ghost:hover:not(:disabled) {
+  background: var(--yp-bg-hover);
+  color: var(--yp-text);
+  filter: none;
+}
+
+.yp-btn--ghost:active:not(:disabled) {
+  background: var(--yp-bg-active);
+  filter: none;
+}
+
+.yp-btn--danger {
+  background: var(--yp-danger);
+  color: var(--yp-on-accent);
+}
+
+.yp-btn--small {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+}

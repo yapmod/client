@@ -1,0 +1,9 @@
+{
+  "indentStyle": "space",
+  "tabWidth": 2,
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "all",
+  "ignorePatterns": ["dist", ".astro", "pnpm-lock.yaml", "coverage"]
+}

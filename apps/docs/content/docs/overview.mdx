@@ -1,0 +1,36 @@
+---
+title: Project Overview
+description: How the repository is organized.
+---
+
+Yapmod Client is a pnpm workspace monorepo. Every package exists because it has a distinct
+responsibility.
+
+## Applications
+
+| Application   | Responsibility                                                                                                   |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `apps/client` | The composition root. Wires the runtime, the UI package, and the Yapin features together, and builds the bundle. |
+| `apps/docs`   | This documentation site (Astro + Fumadocs). Independent from the client.                                         |
+
+## Packages
+
+| Package          | Responsibility                                                                  |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `packages/core`  | The runtime: initialization, state, and disposal of everything the client owns. |
+| `packages/ui`    | SolidJS components and styles that match Yapin's visual language.               |
+| `packages/types` | Shared public contracts (types only, no runtime logic).                         |
+
+## Dependency direction
+
+Dependencies flow in one direction, with no cycles:
+
+```text
+apps/client  →  packages/ui
+     │
+     └──────→  packages/core  →  packages/types
+```
+
+The core never depends on the UI and knows nothing about Yapin. The application layer is
+the only place that knows both, which keeps the runtime generic and lets Yapin-specific
+features live where they belong: in `apps/client`.

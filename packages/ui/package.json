@@ -1,0 +1,18 @@
+{
+  "name": "@yapmod/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.18"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
