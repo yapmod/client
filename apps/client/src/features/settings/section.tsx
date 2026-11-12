@@ -2,6 +2,7 @@ import { version } from '../../../package.json';
 import { Button } from '@yapmod/ui';
 import { PluginsPage } from '../plugins/section';
 import { ThemesPage } from '../themes/section';
+import { setShowBuiltInPlugins, showBuiltInPlugins } from './store';
 import type { SettingsGroup } from './install';
 
 /**
@@ -44,6 +45,27 @@ export const yapmodGroup: SettingsGroup = {
               <div class="hint">Script loaded into this page</div>
             </div>
             <span class="hint">yapmod-client.js</span>
+          </div>
+
+          <div class="section-label" style={{ 'margin-top': '18px' }}>
+            Plugins
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Show built-in plugins</div>
+              <div class="hint">
+                Reveal the plugins that ship with Yapmod on the Plugins page. Hiding them keeps the
+                ones that are running active.
+              </div>
+            </div>
+            <input
+              class="switch"
+              type="checkbox"
+              checked={showBuiltInPlugins()}
+              aria-label="Show built-in plugins"
+              onChange={(event) => setShowBuiltInPlugins(event.currentTarget.checked)}
+            />
           </div>
 
           <div class="section-label" style={{ 'margin-top': '18px' }}>
