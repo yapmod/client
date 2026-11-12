@@ -1,0 +1,6 @@
+{
+  "title": "Themes",
+  "description": "Use and create themes for Yapin.",
+  "defaultOpen": true,
+  "pages": ["index", "using", "creating", "reference"]
+}

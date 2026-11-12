@@ -1,0 +1,6 @@
+{
+  "title": "Plugins",
+  "description": "Use and create plugins for Yapin.",
+  "defaultOpen": true,
+  "pages": ["index", "using", "creating", "api"]
+}

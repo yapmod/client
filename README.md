@@ -28,6 +28,12 @@ The development build watches for changes and rebuilds the client automatically.
 | `pnpm format` | Format with Oxfmt |
 | `pnpm format:check` | Check formatting |
 
+## Contributing
+
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/)
+(`feat:`, `fix:`, `docs:`, `chore:`, …) and stay short: one subject line, no long
+description body.
+
 ## Documentation
 
 The documentation is available in `apps/docs`.
