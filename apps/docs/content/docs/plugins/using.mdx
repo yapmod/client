@@ -2,3 +2,100 @@
 title: Using Plugins
 description: Install, enable, update, and remove plugins.
 ---
+
+Plugins add behavior to Yapin. Everything below happens on the **Plugins**
+page inside the Yapmod settings group.
+
+## Installing
+
+- **From a URL** — _Add Plugin_ → _From URL_. Paste the folder URL that
+  contains `plugin.json` and `plugin.js`; pasting the URL of either file
+  works too. Enable _Check for updates_ if the plugin should be refreshed
+  on every page load.
+- **From code** — _Add Plugin_ → _From Code_. Paste JavaScript that returns
+  an object with optional `onLoad`, `onUnload` and `settings` members.
+
+Plugins are stored in this browser (`yapmod.plugins.v1`), and their code
+runs with full access to the page, so only install plugins from authors you
+trust.
+
+## Managing installed plugins
+
+Each card shows the plugin's name, author and description with:
+
+| Control | Action                                                                   |
+| ------- | ------------------------------------------------------------------------ |
+| Switch  | Start or stop the plugin; the choice persists across reloads             |
+| Gear    | Opens the plugin's settings, while it is running and exported `settings` |
+| Refresh | Re-fetches a remote plugin (remote plugins only)                         |
+| Pencil  | Edits the plugin                                                         |
+| Trash   | Deletes the plugin; per-plugin storage is kept for a reinstall           |
+
+The search box filters the list by name, author or description.
+
+Remote plugins with _Check for updates_ enabled are refreshed once when the
+page loads. A plugin that fails to start is switched off and reported with a
+toast instead of retrying on every load.
+
+## Built-in plugins
+
+Built-in plugins ship **inside the Yapmod bundle** instead of being
+installed. They are trusted code that participates in the same lifecycle as
+community plugins — `onLoad`, `onUnload`, `settings`, `onDispose` and
+per-plugin storage — but they are never stored as installable records, never
+fetched or evaluated, and cannot be edited, updated or deleted.
+
+They are hidden by default so the Plugins page stays focused on installed
+plugins. Turn on **Show built-in plugins** in _Yapmod → Settings_ to reveal
+a **Built-in plugins** section below the community list:
+
+- The setting is pure visibility. Hiding built-ins does not stop the ones
+  that are running.
+- The search box filters both sections.
+- A built-in card has only a settings button (while running) and an enable
+  switch, plus a `Built-in` label — no update, edit, delete actions and no
+  safety warning.
+- Disabling a built-in stops it immediately and persists; enabling it again
+  restarts it.
+
+New built-ins start enabled unless their definition says otherwise, and your
+explicit choice always wins across reloads.
+
+## Custom loaders
+
+A host page can contribute its own built-ins by assigning an array of
+definitions to `globalThis.YapmodBuiltinPlugins` **before** injecting the
+bundle, because the bundle bootstraps as soon as it is imported:
+
+```html
+<script>
+  globalThis.YapmodBuiltinPlugins = [
+    {
+      id: 'builtin:my-loader',
+      manifest: {
+        name: 'My Loader Plugin',
+        author: 'My Host',
+        description: 'Registered by the page instead of installed.',
+        version: '1.0.0',
+      },
+      defaultEnabled: true,
+      setup(yapmod) {
+        return {
+          onLoad() {
+            console.log(`${yapmod.id} started`);
+          },
+          onUnload() {
+            console.log(`${yapmod.id} stopped`);
+          },
+        };
+      },
+    },
+  ];
+</script>
+<script src="/path/to/yapmod-client.js"></script>
+```
+
+Definitions must use the reserved `builtin:` id prefix. Malformed or
+duplicate definitions are skipped with a `[yapmod]` log in the console
+instead of throwing. See [Built-in Plugins](/docs/plugins/builtins) for the
+full contract.

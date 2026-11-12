@@ -1,0 +1,105 @@
+---
+title: Built-in Plugins
+description: How code-registered plugins are defined, started, persisted, and extended by loaders.
+---
+
+Built-in plugins are trusted plugins that ship **with Yapmod** instead of
+being installed as JavaScript. They exist so core features and custom
+loaders can participate in the plugin lifecycle without going through stored
+code and inline-script evaluation.
+
+## Definition
+
+A built-in is a plain object with three members:
+
+```ts
+interface BuiltinPlugin {
+  /** Reserved id, always starting with `builtin:`. */
+  id: string;
+  /** Metadata shown on the built-in card. */
+  manifest: PluginManifest;
+  /** Whether the built-in starts when no explicit choice was made. Defaults to `true`. */
+  defaultEnabled?: boolean;
+  /** Runs synchronously and trusted: no eval, no new Function, no inline script. */
+  setup(api: YapmodPluginApi): BuiltinPluginModule;
+}
+```
+
+`setup` receives the same `YapmodPluginApi` a community plugin gets
+(`id`, `manifest`, `storage`, `flushStorage()`, `onDispose()`,
+`showSettings()`) and returns a module with the same optional hooks:
+`onLoad`, `onUnload` and `settings`.
+
+## Registry
+
+Definitions are added with `registerBuiltinPlugin(definition)` and read back
+with `builtinPlugins()` / `findBuiltinPlugin(id)`.
+
+- The id **must** start with the reserved `builtin:` prefix, so it can never
+  collide with a local plugin id (a slugified name) or a remote id (host plus
+  path).
+- The manifest must carry a non-empty name; other fields fall back to the
+  same defaults the plugin manager uses for installed plugins.
+- Malformed or duplicate definitions are **skipped with a `[yapmod]` log**
+  instead of throwing — one bad loader entry never breaks the bundle.
+- Registration happens during `installPlugins`, before any plugin starts.
+  Built-ins are never `StoredPlugin` records: they are not in
+  `yapmod.plugins.v1`, are never fetched, evaluated, updated or deleted, and
+  are excluded from the remote auto-update path.
+
+## Lifecycle
+
+`startBuiltinPlugin(id)` shares API creation and module activation with
+`startPlugin`, so both kinds of plugin run in the same `loaded` map:
+
+- `stopPlugin`, `hasPluginSettings`, `showPluginSettings` and disposal are
+  reused unchanged; unloading Yapmod stops every running built-in and runs
+  its `onUnload` and `onDispose` cleanups alongside community plugins.
+- `setPluginEnabled` branches for built-ins: the choice persists to the
+  built-in override store rather than a plugin record, and built-ins have no
+  remove or update path.
+- A built-in whose `setup` or `onLoad` throws is logged and persisted as
+  disabled, so the next load does not retry it.
+
+## Default and override semantics
+
+Enabled state is resolved per built-in:
+
+```text
+effective = override ?? definition.defaultEnabled ?? true
+```
+
+Explicit choices live in `yapmod.builtin-plugins.v1` as
+`{ "overrides": { "builtin:<name>": boolean } }`, keyed by the namespaced
+id. This lets a new built-in ship enabled by default without overriding a
+choice the user already made, and lets `defaultEnabled: false` ship a
+built-in that stays off until the user turns it on.
+
+Built-in plugin _data_ keeps using the shared `yapmod.plugins.data.v1`
+storage, keyed by the same namespaced id, so `flushStorage()` behaves exactly
+as it does for community plugins.
+
+The **Show built-in plugins** toggle is stored separately in
+`yapmod.settings.v1` and only controls whether the section is rendered. It
+never starts or stops a built-in: hiding a running built-in keeps it running.
+
+## Loader hook
+
+Custom loaders contribute definitions through a global:
+
+```html
+<script>
+  globalThis.YapmodBuiltinPlugins = [/* BuiltinPlugin definitions */];
+</script>
+<script src="/path/to/yapmod-client.js"></script>
+```
+
+- The bundle bootstraps **at import time**, so the global must be set
+  _before_ the bundle is injected.
+- It is an array of trusted definitions, never source strings: nothing in
+  this path is evaluated.
+- The global is read on every install and left in place, so a fresh
+  injection after `YapmodClient.dispose()` can register the definitions
+  again; duplicate registration is rejected by the registry.
+- The bundled registry remains the default source, so a normal build needs
+  no globals at all.
