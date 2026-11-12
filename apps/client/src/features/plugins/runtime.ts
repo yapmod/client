@@ -2,6 +2,14 @@ import type { Client } from '@yapmod/types';
 import { createSignal } from 'solid-js';
 import { openContentModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
+import {
+  builtinPlugins,
+  builtinPluginEnabled,
+  findBuiltinPlugin,
+  isBuiltinPluginId,
+  registerGlobalBuiltinPlugins,
+  setBuiltinPluginEnabled,
+} from './builtins';
 import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
 import { fetchRemotePlugin } from './remote';
@@ -14,24 +22,7 @@ import {
   replacePluginRecord,
   setPluginEnabledRecord,
 } from './store';
-import type { PluginManifest, StoredPlugin } from './types';
-
-type PluginFunction = (...args: unknown[]) => unknown;
-
-export interface YapmodPluginApi {
-  /** Stable id of this plugin, also used as its storage key. */
-  readonly id: string;
-  /** Metadata from `plugin.json` or the local plugin form. */
-  readonly manifest: PluginManifest;
-  /** A per-plugin object persisted through `flushStorage()`. */
-  readonly storage: Record<string, unknown>;
-  /** Writes `storage` to `localStorage`. */
-  flushStorage(): void;
-  /** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
-  onDispose(dispose: () => void): void;
-  /** Opens the plugin's settings modal, when it exported `settings`. */
-  showSettings(): void;
-}
+import type { PluginFunction, PluginManifest, StoredPlugin, YapmodPluginApi } from './types';
 
 interface LoadedPlugin {
   module: Record<string, unknown>;
@@ -102,25 +93,23 @@ function runDisposers(plugin: LoadedPlugin): void {
 }
 
 /**
- * Evaluates and starts one installed plugin.
- *
- * Plugin source is an expression that returns an object with optional
- * `onLoad`, `onUnload` and `settings` members. The expression is evaluated in
- * the page's realm because plugins are trusted code.
+ * Builds the API object every plugin receives. Community and built-in
+ * plugins share it verbatim, so storage, cleanup registration and settings
+ * behave identically for both.
  */
-export function startPlugin(id: string): boolean {
-  if (runtimeDisposed) return false;
-  if (loaded.has(id)) return true;
-
-  const plugin = getPluginRecord(id);
-  if (!plugin) return false;
-
+function createPluginApi(
+  id: string,
+  manifest: PluginManifest,
+): {
+  api: YapmodPluginApi;
+  disposers: (() => void)[];
+} {
   const storage = loadPluginStorage(id);
   const disposers: (() => void)[] = [];
 
   const api: YapmodPluginApi = {
     id,
-    manifest: { ...plugin.manifest },
+    manifest: { ...manifest },
     storage,
     flushStorage() {
       savePluginStorage(id, storage);
@@ -133,16 +122,20 @@ export function startPlugin(id: string): boolean {
     },
   };
 
-  let module: Record<string, unknown>;
-  try {
-    const result = evaluatePluginSource(plugin.js, api);
-    if (!isRecord(result)) throw new Error('Plugin code must return an object.');
-    module = result;
-  } catch (error) {
-    console.error(`[yapmod] could not load plugin ${id}`, error);
-    return false;
-  }
+  return { api, disposers };
+}
 
+/**
+ * Puts a module into the running map and calls its `onLoad`. A module whose
+ * `onLoad` throws is stopped again and reported as failed, so callers can
+ * persist the plugin as disabled.
+ */
+function activatePlugin(
+  id: string,
+  module: Record<string, unknown>,
+  api: YapmodPluginApi,
+  disposers: (() => void)[],
+): boolean {
   const record: LoadedPlugin = {
     module,
     api,
@@ -163,6 +156,64 @@ export function startPlugin(id: string): boolean {
   }
 
   return true;
+}
+
+/**
+ * Evaluates and starts one installed plugin.
+ *
+ * Plugin source is an expression that returns an object with optional
+ * `onLoad`, `onUnload` and `settings` members. The expression is evaluated in
+ * the page's realm because plugins are trusted code.
+ */
+export function startPlugin(id: string): boolean {
+  if (runtimeDisposed) return false;
+  if (loaded.has(id)) return true;
+
+  const plugin = getPluginRecord(id);
+  if (!plugin) return false;
+
+  const { api, disposers } = createPluginApi(id, plugin.manifest);
+
+  let module: Record<string, unknown>;
+  try {
+    const result = evaluatePluginSource(plugin.js, api);
+    if (!isRecord(result)) throw new Error('Plugin code must return an object.');
+    module = result;
+  } catch (error) {
+    console.error(`[yapmod] could not load plugin ${id}`, error);
+    return false;
+  }
+
+  return activatePlugin(id, module, api, disposers);
+}
+
+/**
+ * Starts one registered built-in plugin.
+ *
+ * The definition's `setup` runs as ordinary trusted code — synchronously and
+ * without any script evaluation — and its module goes through exactly the
+ * same activation path as a community plugin.
+ */
+export function startBuiltinPlugin(id: string): boolean {
+  if (runtimeDisposed) return false;
+  if (loaded.has(id)) return true;
+
+  const definition = findBuiltinPlugin(id);
+  if (!definition) return false;
+
+  const { api, disposers } = createPluginApi(id, definition.manifest);
+
+  let module: Record<string, unknown>;
+  try {
+    const result = definition.setup(api);
+    if (!isRecord(result)) throw new Error('Built-in plugin setup must return an object.');
+    module = result;
+  } catch (error) {
+    console.error(`[yapmod] could not load built-in plugin ${id}`, error);
+    return false;
+  }
+
+  return activatePlugin(id, module, api, disposers);
 }
 
 /** Stops one running plugin without changing its persisted enabled flag. */
@@ -187,8 +238,28 @@ export function stopPlugin(id: string): void {
 /**
  * Enables or disables a plugin, persisting the choice. Returns the state the
  * switch should show; a plugin that fails to load stays disabled.
+ *
+ * Built-ins persist to the built-in override store instead of the plugin
+ * record — they have no record to write to, and can never be removed.
  */
 export function setPluginEnabled(id: string, enabled: boolean): boolean {
+  if (isBuiltinPluginId(id)) {
+    if (enabled) {
+      const started = startBuiltinPlugin(id);
+      setBuiltinPluginEnabled(id, started);
+
+      if (!started) {
+        showToast(`Could not start ${findBuiltinPlugin(id)?.manifest.name ?? 'plugin'}.`, 'error');
+      }
+
+      return started;
+    }
+
+    stopPlugin(id);
+    setBuiltinPluginEnabled(id, false);
+    return false;
+  }
+
   if (enabled) {
     const started = startPlugin(id);
     setPluginEnabledRecord(id, started);
@@ -395,13 +466,19 @@ async function updateInstalledPlugins(): Promise<void> {
 /**
  * Installs the plugin runtime for the lifetime of the client.
  *
- * Remote plugins with auto-update enabled are refreshed first, then every
- * plugin marked as enabled is started. Disposal stops every plugin, runs its
- * cleanups, and removes any plugin modal without changing the saved enabled
- * flags, so plugins start again the next time Yapmod loads.
+ * Definitions handed over by a custom loader are registered first. Remote
+ * plugins with auto-update enabled are then refreshed, every stored plugin
+ * marked as enabled is started, and finally every enabled built-in runs its
+ * `setup`. Built-ins are excluded from the update path: their code ships
+ * with the bundle and is never fetched. A built-in that fails to start is
+ * logged and persisted as disabled so the next load does not retry it.
+ * Disposal stops every plugin, runs its cleanups, and removes any plugin
+ * modal without changing the saved enabled flags, so plugins start again the
+ * next time Yapmod loads.
  */
 export function installPlugins(client: Client): void {
   runtimeDisposed = false;
+  registerGlobalBuiltinPlugins();
 
   client.onDispose(() => {
     runtimeDisposed = true;
@@ -422,6 +499,13 @@ export function installPlugins(client: Client): void {
     for (const plugin of pluginState().plugins) {
       if (!plugin.on) continue;
       if (!startPlugin(plugin.id)) setPluginEnabledRecord(plugin.id, false);
+    }
+
+    if (runtimeDisposed) return;
+
+    for (const definition of builtinPlugins()) {
+      if (!builtinPluginEnabled(definition.id)) continue;
+      if (!startBuiltinPlugin(definition.id)) setBuiltinPluginEnabled(definition.id, false);
     }
   })();
 }
