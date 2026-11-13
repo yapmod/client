@@ -8,7 +8,14 @@ export function YapmodBanner() {
     <RootProvider pathname="/" params={{}} navigate={navigate} search={{ SearchDialog }}>
       <Banner id="yapmod-beta" variant="rainbow">
         Yapmod is currently in development —{' '}
-        <a href="/client/blog/welcome" style={{ fontWeight: 600, textDecoration: 'underline', textDecorationColor: 'rgba(255,255,255,0.5)' }}>
+        <a
+          href="/client/blog/welcome"
+          style={{
+            fontWeight: 600,
+            textDecoration: 'underline',
+            textDecorationColor: 'rgba(255,255,255,0.5)',
+          }}
+        >
           read the announcement
         </a>
         .
