@@ -46,8 +46,15 @@ export function BlogCard({ post }: { post: BlogPost }) {
         </div>
       )}
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-lg font-semibold leading-snug transition-colors group-hover:text-fd-primary" style={{ fontFamily: "'Geist Pixel', ui-sans-serif, system-ui, sans-serif" }}>{post.title}</p>
-        <p className="mt-2 line-clamp-2 text-sm text-fd-muted-foreground empty:hidden">{post.description}</p>
+        <p
+          className="text-lg font-semibold leading-snug transition-colors group-hover:text-fd-primary"
+          style={{ fontFamily: "'Geist Pixel', ui-sans-serif, system-ui, sans-serif" }}
+        >
+          {post.title}
+        </p>
+        <p className="mt-2 line-clamp-2 text-sm text-fd-muted-foreground empty:hidden">
+          {post.description}
+        </p>
         <div className="mt-auto flex flex-row items-center pt-4">
           {post.authors.map(
             (author) =>
@@ -66,7 +73,9 @@ export function BlogCard({ post }: { post: BlogPost }) {
           {post.authors.length > 0 && post.authors[0]?.name && (
             <span className="ml-2 text-xs text-fd-muted-foreground">{post.authors[0].name}</span>
           )}
-          {post.date && <BlogDate date={post.date} className="ms-auto text-xs text-fd-muted-foreground" />}
+          {post.date && (
+            <BlogDate date={post.date} className="ms-auto text-xs text-fd-muted-foreground" />
+          )}
         </div>
       </div>
     </Link>
@@ -284,10 +293,7 @@ export function BlogTagCards({
   return (
     <div
       {...props}
-      className={cn(
-        'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4',
-        className,
-      )}
+      className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4', className)}
     >
       {tags.map((tag) => (
         <Link
@@ -297,7 +303,9 @@ export function BlogTagCards({
         >
           <TagIcon className="size-4 shrink-0 text-fd-muted-foreground" />
           <span className="font-medium">{tag.name}</span>
-          <span className="ms-auto rounded-full bg-fd-muted px-2 py-0.5 text-xs text-fd-muted-foreground">{tag.count}</span>
+          <span className="ms-auto rounded-full bg-fd-muted px-2 py-0.5 text-xs text-fd-muted-foreground">
+            {tag.count}
+          </span>
         </Link>
       ))}
     </div>
