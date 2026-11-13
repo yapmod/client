@@ -255,6 +255,10 @@ importers:
         version: 7.0.2
 
   packages/types:
+    dependencies:
+      solid-js:
+        specifier: ^1.9.18
+        version: 1.9.18
     devDependencies:
       typescript:
         specifier: ^7.0.2

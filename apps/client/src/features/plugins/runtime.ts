@@ -1,6 +1,7 @@
 import type { Client } from '@yapmod/types';
 import { createSignal } from 'solid-js';
 import { openContentModal } from '../../lib/modal';
+import { sharedSolid } from '../../lib/solid';
 import { showToast } from '../../lib/toast';
 import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
@@ -117,6 +118,9 @@ function createPluginApi(
     showSettings() {
       showPluginSettings(id);
     },
+    solid: sharedSolid.solid,
+    solidWeb: sharedSolid.solidWeb,
+    solidStore: sharedSolid.solidStore,
   };
 
   return { api, disposers };

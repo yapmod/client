@@ -18,6 +18,22 @@ export interface PluginManifest {
   hash?: string;
 }
 
+/**
+ * The bundle's single copy of SolidJS, exposed as three module objects.
+ *
+ * The same references are shared by `YapmodClient.api` and the plugin API
+ * (`yapmod.solid`, `yapmod.solidWeb`, `yapmod.solidStore`), so everything on
+ * the page reacts to the same signals.
+ */
+export interface SharedSolid {
+  /** `solid-js`: signals, effects, control flow. */
+  solid: typeof import('solid-js');
+  /** `solid-js/web`: `render`, portals, DOM helpers. */
+  solidWeb: typeof import('solid-js/web');
+  /** `solid-js/store`: `createStore`, `unwrap`. */
+  solidStore: typeof import('solid-js/store');
+}
+
 /** The API object every started plugin receives, community or client-registered. */
 export interface YapmodPluginApi {
   /** Stable id of this plugin, also used as its storage key. */
@@ -32,4 +48,10 @@ export interface YapmodPluginApi {
   onDispose(dispose: () => void): void;
   /** Opens the plugin's settings modal, when it exported `settings`. */
   showSettings(): void;
+  /** The bundle's shared `solid-js` instance. Never bundle your own copy. */
+  readonly solid: SharedSolid['solid'];
+  /** The bundle's shared `solid-js/web` instance. */
+  readonly solidWeb: SharedSolid['solidWeb'];
+  /** The bundle's shared `solid-js/store` instance. */
+  readonly solidStore: SharedSolid['solidStore'];
 }

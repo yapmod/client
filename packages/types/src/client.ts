@@ -5,6 +5,8 @@
  * root agree on. Implementation details stay in the package that owns them.
  */
 
+import type { SharedSolid } from './plugin';
+
 /** Lifecycle states of the client runtime. */
 export type ClientState = 'ready' | 'disposed';
 
@@ -30,13 +32,20 @@ export interface Client {
 /**
  * The minimal handle exposed on `globalThis.YapmodClient`.
  *
- * It intentionally reveals nothing about internal implementation details.
+ * Beyond lifecycle it deliberately reveals little about internal
+ * implementation details — the one exception is `api`, the shared SolidJS
+ * instances embedders need to render into this bundle's reactive world.
  */
 export interface ClientHandle {
   /** Version of the loaded client bundle. */
   readonly version: string;
   /** Current lifecycle state of the runtime. */
   readonly state: ClientState;
+  /**
+   * The bundle's shared SolidJS instances. The same references are offered
+   * to plugins as `yapmod.solid`, `yapmod.solidWeb` and `yapmod.solidStore`.
+   */
+  readonly api: SharedSolid;
   /** Disposes the runtime. Safe to call repeatedly. */
   dispose(): void;
 }
