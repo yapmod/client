@@ -1,5 +1,5 @@
 import type { Component, JSX } from 'solid-js';
-import type { ButtonProps, HintProps, IconProps, PanelProps } from '@yapmod/ui';
+import type { ButtonProps, HintProps, IconName, IconProps, PanelProps } from '@yapmod/ui';
 
 /*
  * Plugin-facing contracts: the single source of truth for the plugin API.
@@ -59,6 +59,28 @@ export interface PluginUi {
   Icon: Component<IconProps>;
 }
 
+/** A settings section a plugin registers inside the Yapmod settings group. */
+export interface PluginSettingsSection {
+  /** Stable id, unique within the plugin. Yapmod namespaces it per plugin. */
+  id: string;
+  /** Label shown in Yapin's settings navigation. */
+  label: string;
+  /** Icon rendered in front of the label. */
+  icon?: IconName;
+  /** Solid content rendered into the section's panel. */
+  render: () => JSX.Element;
+}
+
+/** The settings hooks on the plugin API. */
+export interface PluginSettings {
+  /**
+   * Adds a section to the Yapmod settings group, below Yapmod's own entries.
+   * The section unregisters when the plugin stops. Returns a disposer that
+   * removes it early.
+   */
+  registerSection(section: PluginSettingsSection): () => void;
+}
+
 /**
  * The bundle's single copy of SolidJS, exposed as three module objects.
  *
@@ -97,6 +119,8 @@ export interface YapmodPluginApi {
   observe(selector: string, onFound: (element: Element) => void): () => void;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
+  /** Sections in the Yapmod settings group. */
+  readonly settings: PluginSettings;
   /** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
   onDispose(dispose: () => void): void;
   /** Opens the plugin's settings modal, when it exported `settings`. */

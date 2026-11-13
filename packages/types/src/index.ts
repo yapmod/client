@@ -1,2 +1,12 @@
 export type { Client, ClientHandle, ClientState } from './client';
-export type { PluginFunction, PluginManifest, SharedSolid, YapmodPluginApi } from './plugin';
+export type {
+  PluginFunction,
+  PluginManifest,
+  PluginModalOptions,
+  PluginSettings,
+  PluginSettingsSection,
+  PluginUi,
+  SharedSolid,
+  ToastKind,
+  YapmodPluginApi,
+} from './plugin';

@@ -4,6 +4,7 @@ import { createSignal } from 'solid-js';
 import { openContentModal, openModal } from '../../lib/modal';
 import { sharedSolid } from '../../lib/solid';
 import { showToast } from '../../lib/toast';
+import { registerSettingsSection } from '../settings/install';
 import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
 import { observeElements } from './observe';
@@ -146,6 +147,27 @@ function createPluginApi(
       Hint,
       Panel,
       Icon,
+    },
+    settings: {
+      registerSection(section) {
+        if (typeof section.label !== 'string' || !section.label.trim()) {
+          throw new Error('registerSection(): section.label must be a non-empty string.');
+        }
+        if (typeof section.render !== 'function') {
+          throw new Error('registerSection(): section.render must be a function.');
+        }
+
+        // Namespaced per plugin, so two plugins can use the same section id
+        // and a plugin can never shadow Yapmod's own entries.
+        return track(
+          registerSettingsSection({
+            id: `plugin:${id}:${section.id}`,
+            label: section.label,
+            icon: section.icon,
+            render: section.render,
+          }),
+        );
+      },
     },
     onDispose(dispose) {
       if (typeof dispose === 'function') disposers.push(dispose);
