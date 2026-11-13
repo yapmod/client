@@ -53,7 +53,7 @@ interface BlogPage {
  *
  * With i18n, pass your config to it: `createGetUrl('/blog', i18n)`.
  */
-export const getBlogUrl = createGetUrl('/blog');
+export const getBlogUrl = createGetUrl('/client/blog');
 
 /** lowercase, whitespace replaced by `-` */
 export function tagSlug(tag: string): string {

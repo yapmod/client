@@ -156,7 +156,7 @@ export function Home({ ...props }: HomeProps) {
               bundle.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <GradientButton href="/docs">
+              <GradientButton href="/client/docs">
                 <ArrowRight size={18} />
                 Get Started
               </GradientButton>

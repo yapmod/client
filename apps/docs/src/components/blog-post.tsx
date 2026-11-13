@@ -30,7 +30,7 @@ export function BlogPostPage({ post, newer, older, toc, children, ...props }: Bl
       <HomeLayout {...baseOptions()}>
         <BlogPage toc={toc}>
           <BlogHeader>
-            <BlogBackLink href="/blog" />
+            <BlogBackLink href="/client/blog" />
             <BlogTitle>{post.title}</BlogTitle>
             <BlogDescription>{post.description}</BlogDescription>
             <BlogAuthors authors={post.authors} />

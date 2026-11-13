@@ -6,12 +6,12 @@ import type { BlogAuthor } from './blog';
 
 export const source = loader({
   source: toFumadocsSource(await getCollection('docs'), await getCollection('meta')),
-  baseUrl: '/docs',
+  baseUrl: '/client/docs',
   plugins: [lucideIconsPlugin()],
 });
 
 export const blogSource = loader({
-  baseUrl: '/blog',
+  baseUrl: '/client/blog',
   source: toFumadocsSource(await getCollection('blog')),
 });
 
