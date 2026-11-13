@@ -256,6 +256,9 @@ importers:
 
   packages/types:
     dependencies:
+      '@yapmod/ui':
+        specifier: workspace:*
+        version: link:../ui
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18
