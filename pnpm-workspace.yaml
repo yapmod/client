@@ -5,6 +5,3 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
-
-patchedDependencies:
-  '@fumadocs/astro@0.2.2': patches/@fumadocs__astro@0.2.2.patch
