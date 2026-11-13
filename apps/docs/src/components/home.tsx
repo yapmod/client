@@ -347,7 +347,7 @@ export function Home({ ...props }: HomeProps) {
               </a>
               <a
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#1a0f16] px-6 font-semibold text-[#1a0f16]"
-                href="/blog/welcome"
+                href="/client/blog/welcome"
               >
                 <BookOpen size={18} />
                 Read the announcement
