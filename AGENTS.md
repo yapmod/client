@@ -102,6 +102,15 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   per-plugin storage.
 - The version shown in the UI comes from `apps/client/package.json`; bump it there.
 
+## Git Commits
+
+- **Never use co-author trailers.** Do not append `Co-authored-by` or any similar trailer to
+  commit messages.
+- When committing changes, always use [Conventional Commits](https://www.conventionalcommits.org/)
+  format (e.g. `feat: add plugin export`, `fix: handle missing theme`, `chore: update deps`).
+- Commit and push directly to the branch. Do not create pull requests, branches for review,
+  or any other PR-related workflow.
+
 ## Reference
 
 Design details live in the docs app: `apps/docs/content/docs/architecture.mdx` (lifecycle,
