@@ -2,3 +2,402 @@
 title: Plugin API
 description: The API surface available to plugins.
 ---
+
+Every started plugin receives one `yapmod` object. Check `apiVersion` before
+using v1 features:
+
+```ts
+if (yapmod.apiVersion !== 1) throw new Error('Unsupported plugin API');
+```
+
+The signatures below mirror the contracts in `@yapmod/types`.
+
+## The module
+
+A plugin's source is an expression whose value is the module object (or a
+factory function that returns it). The module may export these hooks:
+
+```ts
+interface PluginModule {
+  onLoad?(): void;
+  onUnload?(): void;
+  settings?: Node | string | (() => Node | string | Promise<Node | string>);
+}
+```
+
+### onLoad
+
+```ts
+onLoad?(): void;
+```
+
+Runs when the plugin starts. If it throws, the plugin is stopped again, switched
+off and reported.
+
+### onUnload
+
+```ts
+onUnload?(): void;
+```
+
+Runs when the plugin stops. It is **optional**: every disposer-returning API
+call (`observe`, `ui.openModal`, `ui.injectCss`, `settings.registerSection`) is
+auto-registered and flushed on stop, so most plugins never need it.
+
+### settings
+
+```ts
+settings?: Node | string | (() => Node | string | Promise<Node | string>);
+```
+
+A legacy settings **modal**. The value can be a DOM node, a string of HTML, or
+a function returning either; async functions are supported. When exported, the
+plugin card's gear button appears and `showSettings()` opens the modal. This is
+distinct from `settings.registerSection()`.
+
+## Identity
+
+### apiVersion
+
+```ts
+/** API contract version. Plugins can check this before using v1 features. */
+readonly apiVersion: 1;
+```
+
+The version of the plugin API contract. Compare it before using v1 features.
+
+### id
+
+```ts
+/** Stable id of this plugin, also used as its storage key. */
+readonly id: string;
+```
+
+The plugin's stable id. It is also the key used for per-plugin storage.
+
+### manifest
+
+```ts
+/** The user-facing metadata every installed plugin carries. */
+export interface PluginManifest {
+  name: string;
+  author: string;
+  description: string;
+  version?: string;
+  hash?: string;
+}
+```
+
+```ts
+/** Metadata from `plugin.json` or the local plugin form. */
+readonly manifest: PluginManifest;
+```
+
+Metadata from `plugin.json` or the local plugin form.
+
+## Storage
+
+### storage
+
+```ts
+/**
+ * Reactive per-plugin storage, backed by a Solid signal. Top-level sets
+ * (`storage.count = 1`) persist automatically; deeper mutations are
+ * written by `flushStorage()`.
+ */
+readonly storage: Record<string, unknown>;
+```
+
+A signal-backed, per-plugin object. **Top-level** writes persist automatically
+and re-run reactive readers:
+
+```ts
+yapmod.storage.count = 1;
+```
+
+**Deep** mutations change the held object — visible to immediate readers but
+neither reactive nor persisted until `flushStorage()`:
+
+```ts
+yapmod.storage.user.name = 'Ada';
+yapmod.flushStorage();
+```
+
+`Object.keys`, `JSON.stringify`, `in` and `delete` all work on `storage`.
+
+### flushStorage()
+
+```ts
+/** Writes `storage` to `localStorage`. Call it after mutating nested values. */
+flushStorage(): void;
+```
+
+Writes `storage` to `localStorage`. Call it after mutating nested values.
+
+## Page
+
+### observe()
+
+```ts
+/**
+ * Calls `onFound` for every element matching `selector`: the ones already
+ * in the page immediately, later ones as they appear. Returns a disposer
+ * that stops the observer; it also runs when the plugin stops.
+ */
+observe(selector: string, onFound: (element: Element) => void): () => void;
+```
+
+Calls `onFound` for every element matching `selector`: the matches already in
+the page immediately and elements added later, once per element (tracked with a
+`WeakSet`). Only insertions are watched, because Yapin rebuilds its interface by
+replacing nodes. An invalid selector throws at call time. The returned disposer
+stops the observer and also runs when the plugin stops.
+
+```ts
+const stop = yapmod.observe('.message', (element) => yapmod.log(element));
+stop(); // optional: stop early
+```
+
+## UI
+
+### ui.showToast()
+
+```ts
+/** Message kinds `ui.showToast` understands. */
+export type ToastKind = 'success' | 'error';
+```
+
+```ts
+/** Shows a short-lived message over the page. */
+showToast(message: string, kind?: ToastKind): void;
+```
+
+Shows a short-lived message over the page.
+
+```ts
+yapmod.ui.showToast('Saved.', 'success');
+```
+
+### ui.openModal()
+
+```ts
+/** Options accepted by `ui.openModal`. */
+export interface PluginModalOptions {
+  title: string;
+  description?: string;
+  wide?: boolean;
+  /** Builds the modal body; `close` closes the modal. */
+  content: (close: () => void) => JSX.Element;
+  /** Builds the modal footer. */
+  footer?: (close: () => void) => JSX.Element;
+  /** Runs once when the modal closes. */
+  onClose?: () => void;
+}
+```
+
+```ts
+/**
+ * Opens a modal in Yapin's own style. Returns a close function; the modal
+ * also closes when the plugin stops.
+ */
+openModal(options: PluginModalOptions): () => void;
+```
+
+Opens a Yapin-styled modal. `content` and `footer` receive a `close` function.
+Returns a disposer that closes the modal; the modal also closes when the plugin
+stops.
+
+### ui.injectCss()
+
+```ts
+/**
+ * Injects a stylesheet into the page. Returns a disposer that removes it
+ * again; it also runs when the plugin stops.
+ */
+injectCss(css: string): () => void;
+```
+
+Injects a stylesheet into the page. Returns a disposer that removes it, which
+also runs when the plugin stops.
+
+```ts
+const remove = yapmod.ui.injectCss('.note { opacity: 0.8; }');
+remove(); // optional: remove early
+```
+
+### ui.Button
+
+```ts
+/** A button styled like Yapin's `.btn`. */
+Button: Component<ButtonProps>;
+```
+
+A Solid component for a button styled like Yapin's `.btn`.
+
+### ui.Hint
+
+```ts
+/** Inline hint text in Yapin's `.hint` style. */
+Hint: Component<HintProps>;
+```
+
+A Solid component for inline hint text in Yapin's `.hint` style.
+
+### ui.Panel
+
+```ts
+/** A card-like container in Yapmod's `yp-` style. */
+Panel: Component<PanelProps>;
+```
+
+A Solid component for a card-like container in Yapmod's `yp-` style.
+
+### ui.Icon
+
+```ts
+/** An inline SVG icon from Yapmod's built-in set. */
+Icon: Component<IconProps>;
+```
+
+A Solid component for an inline SVG icon from Yapmod's built-in set. The `icon`
+prop accepts: `d`, `settings`, `puzzle`, `trash`, `palette`, `upload`,
+`refresh`, `plus`, `pencil`, `close`.
+
+## Settings
+
+### settings.registerSection()
+
+```ts
+/** A settings section a plugin registers inside the Yapmod settings group. */
+export interface PluginSettingsSection {
+  /** Stable id, unique within the plugin. Yapmod namespaces it per plugin. */
+  id: string;
+  /** Label shown in Yapin's settings navigation. */
+  label: string;
+  /** Icon rendered in front of the label. */
+  icon?: IconName;
+  /** Solid content rendered into the section's panel. */
+  render: () => JSX.Element;
+}
+
+/** The settings hooks on the plugin API. */
+export interface PluginSettings {
+  /**
+   * Adds a section to the Yapmod settings group, below Yapmod's own entries.
+   * The section unregisters when the plugin stops. Returns a disposer that
+   * removes it early.
+   */
+  registerSection(section: PluginSettingsSection): () => void;
+}
+```
+
+Adds a section to the Yapmod settings group, below Yapmod's own entries. `id` is
+unique per plugin: Yapmod namespaces it as `plugin:<pluginId>:<sectionId>`, so
+plugins cannot collide with each other or shadow Yapmod's own entries.
+Re-registering the same id replaces the section. `label` must be a non-empty
+string and `render` must be a function (both throw otherwise). `render()`
+returns Solid JSX.
+
+The section unregisters when the plugin stops. The returned disposer removes it
+early.
+
+```tsx
+yapmod.settings.registerSection({
+  id: 'greeting',
+  label: 'Greeting',
+  icon: 'pencil',
+  render() {
+    return <yapmod.ui.Panel>Hello</yapmod.ui.Panel>;
+  },
+});
+```
+
+## Cleanup
+
+### onDispose()
+
+```ts
+/** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
+onDispose(dispose: () => void): void;
+```
+
+Registers a cleanup that runs when the plugin stops or Yapmod unloads. Disposers
+run in reverse registration order, each isolated in a `try`/`catch`.
+
+### showSettings()
+
+```ts
+/** Opens the plugin's settings modal, when it exported `settings`. */
+showSettings(): void;
+```
+
+Opens the legacy settings modal when the module exported `settings`.
+
+## Logging
+
+### log()
+
+```ts
+/** Logs to the console with a `[yapmod:<id>]` prefix. */
+log(...args: unknown[]): void;
+```
+
+Logs to the console with a `[yapmod:<id>]` prefix.
+
+```ts
+yapmod.log('started', yapmod.storage);
+```
+
+## Shared Solid
+
+```ts
+/**
+ * The bundle's single copy of SolidJS, exposed as three module objects.
+ *
+ * The same references are shared by `YapmodClient.api` and the plugin API
+ * (`yapmod.solid`, `yapmod.solidWeb`, `yapmod.solidStore`), so everything on
+ * the page reacts to the same signals.
+ */
+export interface SharedSolid {
+  /** `solid-js`: signals, effects, control flow. */
+  solid: typeof import('solid-js');
+  /** `solid-js/web`: `render`, portals, DOM helpers. */
+  solidWeb: typeof import('solid-js/web');
+  /** `solid-js/store`: `createStore`, `unwrap`. */
+  solidStore: typeof import('solid-js/store');
+}
+```
+
+### solid
+
+```ts
+/** The bundle's shared `solid-js` instance. Never bundle your own copy. */
+readonly solid: SharedSolid['solid'];
+```
+
+The bundle's shared `solid-js` instance (signals, effects, control flow).
+
+### solidWeb
+
+```ts
+/** The bundle's shared `solid-js/web` instance. */
+readonly solidWeb: SharedSolid['solidWeb'];
+```
+
+The bundle's shared `solid-js/web` instance (`render`, portals, DOM helpers).
+
+### solidStore
+
+```ts
+/** The bundle's shared `solid-js/store` instance. */
+readonly solidStore: SharedSolid['solidStore'];
+```
+
+The bundle's shared `solid-js/store` instance (`createStore`, `unwrap`).
+
+`yapmod.solid`, `yapmod.solidWeb` and `yapmod.solidStore` are the same
+references exposed to embedders as `YapmodClient.api`, so everything on the page
+reacts to the same signals. Built plugins should import from `solid-js`,
+`solid-js/web` and `solid-js/store` and let the builder rewrite those imports to
+these shared members — never bundle your own copy. See
+[Writing Plugins](/docs/plugins/creating) for the full rule.

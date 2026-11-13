@@ -2,3 +2,44 @@
 title: Plugins
 description: Add behavior to Yapin with JavaScript.
 ---
+
+Plugins add behavior to Yapin. A plugin runs JavaScript on the page and can
+change how it looks or acts, from small tweaks to full features.
+
+Plugins run with full access to the page, so only install plugins from authors
+you trust. See [Using Plugins](/docs/plugins/using) to install, enable, update
+and remove them.
+
+## Three ways in
+
+- **From a URL** — point Yapmod at a folder that contains `plugin.json` and
+  `plugin.js` and it fetches the code for you.
+- **From code** — paste a plugin's source directly into _Add Plugin → From
+  Code_.
+- **Client-registered** — the application that embeds Yapmod can register its
+  own plugins in code at startup with `YapmodClient.registerClientPlugin()`. See
+  [Client Plugins](/docs/plugins/client-plugins).
+
+## What the plugin API gives you
+
+Every started plugin receives one `yapmod` object with the tools to work inside
+the host:
+
+- **Settings sections** — a panel inside the Yapmod settings group with
+  `settings.registerSection()`.
+- **Toasts and modals** — `ui.showToast()` and `ui.openModal()` in Yapin's own
+  style.
+- **DOM observation** — `observe()` to react to elements as they appear on the
+  page.
+- **Reactive storage** — a per-plugin `storage` object, backed by a Solid
+  signal, that persists automatically.
+- **Shared Solid** — the bundle's own `solid-js`, `solid-js/web` and
+  `solid-js/store` instances so plugin UI reacts to the same signals as Yapmod.
+
+## Next steps
+
+- [Writing Plugins](/docs/plugins/creating) — the module contract and how to
+  build with `@yapmod/builder`.
+- [Plugin Patterns](/docs/plugins/patterns) — short recipes for the common API
+  tasks.
+- [Plugin API](/docs/plugins/api) — the full reference for the `yapmod` object.
