@@ -79,7 +79,7 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   `// oxlint-disable-next-line <rule> -- <reason>`.
 - Naming: lowercase single-word files (`store.ts`, `runtime.ts`, `section.tsx`), PascalCase
   components inside them, and `installX` / `openX` / `createX` for factories.
-- Comments explain *why*. Keep the rationale blocks in `settings/install.ts`,
+- Comments explain _why_. Keep the rationale blocks in `settings/install.ts`,
   `themes/apply.ts`, and `plugins/eval.ts`.
 
 ## Critical constraints

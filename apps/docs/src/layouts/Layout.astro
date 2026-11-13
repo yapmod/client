@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { YapmodBanner } from '@/components/banner';
 import '@/styles/global.css';
 
 interface Props {
@@ -16,9 +17,14 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..700&family=Geist+Pixel&display=swap"
+    />
     <ClientRouter />
   </head>
   <body class="flex flex-col min-h-screen">
+    <YapmodBanner client:load />
     <slot />
   </body>
 </html>

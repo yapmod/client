@@ -41,6 +41,33 @@ const SETTINGS_SELECTOR = '.settings';
 const NAV_SELECTOR = ':scope > .settings-nav';
 const NATIVE_PANEL_SELECTOR = ':scope > .settings-main:not(.yp-panel)';
 
+/**
+ * Adds a section to the installed settings, set by `installSettings`.
+ *
+ * Sections can only be registered while the settings integration is
+ * installed; afterwards the observers and panels are gone and a new
+ * registration could never be mounted, so it is dropped with a warning
+ * instead of half-applied.
+ */
+let sectionRegistrar: ((section: SettingsSection) => () => void) | undefined;
+
+/**
+ * Registers a section in the Yapmod settings group at runtime and returns
+ * a function that removes it again.
+ *
+ * This is how plugins add their own settings pages: they call it through
+ * `yapmod.settings.registerSection()`, which also registers the returned
+ * function as a cleanup, so the section disappears when the plugin stops.
+ */
+export function registerSettingsSection(section: SettingsSection): () => void {
+  if (!sectionRegistrar) {
+    console.warn(`[yapmod] settings are not installed; dropped section ${section.id}`);
+    return () => {};
+  }
+
+  return sectionRegistrar(section);
+}
+
 /*
  * How a Yapmod section is shown inside the host settings modal.
  *
@@ -111,13 +138,11 @@ function createEntry(section: SettingsSection): SectionEntry {
 }
 
 /** Flattens the groups into the navigation elements, in visual order. */
-function createNavElements(groups: SettingsGroup[]): {
-  entries: SectionEntry[];
-  navElements: HTMLElement[];
-} {
-  const entries: SectionEntry[] = [];
-  const navElements: HTMLElement[] = [];
-
+function createNavElements(
+  groups: SettingsGroup[],
+  entries: SectionEntry[],
+  navElements: HTMLElement[],
+): void {
   for (const group of groups) {
     const heading = document.createElement('div');
     heading.className = NAV_LABEL_CLASS;
@@ -132,8 +157,6 @@ function createNavElements(groups: SettingsGroup[]): {
       navElements.push(entry.button);
     }
   }
-
-  return { entries, navElements };
 }
 
 /**
@@ -157,7 +180,9 @@ function createNavElements(groups: SettingsGroup[]): {
 export function installSettings(client: Client, groups: SettingsGroup[]): void {
   if (groups.length === 0) return;
 
-  const { entries, navElements } = createNavElements(groups);
+  const entries: SectionEntry[] = [];
+  const navElements: HTMLElement[] = [];
+  createNavElements(groups, entries, navElements);
 
   let root: HTMLElement | null = null;
   let nav: HTMLElement | null = null;
@@ -168,6 +193,29 @@ export function installSettings(client: Client, groups: SettingsGroup[]): void {
 
   function findEntry(id: string | null): SectionEntry | undefined {
     return id ? entries.find((entry) => entry.section.id === id) : undefined;
+  }
+
+  /**
+   * Removes one section from the navigation and the panels. Used when a
+   * plugin unregisters its section or replaces it by registering the same
+   * id again.
+   */
+  function removeEntry(entry: SectionEntry): void {
+    const index = entries.indexOf(entry);
+    if (index < 0) return;
+
+    // Clear the selection while the entry is still known, so the modal
+    // falls back to Yapin's native page instead of keeping a panel that
+    // no longer exists selected.
+    if (activeId === entry.section.id) deactivate();
+
+    entries.splice(index, 1);
+    const navIndex = navElements.indexOf(entry.button);
+    if (navIndex >= 0) navElements.splice(navIndex, 1);
+
+    entry.disposeContent();
+    entry.button.remove();
+    entry.panel.remove();
   }
 
   /** Puts the nav elements back where they belong. React may drop them. */
@@ -379,6 +427,8 @@ export function installSettings(client: Client, groups: SettingsGroup[]): void {
     bodyObserver?.disconnect();
     bodyObserver = null;
 
+    sectionRegistrar = undefined;
+
     detach();
 
     for (const element of navElements) element.remove();
@@ -389,6 +439,29 @@ export function installSettings(client: Client, groups: SettingsGroup[]): void {
 
     removeStyle(STYLE_ID);
   }
+
+  sectionRegistrar = (section) => {
+    // Re-registering an id replaces the previous section, so a plugin that
+    // runs its setup again does not stack duplicate entries.
+    const existing = findEntry(section.id);
+    if (existing) removeEntry(existing);
+
+    const entry = createEntry(section);
+    entries.push(entry);
+    navElements.push(entry.button);
+
+    // The settings modal may be open right now (mount immediately) or
+    // closed (the body observer mounts everything when it appears).
+    mountNav();
+    mountPanels();
+
+    let removed = false;
+    return () => {
+      if (removed) return;
+      removed = true;
+      removeEntry(entry);
+    };
+  };
 
   injectStyle(STYLE_ID, HOST_CSS);
   sync(); // the settings modal may already be open

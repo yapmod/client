@@ -1,0 +1,30 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Layout from '@/layouts/Layout.astro';
+import { BlogTagPage } from '@/components/blog-tag';
+import { blogAuthors, blogSource } from '@/lib/source';
+import { getPosts, getTagPosts, getTags } from '@/lib/blog';
+
+export const getStaticPaths = (() => {
+  const posts = getPosts(blogSource.getPages(), blogAuthors);
+
+  return getTags(posts).map((tag) => ({
+    params: { tag: tag.slug },
+    props: getTagPosts(posts, tag.slug)!,
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { tag, posts } = Astro.props;
+---
+
+<Layout title={tag.name}>
+  <BlogTagPage
+    client:load
+    pathname={Astro.url.pathname}
+    params={Astro.params}
+    tag={tag}
+    posts={posts}
+  />
+</Layout>

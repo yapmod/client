@@ -1,11 +1,8 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import { Home } from '@/components/home';
 ---
 
-<Layout title="Yapmod Client" description="Documentation for the Yapmod client, its themes, and its plugins.">
-  <main class="flex flex-col flex-1 items-center justify-center gap-4 text-center">
-    <h1 class="text-xl font-bold">Yapmod Client</h1>
-    <p>A client mod for Yapin, with themes, plugins, and a small runtime.</p>
-    <a class="underline" href="/docs">Open Documentation</a>
-  </main>
+<Layout title="Yapmod Client" description="A client mod for Yapin with themes, plugins, and a lightweight runtime.">
+  <Home client:load pathname={Astro.url.pathname} params={Astro.params} />
 </Layout>

@@ -3,6 +3,7 @@ import type { ClientHandle } from '@yapmod/types';
 import { injectStyles, removeStyles } from '@yapmod/ui';
 import { version } from '../package.json';
 import { closeAllModals } from './lib/modal';
+import { sharedSolid } from './lib/solid';
 import { disposeToasts } from './lib/toast';
 import { installPlugins, registerClientPlugin } from './features/plugins/runtime';
 import type { ClientPlugin } from './features/plugins/types';
@@ -59,6 +60,7 @@ function bootstrap(): YapmodClientHandle {
 
   const handle: YapmodClientHandle = Object.freeze({
     version,
+    api: sharedSolid,
     get state() {
       return client.state;
     },

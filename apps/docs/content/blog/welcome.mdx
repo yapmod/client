@@ -1,0 +1,101 @@
+---
+title: Welcome to the Yapmod Blog
+description: Introducing the new direction of Yapmod, its architecture, and the ideas behind the next generation of the project.
+date: 2026-11-13
+tags: [Announcement]
+authors: [ilyeshdz]
+---
+
+# Welcome to Yapmod
+
+Welcome to the new Yapmod website, and more importantly, welcome to the Yapmod blog.
+
+If you've been following the project for a while, you probably know that Yapmod started as a relatively simple idea: adding extra functionality to Yapin. Over time, the project grew considerably, and I realised that the original architecture was no longer the right foundation for what I wanted to build.
+
+With the upcoming 1.0.0 release, I've decided to take a different direction and rebuild a significant part of the project.
+
+This isn't just another update. It's a change in how Yapmod is designed, how it works, and what I want it to become.
+
+## How it works
+
+Yapmod is a single JavaScript file that you inject into the Yapin web page. There is no desktop application, no browser extension, and no separate process.
+
+The script initialises itself when loaded, adds themes, plugins, and a settings section to the page, and exposes a global handle to check its state or unload it cleanly.
+
+## Plugins are at the centre of everything
+
+Plugins are no longer just an additional feature. They are one of the fundamental building blocks of Yapmod.
+
+The idea is simple: functionality should come from extensions whenever it makes sense, rather than being built directly into the client.
+
+There are two kinds of plugins. **Client plugins** are registered by the host application itself. They are how platform-specific features work: if a host wants to provide system notifications or native messaging, it registers those as plugins. Yapmod does not need to know about the platform.
+
+**Community plugins** are what users install, manage, and share. They can be written locally, loaded from a URL, edited, enabled, and disabled.
+
+This distinction means we can build complete experiences without turning the core client into a collection of tightly coupled features.
+
+## Inspired by Shelter and Dorion
+
+When I first started thinking about a proper plugin system for Yapmod, I was inspired by projects like [Shelter](https://github.com/uwu/shelter) and [Dorion](https://github.com/SpikeHD/Dorion).
+
+Shelter treats modifications as a framework rather than a collection of bundled features. Dorion builds a desktop experience around that idea.
+
+I want to bring that philosophy to Yapmod. I do not want it to become just another client with a fixed set of features that I maintain. I want it to provide the foundation for an ecosystem where people can build and share their own plugins.
+
+I am not trying to reproduce Shelter or Dorion. Their approaches are inspiration, not a blueprint.
+
+## What about themes?
+
+Themes are another way to customise the experience without writing code. The system supports local CSS files and online themes, with automatic light and dark mode support.
+
+## Why SolidJS?
+
+Yapmod UI components are built with SolidJS, not React. The host application is React, but our modals, toasts, and settings panels use Solid.
+
+Shelter makes essentially the same choice. Instead of relying on the host framework, they build their own UI layer. I saw this as the right approach because it gives us stability and independence.
+
+The host owns the DOM and can change its interface at any time. If we built our UI inside React, we would be tied to Yapin's internal structure. A change to how React renders the settings modal could break everything we attached to it. By using Solid, we render into our own roots in the light DOM. We are independent of the host's component tree, its state, and its rendering cycle.
+
+This also means we can build any kind of component without waiting for the host to expose it. When we need a new UI element, I create a Solid component that reproduces Yapin's look and feel. These components match the existing UI so everything looks native, but they are written from scratch in Solid. They can be more performant, more reliable, and easier to maintain because we control the entire implementation.
+
+Right now the component library is small. It has only what we need for modals, toasts, and settings. It will expand as we need more components, each one built to match Yapin's design while giving us full control over how it works.
+
+## Where development stands today
+
+As of November 2026, Yapmod is undergoing a significant architectural rewrite.
+
+The 1.0.0 release was originally intended to be the next major milestone. After considering the direction I wanted to take, I decided that simply polishing the existing application wouldn't be enough. I chose to rethink the structure of the project instead.
+
+Most of my attention is on the client itself: the core architecture, the plugin system, the APIs exposed to developers, and the components that make everything work together.
+
+There is still a lot to do, and some of the ideas described in this post are still being developed. I don't want to give the impression that everything is already implemented or ready to use.
+
+## What comes next?
+
+There are several things I want to work on as development progresses:
+
+- **Plugin API refinements:** making the API more consistent and reliable for extension authors.
+- **Client plugin ecosystem:** encouraging hosts to register their own platform-specific plugins.
+- **Theme support:** improving how themes are developed, distributed, and versioned.
+- **Developer experience:** making it easier to create, test, and maintain plugins and themes.
+- **Documentation:** expanding the docs with more examples, patterns, and API references.
+
+These won't all arrive at once. The priority is to establish a solid foundation before expanding further.
+
+## A project that's still evolving
+
+I think it's important to explain why this change matters to me.
+
+I started Yapmod because I wanted a better experience using Yapin. But over time, I became more interested in the possibilities of building something that other people could extend themselves.
+
+I don't want every new feature to depend on me implementing it directly. I want to provide the tools, the architecture, and the documentation that allow other developers to contribute in their own way.
+
+That's ultimately what this new direction is about.
+
+Yapmod is still a personal project, developed independently, and there is a lot of work ahead. I'm not trying to build an enormous platform overnight. I just want to make something that is properly designed, enjoyable to use, and genuinely useful to the people who decide to build on top of it.
+
+The 1.0.0 release is an important step towards that goal, but it's also the beginning of a different chapter for the project.
+
+Thanks for following Yapmod and for taking an interest in what I'm building.
+
+More updates soon!

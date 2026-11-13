@@ -1,0 +1,142 @@
+---
+title: Plugin Patterns
+description: Short recipes for common plugin tasks.
+---
+
+These recipes assume the ambient `yapmod` global. In a typed project, add
+`import type {} from '@yapmod/builder/global';` so the compiler knows about it.
+
+## A settings section
+
+Register a section inside the Yapmod settings group with
+`settings.registerSection()`. The render function returns Solid JSX; because the
+section lives inside Yapmod's own reactive tree it updates with Solid signals.
+The section unregisters automatically when the plugin stops.
+
+```tsx
+import { createSignal } from 'solid-js';
+
+export default {
+  onLoad() {
+    yapmod.settings.registerSection({
+      id: 'greeting',
+      label: 'Greeting',
+      icon: 'pencil',
+      render() {
+        const [name, setName] = createSignal('world');
+        return (
+          <yapmod.ui.Panel>
+            <p>Hello, {name()}!</p>
+            <input value={name()} onInput={(event) => setName(event.currentTarget.value)} />
+          </yapmod.ui.Panel>
+        );
+      },
+    });
+  },
+};
+```
+
+## A modal and a toast
+
+`ui.openModal()` opens a Yapin-styled modal and returns a close function; the
+modal also closes when the plugin stops. `ui.showToast()` shows a short-lived
+message. The content and footer callbacks receive `close` so buttons can dismiss
+the modal.
+
+```tsx
+export default {
+  onLoad() {
+    yapmod.ui.openModal({
+      title: 'Example',
+      content(close) {
+        return (
+          <div>
+            <p>This is a modal.</p>
+            <yapmod.ui.Button
+              onClick={() => {
+                yapmod.ui.showToast('Saved.', 'success');
+                close();
+              }}
+            >
+              Save
+            </yapmod.ui.Button>
+          </div>
+        );
+      },
+    });
+  },
+};
+```
+
+## Watching the page
+
+`observe()` calls your callback for matches already in the page immediately and
+for elements added later, once per element. Yapin rebuilds its interface by
+replacing nodes, so insertions are enough to stay up to date. The returned
+disposer stops the observer and runs automatically when the plugin stops, so no
+`onUnload` is needed.
+
+```tsx
+export default {
+  onLoad() {
+    yapmod.observe('.message', (element) => {
+      yapmod.log('saw a message', element);
+    });
+  },
+};
+```
+
+## Persisting state
+
+`storage` is reactive and per-plugin. A **top-level** write persists
+automatically and re-runs reactive readers. A **deep** mutation changes the held
+object (visible to immediate readers) but is neither reactive nor persisted
+until you call `flushStorage()`.
+
+```tsx
+export default {
+  onLoad() {
+    // Top-level: reactive and persisted automatically.
+    yapmod.storage.count = Number(yapmod.storage.count ?? 0) + 1;
+
+    // Deep: mutate, then flush to persist.
+    yapmod.storage.user = yapmod.storage.user ?? {};
+    yapmod.storage.user.name = 'Ada';
+    yapmod.flushStorage();
+
+    yapmod.log('count', yapmod.storage.count, 'user', yapmod.storage.user);
+  },
+};
+```
+
+## Cleaning up early
+
+Every disposer-returning API call (`observe`, `ui.openModal`, `ui.injectCss`,
+`settings.registerSection`) is auto-registered, but you can also call the
+returned disposer to close or remove the thing early. Use `onDispose()` for
+custom cleanup and keep `onUnload` for work that is not a disposer.
+
+```tsx
+export default {
+  onLoad() {
+    const stop = yapmod.observe('body', () => yapmod.log('seen'));
+    const removeStyle = yapmod.ui.injectCss('.note { opacity: 0.8; }');
+
+    yapmod.onDispose(() => yapmod.log('custom cleanup'));
+
+    // Close or remove something early, on your own terms.
+    setTimeout(() => {
+      stop();
+      removeStyle();
+    }, 5000);
+  },
+};
+```
+
+## Using the shared Solid
+
+Built plugins import from `solid-js`, `solid-js/web` and `solid-js/store`; the
+builder rewrites those imports to `yapmod.solid*` so the plugin runs on the
+bundle's single Solid instance. **Never bundle your own `solid-js`** — a second
+copy would split signal state so plugin components stop reacting to host
+updates. See [Writing Plugins](/docs/plugins/creating) for the full rule.

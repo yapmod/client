@@ -52,6 +52,12 @@ and left disabled.
 ## Definition
 
 ```ts
+interface ClientPluginModule {
+  onLoad?(): void;
+  onUnload?(): void;
+  settings?: Node | string | (() => Node | string | Promise<Node | string>);
+}
+
 interface ClientPlugin {
   /** Reserved id, always starting with `client:`. */
   id: string;

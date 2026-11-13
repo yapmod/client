@@ -1,11 +1,15 @@
 import type { Client } from '@yapmod/types';
+import { Button, Hint, Icon, Panel, injectStyle, removeStyle } from '@yapmod/ui';
 import { createSignal } from 'solid-js';
-import { openContentModal } from '../../lib/modal';
+import { openContentModal, openModal } from '../../lib/modal';
+import { sharedSolid } from '../../lib/solid';
 import { showToast } from '../../lib/toast';
+import { registerSettingsSection } from '../settings/install';
 import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
+import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
-import { loadPluginStorage, savePluginStorage } from './storage';
+import { createPluginStorage } from './storage';
 import {
   addClientPlugin,
   addPluginRecord,
@@ -101,15 +105,69 @@ function createPluginApi(
   api: YapmodPluginApi;
   disposers: (() => void)[];
 } {
-  const storage = loadPluginStorage(id);
+  const { storage, persist } = createPluginStorage(id);
   const disposers: (() => void)[] = [];
+  let styleCounter = 0;
+
+  /**
+   * Registers a disposer with the plugin and hands it back unchanged, so
+   * every disposer-returning API call cleans up by default while still
+   * letting the caller close or remove the thing early.
+   */
+  function track<T extends () => void>(dispose: T): T {
+    disposers.push(dispose);
+    return dispose;
+  }
 
   const api: YapmodPluginApi = {
+    apiVersion: 1,
     id,
     manifest: { ...manifest },
     storage,
     flushStorage() {
-      savePluginStorage(id, storage);
+      persist();
+    },
+    log(...args: unknown[]) {
+      console.log(`[yapmod:${id}]`, ...args);
+    },
+    observe(selector, onFound) {
+      return track(observeElements(selector, onFound));
+    },
+    ui: {
+      showToast: showToast,
+      openModal(options) {
+        return track(openModal(options));
+      },
+      injectCss(css) {
+        const styleId = `yapmod-plugin-${id}-${styleCounter++}`;
+        injectStyle(styleId, css);
+        return track(() => removeStyle(styleId));
+      },
+      Button,
+      Hint,
+      Panel,
+      Icon,
+    },
+    settings: {
+      registerSection(section) {
+        if (typeof section.label !== 'string' || !section.label.trim()) {
+          throw new Error('registerSection(): section.label must be a non-empty string.');
+        }
+        if (typeof section.render !== 'function') {
+          throw new Error('registerSection(): section.render must be a function.');
+        }
+
+        // Namespaced per plugin, so two plugins can use the same section id
+        // and a plugin can never shadow Yapmod's own entries.
+        return track(
+          registerSettingsSection({
+            id: `plugin:${id}:${section.id}`,
+            label: section.label,
+            icon: section.icon,
+            render: section.render,
+          }),
+        );
+      },
     },
     onDispose(dispose) {
       if (typeof dispose === 'function') disposers.push(dispose);
@@ -117,6 +175,9 @@ function createPluginApi(
     showSettings() {
       showPluginSettings(id);
     },
+    solid: sharedSolid.solid,
+    solidWeb: sharedSolid.solidWeb,
+    solidStore: sharedSolid.solidStore,
   };
 
   return { api, disposers };
@@ -173,7 +234,7 @@ export function startPlugin(id: string): boolean {
 
   let module: Record<string, unknown>;
   try {
-    const result = evaluatePluginSource(plugin.js, api);
+    const result = evaluatePluginSource(plugin.js, api, `yapmod://${id}`);
     if (!isRecord(result)) throw new Error('Plugin code must return an object.');
     module = result;
   } catch (error) {

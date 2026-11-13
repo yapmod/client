@@ -14,10 +14,14 @@ let evalCounter = 0;
  * result on a temporary global for the caller to collect. The temporary
  * globals and the script element are removed immediately.
  *
+ * `sourceName` becomes the script's `sourceURL`, so devtools list it under
+ * that name and stack traces read `yapmod://<id>` instead of an inline
+ * snippet.
+ *
  * The plugin source is an expression. It may be an object literal or a
  * function that returns one.
  */
-export function evaluatePluginSource(source: string, api: unknown): unknown {
+export function evaluatePluginSource(source: string, api: unknown, sourceName: string): unknown {
   const globals = globalThis as Record<string, unknown>;
   const token = `${Date.now().toString(36)}_${(evalCounter++).toString(36)}`;
   const apiKey = `__yapmod_api_${token}`;
@@ -38,6 +42,7 @@ export function evaluatePluginSource(source: string, api: unknown): unknown {
     globalThis[${JSON.stringify(resultKey)}] = { error: error };
   }
 })(globalThis[${JSON.stringify(apiKey)}]);
+//# sourceURL=${sourceName}
 `;
 
   const parent = document.head ?? document.documentElement;

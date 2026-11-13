@@ -1,30 +1,9 @@
-/** A function a plugin may export as one of its lifecycle hooks. */
-export type PluginFunction = (...args: unknown[]) => unknown;
+import type { PluginFunction, PluginManifest, YapmodPluginApi } from '@yapmod/types';
 
-/** The API object every started plugin receives, community or client-registered. */
-export interface YapmodPluginApi {
-  /** Stable id of this plugin, also used as its storage key. */
-  readonly id: string;
-  /** Metadata from `plugin.json` or the local plugin form. */
-  readonly manifest: PluginManifest;
-  /** A per-plugin object persisted through `flushStorage()`. */
-  readonly storage: Record<string, unknown>;
-  /** Writes `storage` to `localStorage`. */
-  flushStorage(): void;
-  /** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
-  onDispose(dispose: () => void): void;
-  /** Opens the plugin's settings modal, when it exported `settings`. */
-  showSettings(): void;
-}
-
-/** The user-facing metadata every installed plugin carries. */
-export interface PluginManifest {
-  name: string;
-  author: string;
-  description: string;
-  version?: string;
-  hash?: string;
-}
+// The plugin-facing contracts live in `@yapmod/types`, where the builder ships
+// them to plugin authors. Re-exported here so app-internal imports keep their
+// feature-local path.
+export type { PluginFunction, PluginManifest, YapmodPluginApi };
 
 /**
  * A plugin installed in this browser.
