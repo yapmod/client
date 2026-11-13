@@ -9,7 +9,7 @@ import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
 import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
-import { loadPluginStorage, savePluginStorage } from './storage';
+import { createPluginStorage } from './storage';
 import {
   addClientPlugin,
   addPluginRecord,
@@ -105,7 +105,7 @@ function createPluginApi(
   api: YapmodPluginApi;
   disposers: (() => void)[];
 } {
-  const storage = loadPluginStorage(id);
+  const { storage, persist } = createPluginStorage(id);
   const disposers: (() => void)[] = [];
   let styleCounter = 0;
 
@@ -125,7 +125,7 @@ function createPluginApi(
     manifest: { ...manifest },
     storage,
     flushStorage() {
-      savePluginStorage(id, storage);
+      persist();
     },
     log(...args: unknown[]) {
       console.log(`[yapmod:${id}]`, ...args);

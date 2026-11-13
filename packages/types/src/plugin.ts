@@ -105,9 +105,13 @@ export interface YapmodPluginApi {
   readonly id: string;
   /** Metadata from `plugin.json` or the local plugin form. */
   readonly manifest: PluginManifest;
-  /** A per-plugin object persisted through `flushStorage()`. */
+  /**
+   * Reactive per-plugin storage, backed by a Solid signal. Top-level sets
+   * (`storage.count = 1`) persist automatically; deeper mutations are
+   * written by `flushStorage()`.
+   */
   readonly storage: Record<string, unknown>;
-  /** Writes `storage` to `localStorage`. */
+  /** Writes `storage` to `localStorage`. Call it after mutating nested values. */
   flushStorage(): void;
   /** Logs to the console with a `[yapmod:<id>]` prefix. */
   log(...args: unknown[]): void;
