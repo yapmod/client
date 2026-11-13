@@ -19,14 +19,14 @@ The development build watches for changes and rebuilds the client automatically.
 
 ## Commands
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Build and watch for changes |
-| `pnpm build` | Build for production |
-| `pnpm typecheck` | Type-check the workspace |
-| `pnpm lint` | Run Oxlint |
-| `pnpm format` | Format with Oxfmt |
-| `pnpm format:check` | Check formatting |
+| Command             | Description                 |
+| ------------------- | --------------------------- |
+| `pnpm dev`          | Build and watch for changes |
+| `pnpm build`        | Build for production        |
+| `pnpm typecheck`    | Type-check the workspace    |
+| `pnpm lint`         | Run Oxlint                  |
+| `pnpm format`       | Format with Oxfmt           |
+| `pnpm format:check` | Check formatting            |
 
 ## Contributing
 
