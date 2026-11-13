@@ -1,0 +1,35 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Layout from '@/layouts/Layout.astro';
+import { BlogPostPage } from '@/components/blog-post';
+import { blogAuthors, blogSource } from '@/lib/source';
+import { findPost, getPosts } from '@/lib/blog';
+
+export const getStaticPaths = (() => {
+  const posts = getPosts(blogSource.getPages(), blogAuthors);
+
+  return blogSource.getPages().map((page) => ({
+    params: { slug: decodeURI(page.slugs[0]) },
+    props: { page, ...findPost(posts, page.url)! },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page, post, newer, older } = Astro.props;
+const { body: Content, toc } = await page.data.load();
+---
+
+<Layout title={post.title} description={post.description}>
+  <BlogPostPage
+    client:load
+    pathname={Astro.url.pathname}
+    params={Astro.params}
+    post={post}
+    newer={newer}
+    older={older}
+    toc={toc}
+  >
+    <Content />
+  </BlogPostPage>
+</Layout>

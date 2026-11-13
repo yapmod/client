@@ -1,6 +1,5 @@
 {
   "title": "Plugins",
-  "description": "Use and create plugins for Yapin.",
-  "defaultOpen": true,
+  "icon": "Puzzle",
   "pages": ["index", "using", "client-plugins", "creating", "patterns", "api"]
 }

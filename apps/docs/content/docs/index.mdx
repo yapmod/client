@@ -1,4 +1,20 @@
 ---
 title: Introduction
-description: Documentation for Yapmod themes and plugins.
+description: Get started with Yapmod — a client mod for Yapin.
 ---
+
+Yapmod is a free, open-source client mod for [Yapin](https://yapin.com). It adds themes, plugins, and a settings panel to the live Yapin page — all in one self-contained bundle.
+
+## What you'll learn
+
+- **Themes** — How to install, use, and create custom themes to change Yapin's look.
+- **Plugins** — How to write client-side plugins that extend Yapin's behavior safely under CSP.
+- **Architecture** — How Yapmod works inside Yapin's React DOM without breaking.
+
+## Quick start
+
+1. Build the bundle with `pnpm build` (or `pnpm dev` for watch mode).
+2. Paste the output (`apps/client/dist/yapmod-client.js`) into the browser console on Yapin.
+3. Open the Yapmod settings panel and start customizing.
+
+No build step is needed on the host side — Yapmod runs entirely client-side as a single IIFE file.

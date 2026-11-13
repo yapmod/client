@@ -22,9 +22,7 @@ The module object may export:
   card's gear button appears. This modal is distinct from
   `settings.registerSection()`.
 
-```ts twoslash
-import type {} from '@yapmod/builder/global';
-
+```javascript
 {
   onLoad() {
     yapmod.log('hello');
@@ -47,9 +45,8 @@ evaluation goes through a temporary inline `<script>`.
 TypeScript projects can make the top-level `yapmod` value known to the compiler
 by importing the builder's global declaration:
 
-```ts twoslash
+```ts
 import type {} from '@yapmod/builder/global';
-const api = yapmod;
 ```
 
 This declares `yapmod` as a `YapmodPluginApi` for the file, so you can write
@@ -61,7 +58,7 @@ runtime.
 `@yapmod/builder` compiles plugin TSX and rewrites Solid imports onto the
 bundle's shared instance so the result loads straight through the client.
 
-```ts twoslash
+```ts
 // build.mjs
 import { buildPlugin } from '@yapmod/builder';
 
