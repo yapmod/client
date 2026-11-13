@@ -32,7 +32,7 @@ export function baseOptions(): BaseLayoutProps {
           <LogoSvg />
         </span>
       ),
-      url: '/',
+      url: '/client',
     },
     links,
   };
