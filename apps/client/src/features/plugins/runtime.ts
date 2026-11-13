@@ -7,31 +7,19 @@ import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './ma
 import { fetchRemotePlugin } from './remote';
 import { loadPluginStorage, savePluginStorage } from './storage';
 import {
+  addClientPlugin,
   addPluginRecord,
+  clientPluginEnabled,
+  findClientPlugin,
   getPluginRecord,
+  isClientPluginId,
   pluginState,
   removePluginRecord,
   replacePluginRecord,
+  setClientPluginEnabled,
   setPluginEnabledRecord,
 } from './store';
-import type { PluginManifest, StoredPlugin } from './types';
-
-type PluginFunction = (...args: unknown[]) => unknown;
-
-export interface YapmodPluginApi {
-  /** Stable id of this plugin, also used as its storage key. */
-  readonly id: string;
-  /** Metadata from `plugin.json` or the local plugin form. */
-  readonly manifest: PluginManifest;
-  /** A per-plugin object persisted through `flushStorage()`. */
-  readonly storage: Record<string, unknown>;
-  /** Writes `storage` to `localStorage`. */
-  flushStorage(): void;
-  /** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
-  onDispose(dispose: () => void): void;
-  /** Opens the plugin's settings modal, when it exported `settings`. */
-  showSettings(): void;
-}
+import type { PluginFunction, PluginManifest, StoredPlugin, YapmodPluginApi } from './types';
 
 interface LoadedPlugin {
   module: Record<string, unknown>;
@@ -102,25 +90,23 @@ function runDisposers(plugin: LoadedPlugin): void {
 }
 
 /**
- * Evaluates and starts one installed plugin.
- *
- * Plugin source is an expression that returns an object with optional
- * `onLoad`, `onUnload` and `settings` members. The expression is evaluated in
- * the page's realm because plugins are trusted code.
+ * Builds the API object every plugin receives. Community and client-registered
+ * plugins share it verbatim, so storage, cleanup registration and settings
+ * behave identically for both.
  */
-export function startPlugin(id: string): boolean {
-  if (runtimeDisposed) return false;
-  if (loaded.has(id)) return true;
-
-  const plugin = getPluginRecord(id);
-  if (!plugin) return false;
-
+function createPluginApi(
+  id: string,
+  manifest: PluginManifest,
+): {
+  api: YapmodPluginApi;
+  disposers: (() => void)[];
+} {
   const storage = loadPluginStorage(id);
   const disposers: (() => void)[] = [];
 
   const api: YapmodPluginApi = {
     id,
-    manifest: { ...plugin.manifest },
+    manifest: { ...manifest },
     storage,
     flushStorage() {
       savePluginStorage(id, storage);
@@ -133,16 +119,20 @@ export function startPlugin(id: string): boolean {
     },
   };
 
-  let module: Record<string, unknown>;
-  try {
-    const result = evaluatePluginSource(plugin.js, api);
-    if (!isRecord(result)) throw new Error('Plugin code must return an object.');
-    module = result;
-  } catch (error) {
-    console.error(`[yapmod] could not load plugin ${id}`, error);
-    return false;
-  }
+  return { api, disposers };
+}
 
+/**
+ * Puts a module into the running map and calls its `onLoad`. A module whose
+ * `onLoad` throws is stopped again and reported as failed, so callers can
+ * persist the plugin as disabled.
+ */
+function activatePlugin(
+  id: string,
+  module: Record<string, unknown>,
+  api: YapmodPluginApi,
+  disposers: (() => void)[],
+): boolean {
   const record: LoadedPlugin = {
     module,
     api,
@@ -160,6 +150,87 @@ export function startPlugin(id: string): boolean {
     console.error(`[yapmod] plugin ${id} onLoad failed`, error);
     stopPlugin(id);
     return false;
+  }
+
+  return true;
+}
+
+/**
+ * Evaluates and starts one installed plugin.
+ *
+ * Plugin source is an expression that returns an object with optional
+ * `onLoad`, `onUnload` and `settings` members. The expression is evaluated in
+ * the page's realm because plugins are trusted code.
+ */
+export function startPlugin(id: string): boolean {
+  if (runtimeDisposed) return false;
+  if (loaded.has(id)) return true;
+
+  const plugin = getPluginRecord(id);
+  if (!plugin) return false;
+
+  const { api, disposers } = createPluginApi(id, plugin.manifest);
+
+  let module: Record<string, unknown>;
+  try {
+    const result = evaluatePluginSource(plugin.js, api);
+    if (!isRecord(result)) throw new Error('Plugin code must return an object.');
+    module = result;
+  } catch (error) {
+    console.error(`[yapmod] could not load plugin ${id}`, error);
+    return false;
+  }
+
+  return activatePlugin(id, module, api, disposers);
+}
+
+/**
+ * Starts one client-registered plugin.
+ *
+ * The definition's `setup` runs as ordinary trusted code — synchronously,
+ * in the host application's own module — and its module goes through
+ * exactly the same activation path as a community plugin.
+ */
+export function startClientPlugin(id: string): boolean {
+  if (runtimeDisposed) return false;
+  if (loaded.has(id)) return true;
+
+  const definition = findClientPlugin(id);
+  if (!definition) return false;
+
+  const { api, disposers } = createPluginApi(id, definition.manifest);
+
+  let module: Record<string, unknown>;
+  try {
+    const result = definition.setup(api);
+    if (!isRecord(result)) throw new Error('Client plugin setup must return an object.');
+    module = result;
+  } catch (error) {
+    console.error(`[yapmod] could not load client plugin ${id}`, error);
+    return false;
+  }
+
+  return activatePlugin(id, module, api, disposers);
+}
+
+/**
+ * Registers a plugin provided by the application embedding Yapmod.
+ *
+ * This is the public entry point on `globalThis.YapmodClient`. The
+ * definition is validated and recorded, then started immediately when it is
+ * enabled (the host's `defaultEnabled`, unless the user chose otherwise).
+ * A plugin that fails to start is logged and persisted as disabled, so the
+ * next page load does not retry it silently.
+ *
+ * Returns `false` when the definition was rejected; a registered plugin
+ * that failed to start still counts as registered.
+ */
+export function registerClientPlugin(definition: unknown): boolean {
+  const plugin = addClientPlugin(definition);
+  if (!plugin) return false;
+
+  if (clientPluginEnabled(plugin.id) && !startClientPlugin(plugin.id)) {
+    setClientPluginEnabled(plugin.id, false);
   }
 
   return true;
@@ -187,8 +258,29 @@ export function stopPlugin(id: string): void {
 /**
  * Enables or disables a plugin, persisting the choice. Returns the state the
  * switch should show; a plugin that fails to load stays disabled.
+ *
+ * Client-registered plugins persist to their override store instead of a
+ * plugin record — they have no record to write to, and can never be
+ * removed or updated.
  */
 export function setPluginEnabled(id: string, enabled: boolean): boolean {
+  if (isClientPluginId(id)) {
+    if (enabled) {
+      const started = startClientPlugin(id);
+      setClientPluginEnabled(id, started);
+
+      if (!started) {
+        showToast(`Could not start ${findClientPlugin(id)?.manifest.name ?? 'plugin'}.`, 'error');
+      }
+
+      return started;
+    }
+
+    stopPlugin(id);
+    setClientPluginEnabled(id, false);
+    return false;
+  }
+
   if (enabled) {
     const started = startPlugin(id);
     setPluginEnabledRecord(id, started);
@@ -396,9 +488,13 @@ async function updateInstalledPlugins(): Promise<void> {
  * Installs the plugin runtime for the lifetime of the client.
  *
  * Remote plugins with auto-update enabled are refreshed first, then every
- * plugin marked as enabled is started. Disposal stops every plugin, runs its
- * cleanups, and removes any plugin modal without changing the saved enabled
- * flags, so plugins start again the next time Yapmod loads.
+ * stored plugin marked as enabled is started. Client-registered plugins are
+ * not started here: the embedding application registers them through
+ * `registerClientPlugin()`, which starts them at registration time, and
+ * they are never fetched or updated. Disposal stops every plugin — community
+ * and client-registered alike — runs its cleanups, and removes any plugin
+ * modal without changing the saved enabled flags, so plugins start again the
+ * next time Yapmod loads.
  */
 export function installPlugins(client: Client): void {
   runtimeDisposed = false;
