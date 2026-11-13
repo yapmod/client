@@ -234,7 +234,7 @@ export function startPlugin(id: string): boolean {
 
   let module: Record<string, unknown>;
   try {
-    const result = evaluatePluginSource(plugin.js, api);
+    const result = evaluatePluginSource(plugin.js, api, `yapmod://${id}`);
     if (!isRecord(result)) throw new Error('Plugin code must return an object.');
     module = result;
   } catch (error) {
