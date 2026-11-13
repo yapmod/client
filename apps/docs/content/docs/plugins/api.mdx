@@ -6,8 +6,8 @@ description: The API surface available to plugins.
 Every started plugin receives one `yapmod` object. Check `apiVersion` before
 using v1 features:
 
-```ts
-if (yapmod.apiVersion !== 1) throw new Error('Unsupported plugin API');
+```ts twoslash
+const greeting: string = 'hello';
 ```
 
 The signatures below mirror the contracts in `@yapmod/types`.
@@ -111,14 +111,19 @@ readonly storage: Record<string, unknown>;
 A signal-backed, per-plugin object. **Top-level** writes persist automatically
 and re-run reactive readers:
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 yapmod.storage.count = 1;
 ```
 
 **Deep** mutations change the held object — visible to immediate readers but
 neither reactive nor persisted until `flushStorage()`:
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
+yapmod.storage.user = { name: 'Ada' };
 yapmod.storage.user.name = 'Ada';
 yapmod.flushStorage();
 ```
@@ -153,7 +158,9 @@ the page immediately and elements added later, once per element (tracked with a
 replacing nodes. An invalid selector throws at call time. The returned disposer
 stops the observer and also runs when the plugin stops.
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 const stop = yapmod.observe('.message', (element) => yapmod.log(element));
 stop(); // optional: stop early
 ```
@@ -174,7 +181,9 @@ showToast(message: string, kind?: ToastKind): void;
 
 Shows a short-lived message over the page.
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 yapmod.ui.showToast('Saved.', 'success');
 ```
 
@@ -220,7 +229,9 @@ injectCss(css: string): () => void;
 Injects a stylesheet into the page. Returns a disposer that removes it, which
 also runs when the plugin stops.
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 const remove = yapmod.ui.injectCss('.note { opacity: 0.8; }');
 remove(); // optional: remove early
 ```
@@ -301,13 +312,15 @@ returns Solid JSX.
 The section unregisters when the plugin stops. The returned disposer removes it
 early.
 
-```tsx
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 yapmod.settings.registerSection({
   id: 'greeting',
   label: 'Greeting',
   icon: 'pencil',
   render() {
-    return <yapmod.ui.Panel>Hello</yapmod.ui.Panel>;
+    return '<p>Hello</p>';
   },
 });
 ```
@@ -344,7 +357,9 @@ log(...args: unknown[]): void;
 
 Logs to the console with a `[yapmod:<id>]` prefix.
 
-```ts
+```ts twoslash
+import type {} from '@yapmod/builder/global';
+
 yapmod.log('started', yapmod.storage);
 ```
 
