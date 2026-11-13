@@ -6,6 +6,7 @@ import { defineConfig } from 'astro/config';
 // only by Fumadocs islands inside this app and never enters the client bundle.
 
 export default defineConfig({
+  base: '/client',
   integrations: [
     fumadocs({
       components: './src/components/mdx.tsx',
