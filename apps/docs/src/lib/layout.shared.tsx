@@ -20,7 +20,7 @@ const links: LinkItemType[] = [
   {
     type: 'main',
     text: 'Blog',
-    url: '/blog',
+    url: '/client/blog',
   },
 ];
 
