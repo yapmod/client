@@ -24,13 +24,13 @@ export default {
   },
   start(api) {
     // This runs when the plugin is loaded
-    api.log('Plugin started!')
+    api.log('Plugin started!');
   },
   stop() {
     // This runs when the plugin is disabled or removed
-    console.log('Plugin stopped')
+    console.log('Plugin stopped');
   },
-}
+};
 ```
 
 <Callout type="info">
@@ -58,7 +58,8 @@ While the plugin is active, it can interact with the page through the API. The p
 When the plugin is disabled, removed, or when Yapmod itself unloads, the `stop()` hook runs. This is your chance to clean up: remove event listeners, dispose of observers, and save any pending state.
 
 <Callout type="warn">
-**Always clean up** — use `api.onDispose()` to register cleanup functions that run when the plugin stops. This ensures your plugin doesn't leave behind orphaned observers or event listeners.
+  **Always clean up** — use `api.onDispose()` to register cleanup functions that run when the plugin
+  stops. This ensures your plugin doesn't leave behind orphaned observers or event listeners.
 </Callout>
 
 ## How Yapmod evaluates plugins
@@ -90,7 +91,9 @@ If you choose not to use the builder, you can write your plugin as a plain JavaS
 - Ensuring the output is a valid expression that Yapmod can evaluate.
 
 <Callout type="error">
-The manual approach is not recommended for most users. Without the builder, you lose TypeScript support, SolidJS JSX compilation, and the convenience of the build tool. Use it only if you have a specific reason to avoid the starter repo.
+  The manual approach is not recommended for most users. Without the builder, you lose TypeScript
+  support, SolidJS JSX compilation, and the convenience of the build tool. Use it only if you have a
+  specific reason to avoid the starter repo.
 </Callout>
 
 ## Next steps

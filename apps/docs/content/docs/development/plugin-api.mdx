@@ -6,7 +6,9 @@ description: Reference for the YapmodPluginApi object available to every plugin.
 Every plugin receives a `YapmodPluginApi` object when it starts. This page documents all the properties and methods available through that API.
 
 <Callout type="info">
-The built-in Plugin API is the recommended way to build plugins. You can technically do everything manually by manipulating the DOM yourself, but the API methods are more performant, easier to use, and handle cleanup automatically.
+  The built-in Plugin API is the recommended way to build plugins. You can technically do everything
+  manually by manipulating the DOM yourself, but the API methods are more performant, easier to use,
+  and handle cleanup automatically.
 </Callout>
 
 ## Properties
@@ -37,18 +39,19 @@ Reactive per-plugin storage backed by a Solid signal. Top-level property assignm
 
 ```typescript
 // Top-level set — persists automatically
-api.storage.count = (api.storage.count as number | undefined) ?? 0 + 1
+api.storage.count = (api.storage.count as number | undefined) ?? 0 + 1;
 
 // Nested mutation — call flushStorage after
-const data = api.storage.data as { items: string[] } | undefined
+const data = api.storage.data as { items: string[] } | undefined;
 if (data) {
-  data.items.push('new item')
-  api.flushStorage()
+  data.items.push('new item');
+  api.flushStorage();
 }
 ```
 
 <Callout type="warn">
-Storage is backed by `localStorage`. Large amounts of data may impact performance. Keep stored data minimal.
+  Storage is backed by `localStorage`. Large amounts of data may impact performance. Keep stored
+  data minimal.
 </Callout>
 
 ### `api.ui`
@@ -92,7 +95,7 @@ Writes the current `storage` state to `localStorage`. Call this after mutating n
 Logs to the console with a `[yapmod:<id>]` prefix, making it easy to filter your plugin's output in the dev tools console.
 
 ```typescript
-api.log('Plugin started with config:', config)
+api.log('Plugin started with config:', config);
 ```
 
 ### `api.observe(selector, onFound)`
@@ -103,16 +106,17 @@ Watches for elements matching the CSS selector. Calls `onFound` for every matchi
 
 ```typescript
 const dispose = api.observe('.message-input', (element) => {
-  api.log('Found message input:', element)
+  api.log('Found message input:', element);
   // Modify or interact with the element
-})
+});
 
 // Stop observing when no longer needed
-dispose()
+dispose();
 ```
 
 <Callout type="idea">
-The disposer returned by `observe()` also runs automatically when the plugin stops. You can also register it with `api.onDispose()` for explicit cleanup.
+  The disposer returned by `observe()` also runs automatically when the plugin stops. You can also
+  register it with `api.onDispose()` for explicit cleanup.
 </Callout>
 
 ### `api.onDispose(dispose)`
@@ -121,8 +125,8 @@ Registers a cleanup function that runs when the plugin stops or when Yapmod unlo
 
 ```typescript
 api.onDispose(() => {
-  console.log('Cleaning up plugin resources')
-})
+  console.log('Cleaning up plugin resources');
+});
 ```
 
 ### `api.showSettings()`
@@ -141,8 +145,8 @@ Shows a short-lived toast message over the page.
 - `kind` — optional, `'success'` or `'error'`. Defaults to `'success'`.
 
 ```typescript
-api.ui.showToast('Plugin activated!', 'success')
-api.ui.showToast('Something went wrong', 'error')
+api.ui.showToast('Plugin activated!', 'success');
+api.ui.showToast('Something went wrong', 'error');
 ```
 
 ### `api.ui.openModal(options)`
@@ -174,7 +178,7 @@ const dispose = api.ui.injectCss(`
   .my-custom-class {
     color: red;
   }
-`)
+`);
 ```
 
 ### SolidJS Components

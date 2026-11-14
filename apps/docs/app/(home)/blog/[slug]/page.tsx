@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { blogAuthors, blogSource } from '@/lib/source';
 import { findPost, getPosts } from '@/lib/blog';
 import { getMDXComponents } from '@/components/mdx';
+import { getBlogImageUrlFn } from '@/lib/shared';
+import type { Metadata } from 'next';
 import {
   BlogAuthors,
   BlogBackLink,
@@ -14,6 +16,22 @@ import {
   BlogTags,
   BlogTitle,
 } from '@/components/blog';
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await props.params;
+  const page = blogSource.getPage([slug]);
+  if (!page) notFound();
+
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    openGraph: {
+      images: getBlogImageUrlFn(page).url,
+    },
+  };
+}
 
 export default async function Page(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params;

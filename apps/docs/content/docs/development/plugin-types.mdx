@@ -24,7 +24,8 @@ User-installed plugins are plugins that you, the user, manually add to your Yapm
 - **Reactive storage** — each plugin gets its own isolated storage space backed by `localStorage`, so data survives page reloads.
 
 <Callout type="info">
-When you delete a user-installed plugin, its per-plugin storage is intentionally kept. This means if you reinstall the same plugin later, your data is still there.
+  When you delete a user-installed plugin, its per-plugin storage is intentionally kept. This means
+  if you reinstall the same plugin later, your data is still there.
 </Callout>
 
 ## Client-registered plugins
@@ -51,14 +52,14 @@ Client-registered plugins are plugins that are built into the Yapmod client itse
 
 ## Key differences
 
- Feature | User-installed | Client-registered |
----|---|---|
-Installation | Manual upload | Automatic on startup |
-Distribution | Shared as files | Bundled with Yapmod |
-Maintenance | User-managed | Maintained by Yapmod |
-Storage | Per-plugin localStorage | Per-plugin localStorage |
-API access | Full `YapmodPluginApi` | Full `YapmodPluginApi` |
-Removal | User can disable/delete | Always present |
+| Feature      | User-installed          | Client-registered       |
+| ------------ | ----------------------- | ----------------------- |
+| Installation | Manual upload           | Automatic on startup    |
+| Distribution | Shared as files         | Bundled with Yapmod     |
+| Maintenance  | User-managed            | Maintained by Yapmod    |
+| Storage      | Per-plugin localStorage | Per-plugin localStorage |
+| API access   | Full `YapmodPluginApi`  | Full `YapmodPluginApi`  |
+| Removal      | User can disable/delete | Always present          |
 
 ## Next steps
 

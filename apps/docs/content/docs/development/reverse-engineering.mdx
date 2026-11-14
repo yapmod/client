@@ -15,7 +15,8 @@ Yapmod plugins run inside the Yapin page, which is a React application. Unlike a
 - Discover API endpoints and data formats used by the app.
 
 <Callout type="warn">
-Yapin's internal structure may change without notice. Always use the most stable selectors you can find, and test your plugin after Yapin updates.
+  Yapin's internal structure may change without notice. Always use the most stable selectors you can
+  find, and test your plugin after Yapin updates.
 </Callout>
 
 ## Inspecting the DOM structure
@@ -41,7 +42,8 @@ Not all selectors are created equal. Some are more stable than others:
 - **DOM position** — very fragile. Never rely on element position in the DOM tree.
 
 <Callout type="idea">
-When targeting elements, prefer data attributes first, then class names, and avoid relying on DOM structure or text content.
+  When targeting elements, prefer data attributes first, then class names, and avoid relying on DOM
+  structure or text content.
 </Callout>
 
 ## Understanding React rendering
@@ -82,7 +84,8 @@ By observing network traffic, you can:
 - Discover endpoints that might be useful for your plugin.
 
 <Callout type="info">
-You don't need to replicate Yapin's API calls in your plugin. The plugin API gives you access to the data and UI you need. Network analysis is mainly for understanding how the app works.
+  You don't need to replicate Yapin's API calls in your plugin. The plugin API gives you access to
+  the data and UI you need. Network analysis is mainly for understanding how the app works.
 </Callout>
 
 ## Using the Console for exploration
@@ -93,21 +96,21 @@ The browser **Console** panel is your best friend for quick exploration:
 
 ```javascript
 // Find elements by selector
-document.querySelector('.settings-main')
-document.querySelectorAll('.ss2-card')
+document.querySelector('.settings-main');
+document.querySelectorAll('.ss2-card');
 
 // Check if an element exists
-document.querySelector('[data-yp-section]') !== null
+document.querySelector('[data-yp-section]') !== null;
 ```
 
 ### Inspecting objects
 
 ```javascript
 // Inspect a DOM element
-inspect(document.querySelector('.settings-main'))
+inspect(document.querySelector('.settings-main'));
 
 // Check CSS variables
-getComputedStyle(document.documentElement).getPropertyValue('--bg-side')
+getComputedStyle(document.documentElement).getPropertyValue('--bg-side');
 ```
 
 ### Testing selectors
@@ -116,9 +119,9 @@ Before writing your plugin, test your selectors in the console to make sure they
 
 ```javascript
 // Test a selector
-const elements = document.querySelectorAll('.message-input')
-console.log(`Found ${elements.length} elements`)
-elements.forEach((el, i) => console.log(`${i}:`, el))
+const elements = document.querySelectorAll('.message-input');
+console.log(`Found ${elements.length} elements`);
+elements.forEach((el, i) => console.log(`${i}:`, el));
 ```
 
 ## Finding CSS patterns

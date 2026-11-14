@@ -5,11 +5,13 @@ sessionId: session-261113-215234-1bzp
 # Requirements
 
 ### Overview
+
 Publish `@yapmod/builder`, `@yapmod/types`, and `@yapmod/ui` as three independent npm packages so plugin authors can install and use them to build Yapmod plugins with full TypeScript support and SolidJS UI components.
 
 ### Scope
 
 **In Scope:**
+
 - Add esbuild-based build scripts to `@yapmod/ui`, `@yapmod/types`, and `@yapmod/builder`
 - Configure proper `exports` fields with `.js` and `.d.ts` entries for npm consumers
 - Set `"private": false` and add npm metadata (description, repository, license)
@@ -18,30 +20,33 @@ Publish `@yapmod/builder`, `@yapmod/types`, and `@yapmod/ui` as three independen
 - Handle `@yapmod/builder`'s `global.d.ts` conditional export for the ambient `yapmod` declaration
 
 **Out of Scope:**
+
 - Publishing `@yapmod/core` (internal runtime, not needed by plugin authors)
 - Publishing `@yapmod/client` (the injected bundle itself)
 - CI/CD pipelines or automated publishing workflows
 - Documentation site changes (existing docs already reference `@yapmod/builder`)
 
 ### User Stories
+
 - As a plugin author, I want to `npm install @yapmod/builder` so I can build my plugin with `buildPlugin()`
 - As a plugin author, I want to `npm install @yapmod/types` so I get TypeScript types for the plugin API
 - As a plugin author, I want to `npm install @yapmod/ui` so I can use Button, Panel, Hint, and Icon components in my plugin
 - As a plugin author, I want to import `@yapmod/builder/global` so the ambient `yapmod` global is typed in my project
 
 ### Functional Requirements
+
 - `buildPlugin()` from `@yapmod/builder` works identically after publishing as it does in the workspace
 - The unplugin (`yapmodPlugin`) works with Vite, Rollup, Webpack, and Rspack
 - `@yapmod/ui` components render correctly when used by plugin authors who bundle with their own tooling
 - `@yapmod/types` provides all type exports needed for plugin development
 - Packages work with Node 22+ (matching the project's requirement)
 
-
 # Technical Design
 
 ### Current Implementation
 
 All three packages currently:
+
 - Export raw `.ts` files via `"exports": "./src/index.ts"` (workspace-only pattern)
 - Are marked `"private": true` (not publishable to npm)
 - Have no build step — consumers resolve `.ts` directly through TypeScript
@@ -68,6 +73,7 @@ All three packages currently:
 ### Proposed Changes
 
 #### `@yapmod/ui` (`packages/ui/`)
+
 - Add `build` script: esbuild compiles `src/index.ts` → `dist/index.js` with `--bundle --format=esm --platform=browser`
 - Replace `base.css?inline` import: the build script reads `src/styles/base.css` and injects its content as the `uiCss` export instead of relying on Vite's `?inline`
 - Add `tsconfig.json` for declaration emission (`tsc --emitDeclarationOnly`) → `dist/index.d.ts`
@@ -75,6 +81,7 @@ All three packages currently:
 - Add npm metadata: `description`, `repository`, `license`, `keywords`
 
 #### `@yapmod/types` (`packages/types/`)
+
 - Add `build` script: `tsc --emitDeclarationOnly` (types-only package, no JS needed — but esbuild can emit an empty ESM entry)
 - Since it's purely types, use esbuild to produce a minimal `dist/index.js` that re-exports nothing, and `tsc` for `dist/index.d.ts`
 - Update dependency on `@yapmod/ui` from `workspace:*` to `^1.0.0`
@@ -82,6 +89,7 @@ All three packages currently:
 - Add npm metadata
 
 #### `@yapmod/builder` (`packages/builder/`)
+
 - Add `build` script: esbuild bundles `src/index.ts` → `dist/index.js` with all dependencies except `peerDependencies` (solid-js, esbuild, @babel/core, unplugin)
 - Emit declarations: `tsc --emitDeclarationOnly` → `dist/index.d.ts`
 - Copy `global.d.ts` to `dist/global.d.ts`
@@ -124,7 +132,7 @@ After building, each package publishes:
 
 ### Architecture Diagram
 
-``` mermaid
+```mermaid
 graph LR
   A[@yapmod/ui] -->|ButtonProps etc.| B[@yapmod/types]
   B -->|YapmodPluginApi| C[@yapmod/builder]
@@ -135,39 +143,47 @@ graph LR
 ```
 
 ### Risks
+
 - **CSS `?inline` removal**: The `@yapmod/ui` build must correctly inline `base.css` content. If the CSS reference breaks, components render without styles. Mitigation: verify the built `uiCss` string matches the original CSS.
 - **Peer dependency version conflicts**: Plugin authors may have different versions of esbuild or Babel. Mitigation: use broad peer dependency ranges (`>=0.17` for esbuild, `>=7` for @babel/core).
 - **Type declaration accuracy**: `tsc --emitDeclarationOnly` must resolve `@yapmod/ui` types from `node_modules`, not the workspace. Mitigation: build in order (ui → types → builder) and test with a clean install.
 
-
 # Delivery Steps
 
-###   Step 1: Add build infrastructure to @yapmod/ui
+### Step 1: Add build infrastructure to @yapmod/ui
+
 Compile @yapmod/ui into a publishable ESM package with inlined CSS.
+
 - Create `packages/ui/build.mjs`: esbuild bundles `src/index.ts` → `dist/index.js`, reading `src/styles/base.css` and injecting its content as the `uiCss` export (replacing the Vite `?inline` import).
 - Add `tsc --emitDeclarationOnly` step to emit `dist/index.d.ts` with a dedicated `tsconfig.build.json`.
 - Update `package.json`: set `"private": false`, add `files: ["dist"]`, update `exports` to `{ ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } }`, add npm metadata (description, repository, license, keywords).
 - Add `solid-js` as a `peerDependency` instead of a regular dependency.
 - Verify: `node build.mjs` produces `dist/index.js` and `dist/index.d.ts`; the `uiCss` export contains the CSS string.
 
-###   Step 2: Add build infrastructure to @yapmod/types
+### Step 2: Add build infrastructure to @yapmod/types
+
 Compile @yapmod/types into a publishable package with type declarations.
+
 - Create `packages/types/build.mjs`: esbuild produces a minimal `dist/index.js` (re-exports nothing since it's types-only), and `tsc --emitDeclarationOnly` emits `dist/index.d.ts`.
 - Update dependency on `@yapmod/ui` from `workspace:*` to `"^1.0.0"`.
 - Update `package.json`: set `"private": false`, add `files: ["dist"]`, update `exports`, add npm metadata.
 - Add `solid-js` and `@yapmod/ui` as `peerDependencies`.
 - Verify: `dist/index.d.ts` exports all types including `YapmodPluginApi`, `PluginManifest`, etc.
 
-###   Step 3: Add build infrastructure to @yapmod/builder
+### Step 3: Add build infrastructure to @yapmod/builder
+
 Compile @yapmod/builder into a publishable package with bundled dependencies and type declarations.
+
 - Create `packages/builder/build.mjs`: esbuild bundles `src/index.ts` → `dist/index.js`, externalizing peer dependencies (solid-js, esbuild, @babel/core, unplugin, babel-preset-solid, @babel/preset-typescript). `tsc --emitDeclarationOnly` emits `dist/index.d.ts`. Copy `global.d.ts` → `dist/global.d.ts`.
 - Update dependency on `@yapmod/types` from `workspace:*` to `"^1.0.0"`.
 - Move `solid-js`, `esbuild`, `@babel/core`, `@babel/preset-typescript`, `babel-preset-solid`, `unplugin` to `peerDependencies` with broad version ranges.
 - Update `package.json`: set `"private": false`, add `files: ["dist"]`, update `exports` with both `"."` and `"./global"` entries, add npm metadata.
 - Verify: `dist/index.js` loads without errors; `dist/global.d.ts` declares the ambient `yapmod` global.
 
-###   Step 4: Wire root workspace scripts and verify end-to-end
+### Step 4: Wire root workspace scripts and verify end-to-end
+
 Add workspace-level build and publish scripts, and verify the full pipeline works.
+
 - Add to root `package.json`: `"build:packages"` script that runs `pnpm --filter @yapmod/ui build && pnpm --filter @yapmod/types build && pnpm --filter @yapmod/builder build` (in dependency order).
 - Add `"prepublishOnly"` hook to ensure packages are built before publishing.
 - Run the builder's existing example (`pnpm --filter @yapmod/builder example`) to verify the built package produces the same output as the workspace version.

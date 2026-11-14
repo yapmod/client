@@ -3,11 +3,7 @@ import { ChevronDown, ShareIcon } from 'lucide-react';
 import { useState } from 'react';
 import { TOCScrollArea, useTOCItems } from '../toc';
 import { TOCItem, TOCItems } from '../toc/default';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '../ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { useCopyButton } from 'fumadocs-ui/utils/use-copy-button';
 import { cn } from '../../lib/utils';
 

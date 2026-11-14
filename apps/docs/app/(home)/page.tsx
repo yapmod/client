@@ -21,9 +21,8 @@ export default function HomePage() {
             Yapin, made yours.
           </h1>
           <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Yapmod is a free, open-source client mod for Yapin. Customize your
-            experience with themes, plugins, and settings, all running directly
-            in your browser.
+            Yapmod is a free, open-source client mod for Yapin. Customize your experience with
+            themes, plugins, and settings, all running directly in your browser.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
@@ -51,20 +50,14 @@ export default function HomePage() {
         </div>
       </section>
 
-
       {/* Why Yapmod Section */}
-      <section
-        id="why"
-        className="flex flex-col items-center px-4 py-16 scroll-mt-16"
-      >
+      <section id="why" className="flex flex-col items-center px-4 py-16 scroll-mt-16">
         <div className="max-w-6xl mx-auto w-full">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">
-              Why Yapmod?
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">Why Yapmod?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Yapmod enhances Yapin with powerful customization tools, giving
-              you full control over your experience.
+              Yapmod enhances Yapin with powerful customization tools, giving you full control over
+              your experience.
             </p>
           </div>
 
@@ -104,18 +97,12 @@ export default function HomePage() {
       </section>
 
       {/* Community Section */}
-      <section
-        id="community"
-        className="flex flex-col items-center px-4 py-16 scroll-mt-16"
-      >
+      <section id="community" className="flex flex-col items-center px-4 py-16 scroll-mt-16">
         <div className="max-w-4xl mx-auto w-full">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">
-              Community
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">Community</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join the conversation, share your creations, and get help from
-              fellow Yapmod users.
+              Join the conversation, share your creations, and get help from fellow Yapmod users.
             </p>
           </div>
 

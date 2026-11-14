@@ -10,7 +10,11 @@ const geistPixel = GeistPixelSquare;
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={cn(geist.className, geist.variable, geistPixel.variable)} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn(geist.className, geist.variable, geistPixel.variable)}
+      suppressHydrationWarning
+    >
       <body className="flex flex-col min-h-screen">
         <RootProvider>{children}</RootProvider>
       </body>
