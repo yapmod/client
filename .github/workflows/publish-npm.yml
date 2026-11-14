@@ -37,4 +37,4 @@ jobs:
         working-directory: packages/builder
         run: |
           npm version ${{ github.event.inputs.version }} --no-git-tag-version
-          npm publish --provenance --access public
+          npm publish --access public
