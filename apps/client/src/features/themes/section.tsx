@@ -266,28 +266,6 @@ export function ThemesPage() {
         </Button>
       </div>
 
-      <section
-        class="ss2-card"
-        style={{
-          'border-color':
-            'color-mix(in srgb, var(--warning, #f5b544) 45%, var(--border, #ffffff12))',
-        }}
-      >
-        <div class="toggle-label">Theme safety</div>
-        <p class="hint" style={{ margin: '0' }}>
-          Themes can change Yapin's layout and may cause lag. Only install CSS from authors you
-          trust. Find themes on{' '}
-          <a href="https://betterdiscord.app/themes" target="_blank" rel="noreferrer">
-            BetterDiscord
-          </a>{' '}
-          or{' '}
-          <a href="https://github.com/search?q=discord+theme" target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-          .
-        </p>
-      </section>
-
       <Show
         when={items().length > 0}
         fallback={

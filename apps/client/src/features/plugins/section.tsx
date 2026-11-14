@@ -283,20 +283,6 @@ export function PluginsPage() {
         </Button>
       </div>
 
-      <section
-        class="ss2-card"
-        style={{
-          'border-color':
-            'color-mix(in srgb, var(--warning, #f5b544) 45%, var(--border, #ffffff12))',
-        }}
-      >
-        <div class="toggle-label">Plugin safety</div>
-        <p class="hint" style={{ margin: '0' }}>
-          Plugins run arbitrary JavaScript in this page. Only install plugins from authors you
-          trust.
-        </p>
-      </section>
-
       <Show
         when={pluginState().plugins.length > 0}
         fallback={
