@@ -6,45 +6,33 @@
     "url": "https://github.com/yapmod/client.git",
     "directory": "packages/builder"
   },
+  "bin": {
+    "yapmod": "./dist/cli.js"
+  },
   "files": [
-    "dist",
-    "global.d.ts"
+    "dist"
   ],
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./global": {
-      "types": "./global.d.ts"
-    }
-  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsup && tsc --emitDeclarationOnly -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "example": "node examples/build.mjs && vite build --config examples/vite.config.mjs && node examples/check.mjs"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-typescript": "^7.29.0",
     "babel-preset-solid": "^1.8.4",
+    "commander": "^15.1.0",
     "esbuild": "^0.28.2",
-    "solid-js": "^1.9.18",
-    "unplugin": "^3.7.0"
+    "solid-js": "^1.9.18"
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/node": "^26.0.0",
     "@typescript/typescript6": "^6.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.3.7"
+    "typescript": "^7.0.2"
   }
 }
