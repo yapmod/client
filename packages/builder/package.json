@@ -1,6 +1,11 @@
 {
   "name": "@yapmod/builder",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yapmod/client.git",
+    "directory": "packages/builder"
+  },
   "files": [
     "dist",
     "global.d.ts"
