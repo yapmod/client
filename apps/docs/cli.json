@@ -5,10 +5,11 @@
     "componentsDir": "./components",
     "layoutDir": "./layouts",
     "cssDir": "./styles",
-    "libDir": "./lib"
+    "libDir": "./lib",
+    "utils": "./lib/utils"
   },
-  "baseDir": "src",
+  "baseDir": "",
   "uiLibrary": "base-ui",
-  "framework": "astro",
+  "framework": "next",
   "commands": {}
 }

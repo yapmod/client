@@ -1,20 +1,32 @@
 ---
 title: Introduction
-description: Get started with Yapmod — a client mod for Yapin.
+description: Learn how to build Yapmod plugins for the Yapin chat app.
 ---
 
-Yapmod is a free, open-source client mod for [Yapin](https://yapin.com). It adds themes, plugins, and a settings panel to the live Yapin page — all in one self-contained bundle.
+If you're here, it probably means you want to learn how to create Yapmod plugins. You've come to the right place.
+
+This documentation is focused on **plugin development** for Yapmod. If you're looking for information on how to install or use Yapmod itself, head over to the [landing page](/) which covers features, installation, and getting started as a user.
 
 ## What you'll learn
 
-- **Themes** — How to install, use, and create custom themes to change Yapin's look.
-- **Plugins** — How to write client-side plugins that extend Yapin's behavior safely under CSP.
-- **Architecture** — How Yapmod works inside Yapin's React DOM without breaking.
+This documentation is designed as a **guide** to help you go from zero to your first working plugin. It covers:
 
-## Quick start
+- **How to build a plugin** — the structure, the plugin object, and what each property does.
+- **API reference** — the tools and methods available to your plugin at runtime.
+- **How Yapmod works** — how Yapmod injects itself into the Yapin interface, how it customizes the DOM, and how the plugin runtime operates behind the scenes.
+- **External plugins** — how to distribute and load plugins from external sources.
+- **Reverse engineering Yapin** — how to inspect the Yapin website, find the right hooks and DOM nodes, and understand the patterns you'll work with.
 
-1. Build the bundle with `pnpm build` (or `pnpm dev` for watch mode).
-2. Paste the output (`apps/client/dist/yapmod-client.js`) into the browser console on Yapin.
-3. Open the Yapmod settings panel and start customizing.
+## What's not covered
 
-No build step is needed on the host side — Yapmod runs entirely client-side as a single IIFE file.
+This documentation does **not** cover themes. Themes use a different system and can be created by anyone without going through the plugin API. They are built in and handled separately.
+
+## Prerequisites
+
+To get the most out of this guide, you should be familiar with:
+
+- JavaScript or TypeScript
+- Basic DOM manipulation concepts
+- How browser extensions or content scripts work (helpful but not required)
+
+Ready? Start with the [Setup guide](/docs/setup) to get your development environment ready, then move on to [Plugin Development](/docs/development) to learn how to build your first plugin.

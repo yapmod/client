@@ -1,0 +1,38 @@
+---
+title: Plugin Development Overview
+description: Learn how to build Yapmod plugins, from fundamentals to the API reference.
+---
+
+This section covers everything you need to know about building Yapmod plugins, from the basic prerequisites to the full API reference.
+
+## What you'll learn
+
+- **Fundamentals** — the skills and tools you need before writing a plugin, including JavaScript, TypeScript, and browser dev tools.
+- **How plugins work** — the plugin lifecycle, how Yapmod loads and runs your code, and the evaluation process.
+- **Plugin API** — the built-in methods and properties available to every plugin, from storage to DOM observation to UI helpers.
+- **Plugin types** — the difference between user-installed plugins and client-registered plugins.
+- **Reverse engineering** — how to inspect and understand the Yapin interface to find the right elements and patterns to target.
+- **Distribution** — how plugins are shared and loaded (and what Yapmod does not provide).
+
+## Two ways to build a plugin
+
+You can build a Yapmod plugin in two ways:
+
+1. **Using the starter repo** (recommended) — clone the pre-configured repository that bundles your code into a valid plugin file. This lets you write TypeScript and SolidJS naturally, and produces a ready-to-upload plugin with one command.
+2. **Manually** — write your plugin as a raw JavaScript expression that returns the plugin object, without any build tool. This approach works but requires you to handle bundling and formatting yourself.
+
+We recommend the starter repo approach for almost everyone. The manual approach is documented here for reference, but the built-in API and builder tool give you a much better experience.
+
+## Why use the built-in Plugin API
+
+You can technically write a plugin that does everything manually by inspecting and manipulating the DOM on your own. However, Yapmod provides a set of built-in Plugin API methods that are:
+
+- **More performant** — they are optimized and integrated with Yapmod's internal systems.
+- **Easier to use** — reactive storage, DOM observation, and UI helpers are provided out of the box.
+- **More reliable** — they handle cleanup and disposal automatically when your plugin stops.
+
+Use the built-in API whenever possible. Look at the existing plugin code for examples of how to use these tools as the foundation for your own plugins.
+
+## Getting started
+
+Begin with [Fundamentals](/docs/development/fundamentals) to make sure you have the right background knowledge, then move on to [How Plugins Work](/docs/development/how-plugins-work) to understand the plugin lifecycle.

@@ -1,0 +1,50 @@
+---
+title: Building Your Plugin
+description: Compile and bundle your plugin code into a file ready for Yapmod.
+---
+
+Once you have your plugin code written, you need to build it into a single file that Yapmod can load.
+
+## The build command
+
+From your plugin project directory, run:
+
+```bash
+pnpm build
+```
+
+This command uses the Yapmod plugin builder to:
+
+1. Read your TypeScript source files.
+2. Compile any JSX syntax and SolidJS components.
+3. Bundle everything into a single JavaScript file.
+4. Output the final plugin file to the `dist` directory.
+
+## Output
+
+After a successful build, you will find your compiled plugin file in the `dist` folder. This is the file you upload to Yapmod.
+
+## Building in different environments
+
+The build process works with Node.js or Bun. If you are using Bun as your runtime:
+
+```bash
+bun run build
+```
+
+The builder does not depend on a specific runtime, so either option produces the same result.
+
+## Loading the plugin into Yapmod
+
+After building, you can load your plugin into Yapmod:
+
+1. Open Yapin with Yapmod installed.
+2. Go to the Yapmod settings panel.
+3. Navigate to the plugins section.
+4. Upload the built file from the `dist` folder.
+
+Your plugin will be loaded and active immediately.
+
+## Next steps
+
+For a faster development workflow, set up [hot reloading](/docs/setup/hot-reloading) so your plugin updates automatically when you make changes.

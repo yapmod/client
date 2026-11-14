@@ -5,3 +5,11 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+
+minimumReleaseAgeExclude:
+  - '@fumadocs/base-ui@16.19.1'
+  - fumadocs-core@16.19.1
+  - fumadocs-mdx@15.6.2
+
+overrides:
+  next-themes: 'npm:@teispace/next-themes@latest'

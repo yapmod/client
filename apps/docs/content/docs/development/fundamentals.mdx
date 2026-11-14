@@ -1,0 +1,76 @@
+---
+title: Fundamentals
+description: The skills and tools you need before writing a Yapmod plugin.
+---
+
+Before you start building a Yapmod plugin, you should be comfortable with a few core concepts. This page covers the fundamentals that will help you understand the rest of this documentation and work effectively with the plugin system.
+
+## JavaScript and TypeScript
+
+Yapmod plugins are written in JavaScript or TypeScript. You should understand:
+
+- **Basic syntax** — variables, functions, objects, arrays, and control flow.
+- **ES modules** — how `import` and `export` work, since plugins use module syntax.
+- **Async/await** — many operations, like fetching data or waiting for DOM elements, are asynchronous.
+- **TypeScript basics** (optional but recommended) — type annotations, interfaces, and generics. The starter repo is configured for TypeScript out of the box.
+
+<Callout type="idea">
+  If you're new to TypeScript, you don't need to master it before starting. The starter repo works
+  with plain JavaScript too. Learn TypeScript gradually as you build.
+</Callout>
+
+## Browser Developer Tools
+
+Browser dev tools are essential for plugin development. You'll use them to inspect the Yapin interface, debug your plugin, and understand how the page works.
+
+### Inspecting the DOM
+
+Open the **Elements** (or **Inspector**) panel in your browser dev tools to:
+
+- Explore the DOM structure of the Yapin interface.
+- Find the CSS selectors for elements you want to target.
+- See how Yapin renders its components (it's a React app, so the DOM structure reflects React's rendering patterns).
+
+Right-click any element on the page and select **Inspect** to jump to it in the dev tools.
+
+### Console logging
+
+Use the **Console** panel to:
+
+- See `console.log` output from your plugin.
+- Debug errors and stack traces.
+- Run one-off JavaScript expressions against the current page.
+
+Yapmod plugins have a built-in `api.log()` method that prefixes output with `[yapmod:<plugin-id>]` for easier filtering.
+
+### Network traffic
+
+The **Network** panel lets you:
+
+- See all HTTP requests made by the page.
+- Inspect request headers, payloads, and responses.
+- Filter by request type (XHR, Fetch, JS, CSS, etc.).
+
+Understanding network traffic helps you:
+
+- Identify API endpoints that Yapin uses.
+- Debug why your plugin's fetch requests might fail.
+- Understand the data flow between Yapin and its backend.
+
+<Callout type="warn">
+  **Managing network traffic** — you can use the Network panel to throttle connections, block
+  requests, or replay them. This is useful for testing how your plugin behaves under different
+  network conditions, but avoid modifying actual network requests in production.
+</Callout>
+
+## Understanding React DOM
+
+Yapin is built with React, which means the DOM is dynamically managed by React's virtual DOM. This has implications for plugin development:
+
+- **DOM nodes can be replaced** — React may remove and re-create DOM nodes during re-renders. Direct references to elements can become stale.
+- **Use observers** — Yapmod's `api.observe()` method handles this by using `MutationObserver` to track elements as they appear and disappear.
+- **CSS selectors are your friend** — target elements by stable CSS selectors or data attributes rather than by position in the DOM tree.
+
+## Next steps
+
+Once you're comfortable with these fundamentals, move on to [How Plugins Work](/docs/development/how-plugins-work) to understand the plugin lifecycle. For a deeper dive into inspecting the Yapin interface, see [Reverse Engineering Yapin](/docs/development/reverse-engineering).
