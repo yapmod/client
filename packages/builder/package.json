@@ -1,6 +1,6 @@
 {
   "name": "@yapmod/builder",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/yapmod/client.git",
@@ -13,6 +13,9 @@
     "dist"
   ],
   "type": "module",
+  "exports": {
+    "./transform": "./dist/transform.js"
+  },
   "publishConfig": {
     "access": "public"
   },

@@ -153,3 +153,21 @@ export function transformPluginSource(code: string, id: string): string | null {
 
   return second?.code ?? null;
 }
+
+/**
+ * Returns the Babel presets array used by `transformPluginSource`.
+ * Exported so external tooling (e.g. tsup plugins) can reuse the same
+ * SolidJS + TypeScript compilation pipeline without duplicating presets.
+ */
+export function getBabelPresets() {
+  return [presetSolid, presetTypescript];
+}
+
+/**
+ * Returns the shared-imports rewrite Babel plugin.
+ * Exported so external tooling can apply the same rewrite pass that turns
+ * `solid-js` imports into `yapmod.solid...` references.
+ */
+export function getSharedImportsPlugin() {
+  return rewriteSharedImports();
+}
