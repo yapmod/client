@@ -1,18 +1,21 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/cli.ts'],
   format: ['esm'],
   dts: false,
   splitting: false,
   clean: true,
   target: 'es2020',
+  banner: {
+    js: '#!/usr/bin/env node',
+  },
   external: [
     '@babel/core',
     '@babel/preset-typescript',
     'babel-preset-solid',
+    'commander',
     'esbuild',
     'solid-js',
-    'unplugin',
   ],
 });

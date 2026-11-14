@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { build, type Plugin } from 'esbuild';
+import { build, type BuildOptions, type Plugin } from 'esbuild';
 
 import { EXPRESSION_GLOBAL_NAME, expressionBanner, expressionFooter } from './expression.ts';
 import { transformPluginSource } from './transform.ts';
@@ -50,15 +50,17 @@ export interface BuildPluginOptions {
 }
 
 /**
- * Bundles a plugin entry into a self-contained expression the client's
- * loader can evaluate: Babel compiles TSX and rewrites shared-module
- * imports, esbuild bundles everything else, and the result is wrapped in
- * the `function (yapmod) { ... }` shape from `expression.ts`.
+ * The esbuild options every build path shares.
  *
- * Returns the expression and writes it to `options.outfile`.
+ * The watch mode in `watch.ts` reuses them verbatim, so a dev build and a
+ * production build cannot drift apart.
  */
-export async function buildPlugin(options: BuildPluginOptions): Promise<string> {
-  const result = await build({
+export function createBuildOptions(options: {
+  entry: string;
+  minify?: boolean;
+  plugins?: Plugin[];
+}): BuildOptions {
+  return {
     entryPoints: [options.entry],
     bundle: true,
     write: false,
@@ -68,13 +70,41 @@ export async function buildPlugin(options: BuildPluginOptions): Promise<string> 
     jsx: 'preserve',
     target: 'es2020',
     minify: options.minify ?? false,
-    plugins: [babelTransform, sharedModuleGuard],
-  });
+    plugins: options.plugins ?? [babelTransform, sharedModuleGuard],
+  };
+}
 
-  const output = result.outputFiles[0];
+/**
+ * Bundles a plugin entry into a self-contained expression the client's
+ * loader can evaluate: Babel compiles TSX and rewrites shared-module
+ * imports, esbuild bundles everything else, and the result is wrapped in
+ * the `function (yapmod) { ... }` shape from `expression.ts`.
+ *
+ * Returns the expression without touching the filesystem — `buildPlugin`
+ * adds the file writing.
+ */
+export async function buildPluginExpression(options: {
+  entry: string;
+  minify?: boolean;
+}): Promise<string> {
+  const result = await build(createBuildOptions(options));
+
+  const output = result.outputFiles?.[0];
   if (!output) throw new Error('@yapmod/builder: esbuild produced no output.');
 
-  const expression = expressionBanner + output.text + expressionFooter;
+  return expressionBanner + output.text + expressionFooter;
+}
+
+/**
+ * Bundles a plugin entry into a self-contained expression the client's
+ * loader can evaluate: Babel compiles TSX and rewrites shared-module
+ * imports, esbuild bundles everything else, and the result is wrapped in
+ * the `function (yapmod) { ... }` shape from `expression.ts`.
+ *
+ * Returns the expression and writes it to `options.outfile`.
+ */
+export async function buildPlugin(options: BuildPluginOptions): Promise<string> {
+  const expression = await buildPluginExpression(options);
   await mkdir(dirname(options.outfile), { recursive: true });
   await writeFile(options.outfile, expression, 'utf8');
   return expression;

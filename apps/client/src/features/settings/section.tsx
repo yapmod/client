@@ -1,8 +1,16 @@
 import { version } from '../../../package.json';
 import { Button } from '@yapmod/ui';
+import { Show } from 'solid-js';
+import { devStatus } from '../dev/status';
+import { stopDevPlugins } from '../dev/apply';
 import { PluginsPage } from '../plugins/section';
 import { ThemesPage } from '../themes/section';
-import { setShowClientPlugins, showClientPlugins } from './store';
+import {
+  developerFeatures,
+  setDeveloperFeatures,
+  setShowClientPlugins,
+  showClientPlugins,
+} from './store';
 import type { SettingsGroup } from './install';
 
 /**
@@ -67,6 +75,42 @@ export const yapmodGroup: SettingsGroup = {
               onChange={(event) => setShowClientPlugins(event.currentTarget.checked)}
             />
           </div>
+
+          <div class="section-label" style={{ 'margin-top': '18px' }}>
+            Developer
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Developer features</div>
+              <div class="hint">
+                Accept hot updates from a local dev server. While this is on, the client evaluates
+                the code a dev server on <code>localhost</code> pushes into the page. Turn it off
+                when you are done.
+              </div>
+            </div>
+            <input
+              class="switch"
+              type="checkbox"
+              checked={developerFeatures()}
+              aria-label="Developer features"
+              onChange={(event) => {
+                const enabled = event.currentTarget.checked;
+                setDeveloperFeatures(enabled);
+                // Dev plugins were started by a dev server; they stop with it.
+                if (!enabled) stopDevPlugins();
+              }}
+            />
+          </div>
+
+          <Show when={developerFeatures()}>
+            <div class="hint" style={{ 'margin-top': '8px' }}>
+              {devStatus().connected
+                ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
+                : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
+              {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
+            </div>
+          </Show>
 
           <div class="section-label" style={{ 'margin-top': '18px' }}>
             Actions

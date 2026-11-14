@@ -6,10 +6,18 @@ const STORAGE_KEY = 'yapmod.settings.v1';
 interface YapmodSettings {
   /** Whether the Plugins page shows the client-registered plugin section. */
   showClientPlugins: boolean;
+  /**
+   * Whether the client accepts hot updates from a local dev server.
+   *
+   * Off by default: an enabled client evaluates code pushed into the page,
+   * which is only safe while the developer is in control of the browser.
+   */
+  developerFeatures: boolean;
 }
 
 const DEFAULT_SETTINGS: YapmodSettings = {
   showClientPlugins: false,
+  developerFeatures: false,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -38,6 +46,10 @@ function loadSettings(): YapmodSettings {
       typeof parsed.showClientPlugins === 'boolean'
         ? parsed.showClientPlugins
         : DEFAULT_SETTINGS.showClientPlugins,
+    developerFeatures:
+      typeof parsed.developerFeatures === 'boolean'
+        ? parsed.developerFeatures
+        : DEFAULT_SETTINGS.developerFeatures,
   };
 }
 
@@ -60,7 +72,26 @@ export function showClientPlugins(): boolean {
 export function setShowClientPlugins(value: boolean): void {
   if (settings().showClientPlugins === value) return;
 
-  const next: YapmodSettings = { showClientPlugins: value };
+  const next: YapmodSettings = { ...settings(), showClientPlugins: value };
+  persist(next);
+  setSettings(next);
+}
+
+/** Whether the client accepts hot updates from a local dev server. */
+export function developerFeatures(): boolean {
+  return settings().developerFeatures;
+}
+
+/**
+ * Turns developer features on or off.
+ *
+ * While they are off, the client ignores every message from a dev server,
+ * so a stray dev server cannot push code into the page.
+ */
+export function setDeveloperFeatures(value: boolean): void {
+  if (settings().developerFeatures === value) return;
+
+  const next: YapmodSettings = { ...settings(), developerFeatures: value };
   persist(next);
   setSettings(next);
 }

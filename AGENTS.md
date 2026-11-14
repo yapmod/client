@@ -28,7 +28,7 @@ browser console on Yapin (or load it with a script tag) and re-inject after each
 apps/client/        # composition root; the only layer that knows Yapin's DOM
   src/index.ts      # bootstraps on import, installs features, exposes the global handle
   src/lib/          # modal, toast, url helpers
-  src/features/     # settings, themes, plugins
+  src/features/     # settings, themes, plugins, dev (hot reload)
 apps/docs/          # Astro + Fumadocs site (React islands; separate from the client)
 packages/core/      # createClient(): lifecycle + disposal only
 packages/types/     # type-only public contracts
@@ -80,7 +80,7 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
 - Naming: lowercase single-word files (`store.ts`, `runtime.ts`, `section.tsx`), PascalCase
   components inside them, and `installX` / `openX` / `createX` for factories.
 - Comments explain _why_. Keep the rationale blocks in `settings/install.ts`,
-  `themes/apply.ts`, and `plugins/eval.ts`.
+  `themes/apply.ts`, `plugins/eval.ts`, and `dev/bridge.ts`.
 
 ## Critical constraints
 
@@ -89,6 +89,10 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   are fetched and inlined into `<style id="yapmod-theme-styles">` (`features/themes/apply.ts`).
   `connect-src` is allowlisted (`raw.githubusercontent.com` is the practical host); failed
   fetches retry after 60s.
+- **Hot reload uses `window.postMessage`, not the network.** The page cannot fetch from a local
+  dev server (`connect-src`), so the builder's dev server serves a control page that pushes builds
+  into the Yapin window it opened (`features/dev/bridge.ts`). The client only accepts messages
+  from loopback origins and only while developer features are on.
 - **The host is React and replaces DOM nodes.** The settings integration uses scoped
   `MutationObserver`s and structural CSS/data attributes (`data-yp-section`,
   `data-yp-current`) to keep Yapmod nav and panels attached. Don't replace this with

@@ -245,6 +245,50 @@ export function startPlugin(id: string): boolean {
   return activatePlugin(id, module, api, disposers);
 }
 
+/** The outcome of a hot reload. */
+export interface ReloadResult {
+  ok: boolean;
+  error?: string;
+}
+
+/**
+ * Replaces the code of a plugin while the page is running.
+ *
+ * The new source is evaluated *before* the old plugin is stopped, so a
+ * broken build leaves the working version untouched. That ordering is what
+ * makes hot reload safe: a save with a syntax error must not take the
+ * plugin down.
+ *
+ * The plugin's storage survives, because it is keyed by the plugin id and
+ * re-read from `localStorage` for the new instance.
+ */
+export function reloadPlugin(id: string, source: string): ReloadResult {
+  if (runtimeDisposed) return { ok: false, error: 'Yapmod is shutting down.' };
+
+  const record = getPluginRecord(id);
+  if (!record) return { ok: false, error: 'Plugin not found.' };
+
+  const { api, disposers } = createPluginApi(id, record.manifest);
+
+  let module: Record<string, unknown>;
+  try {
+    const result = evaluatePluginSource(source, api, `yapmod://${id}`);
+    if (!isRecord(result)) throw new Error('Plugin code must return an object.');
+    module = result;
+  } catch (error) {
+    console.error(`[yapmod] could not reload plugin ${id}`, error);
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+
+  stopPlugin(id);
+
+  if (!activatePlugin(id, module, api, disposers)) {
+    return { ok: false, error: 'The plugin failed to start.' };
+  }
+
+  return { ok: true };
+}
+
 /**
  * Starts one client-registered plugin.
  *
