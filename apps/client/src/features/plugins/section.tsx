@@ -12,6 +12,7 @@ import {
   updatePlugin,
 } from './runtime';
 import { clientPlugins, clientPluginEnabled, getPluginRecord, pluginState } from './store';
+import { isDevPluginId } from '../dev/apply';
 import type { ClientPlugin, StoredPlugin } from './types';
 
 function PluginCard(props: { plugin: StoredPlugin }) {
@@ -57,7 +58,25 @@ function PluginCard(props: { plugin: StoredPlugin }) {
     <section class="ss2-card">
       <div style={{ display: 'flex', 'align-items': 'flex-start', gap: '12px' }}>
         <div style={{ flex: '1 1 0', 'min-width': '0' }}>
-          <div class="toggle-label">{plugin().manifest.name}</div>
+          <div
+            class="toggle-label"
+            style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
+          >
+            <span>{plugin().manifest.name}</span>
+            <Show when={isDevPluginId(plugin().id)}>
+              <span
+                class="hint"
+                style={{
+                  border: '1px solid var(--border, #ffffff12)',
+                  'border-radius': '999px',
+                  'font-size': '11px',
+                  padding: '1px 8px',
+                }}
+              >
+                Dev
+              </span>
+            </Show>
+          </div>
           <div class="hint">by {plugin().manifest.author}</div>
         </div>
 

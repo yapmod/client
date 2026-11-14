@@ -7,6 +7,7 @@ import { sharedSolid } from './lib/solid';
 import { disposeToasts } from './lib/toast';
 import { installPlugins, registerClientPlugin } from './features/plugins/runtime';
 import type { ClientPlugin } from './features/plugins/types';
+import { installDev } from './features/dev/bridge';
 import { installSettings } from './features/settings/install';
 import { yapmodGroup } from './features/settings/section';
 import { installThemes } from './features/themes/apply';
@@ -54,6 +55,7 @@ function bootstrap(): YapmodClientHandle {
   client.onDispose(removeStyles);
   installThemes(client);
   installPlugins(client);
+  installDev(client);
   installSettings(client, [yapmodGroup]);
   client.onDispose(closeAllModals);
   client.onDispose(disposeToasts);
