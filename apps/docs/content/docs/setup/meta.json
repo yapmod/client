@@ -1,0 +1,14 @@
+{
+  "title": "Setup",
+  "icon": "Wrench",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "prerequisites",
+    "starter-repo",
+    "---Building---",
+    "building",
+    "hot-reloading",
+    "editor-tools"
+  ]
+}

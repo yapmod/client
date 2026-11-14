@@ -3,10 +3,10 @@ import {
   ArrowRight,
   GitBranch,
   Heart,
+  Lightbulb,
   MessageCircle,
   Palette,
   Puzzle,
-  Shield,
   Sparkles,
   Zap,
 } from 'lucide-react';
@@ -27,12 +27,18 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/yapmod/client/releases"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/docs"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Download
+              Plugin Developer Docs
+              <ArrowRight className="size-4" />
+            </a>
+            <a
+              href="/blog"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-base font-medium transition-colors hover:bg-muted hover:text-foreground"
+            >
+              Read the Blog
+              <ArrowRight className="size-4" />
             </a>
             <a
               href="#why"
@@ -44,6 +50,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
 
       {/* Why Yapmod Section */}
       <section
@@ -83,49 +90,15 @@ export default function HomePage() {
               icon={<Zap className="h-5 w-5" />}
             />
             <Card
-              title="Safe"
-              description="Plugins run in a sandboxed environment. Source code is visible and auditable before you install anything."
-              icon={<Shield className="h-5 w-5" />}
+              title="Stability Focus"
+              description="The project prioritizes stability above all, so your customizations work reliably across updates."
+              icon={<Sparkles className="h-5 w-5" />}
             />
             <Card
               title="Open Source"
               description="Fully open source and community-driven. Contribute features, report bugs, and shape the project."
               icon={<Sparkles className="h-5 w-5" />}
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Get Involved Section */}
-      <section
-        id="build"
-        className="flex flex-col items-center px-4 py-16 scroll-mt-16"
-      >
-        <div className="max-w-4xl mx-auto w-full text-center">
-          <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">
-            Get involved
-          </h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Yapmod is built by the community, for the community. Whether you
-            write code, design themes, or just want to help test, there is a
-            place for you.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="https://github.com/yapmod/client"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <GitBranch className="size-4" />
-              View on GitHub
-            </a>
-            <a
-              href="/docs/guide/plugins"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-base font-medium transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Build a Plugin
-            </a>
           </div>
         </div>
       </section>
@@ -150,7 +123,7 @@ export default function HomePage() {
             <Card
               href="https://discord.gg/yapin"
               external
-              title="Discord"
+              title="Yapin"
               description="Chat with the community and get real-time help."
               icon={<MessageCircle className="h-5 w-5" />}
             />
@@ -162,11 +135,11 @@ export default function HomePage() {
               icon={<GitBranch className="h-5 w-5" />}
             />
             <Card
-              href="https://github.com/sponsors/yapmod"
+              href="https://github.com/yapmod/client/issues"
               external
-              title="Sponsor"
-              description="Support the project and help it grow."
-              icon={<Heart className="h-5 w-5" />}
+              title="Find an idea"
+              description="Browse open issues and good first picks to start contributing."
+              icon={<Lightbulb className="h-5 w-5" />}
             />
           </Cards>
         </div>

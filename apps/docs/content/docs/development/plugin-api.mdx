@@ -1,0 +1,220 @@
+---
+title: Plugin API
+description: Reference for the YapmodPluginApi object available to every plugin.
+---
+
+Every plugin receives a `YapmodPluginApi` object when it starts. This page documents all the properties and methods available through that API.
+
+<Callout type="info">
+The built-in Plugin API is the recommended way to build plugins. You can technically do everything manually by manipulating the DOM yourself, but the API methods are more performant, easier to use, and handle cleanup automatically.
+</Callout>
+
+## Properties
+
+### `api.apiVersion`
+
+**Type:** `1` (readonly)
+
+The current API contract version. Plugins can check this before using v1 features.
+
+### `api.id`
+
+**Type:** `string` (readonly)
+
+The stable ID of this plugin, also used as its storage key.
+
+### `api.manifest`
+
+**Type:** `PluginManifest` (readonly)
+
+Metadata from the plugin's manifest, including `name`, `author`, `description`, `version`, and `hash`.
+
+### `api.storage`
+
+**Type:** `Record<string, unknown>` (readonly)
+
+Reactive per-plugin storage backed by a Solid signal. Top-level property assignments persist automatically. For deeper mutations, call `api.flushStorage()` after changing nested values.
+
+```typescript
+// Top-level set — persists automatically
+api.storage.count = (api.storage.count as number | undefined) ?? 0 + 1
+
+// Nested mutation — call flushStorage after
+const data = api.storage.data as { items: string[] } | undefined
+if (data) {
+  data.items.push('new item')
+  api.flushStorage()
+}
+```
+
+<Callout type="warn">
+Storage is backed by `localStorage`. Large amounts of data may impact performance. Keep stored data minimal.
+</Callout>
+
+### `api.ui`
+
+**Type:** `PluginUi` (readonly)
+
+UI helpers and Solid components available to every plugin. See [UI Helpers](#ui-helpers) below.
+
+### `api.settings`
+
+**Type:** `PluginSettings` (readonly)
+
+Settings hooks for registering sections in the Yapmod settings panel. See [Settings](#settings) below.
+
+### `api.solid`
+
+**Type:** `solid-js` (readonly)
+
+The shared SolidJS instance from the bundle. Use this instead of bundling your own copy of SolidJS.
+
+### `api.solidWeb`
+
+**Type:** `solid-js/web` (readonly)
+
+The shared SolidJS/web instance for DOM rendering, portals, and DOM helpers.
+
+### `api.solidStore`
+
+**Type:** `solid-js/store` (readonly)
+
+The shared SolidJS/store instance for `createStore` and `unwrap`.
+
+## Methods
+
+### `api.flushStorage()`
+
+Writes the current `storage` state to `localStorage`. Call this after mutating nested values that won't trigger automatic persistence.
+
+### `api.log(...args)`
+
+Logs to the console with a `[yapmod:<id>]` prefix, making it easy to filter your plugin's output in the dev tools console.
+
+```typescript
+api.log('Plugin started with config:', config)
+```
+
+### `api.observe(selector, onFound)`
+
+**Returns:** Disposer function `() => void`
+
+Watches for elements matching the CSS selector. Calls `onFound` for every matching element already on the page, and for any new elements that appear later. Returns a disposer function that stops the observer.
+
+```typescript
+const dispose = api.observe('.message-input', (element) => {
+  api.log('Found message input:', element)
+  // Modify or interact with the element
+})
+
+// Stop observing when no longer needed
+dispose()
+```
+
+<Callout type="idea">
+The disposer returned by `observe()` also runs automatically when the plugin stops. You can also register it with `api.onDispose()` for explicit cleanup.
+</Callout>
+
+### `api.onDispose(dispose)`
+
+Registers a cleanup function that runs when the plugin stops or when Yapmod unloads. Use this to clean up event listeners, observers, and other resources.
+
+```typescript
+api.onDispose(() => {
+  console.log('Cleaning up plugin resources')
+})
+```
+
+### `api.showSettings()`
+
+Opens the plugin's settings modal, if the plugin exported a `settings` hook. Use this to programmatically open your plugin's settings panel.
+
+## UI Helpers
+
+The `api.ui` object provides UI tools for interacting with the user.
+
+### `api.ui.showToast(message, kind?)`
+
+Shows a short-lived toast message over the page.
+
+- `message` — the text to display.
+- `kind` — optional, `'success'` or `'error'`. Defaults to `'success'`.
+
+```typescript
+api.ui.showToast('Plugin activated!', 'success')
+api.ui.showToast('Something went wrong', 'error')
+```
+
+### `api.ui.openModal(options)`
+
+**Returns:** Close function `() => void`
+
+Opens a modal dialog styled like Yapin's native modals.
+
+```typescript
+const close = api.ui.openModal({
+  title: 'My Modal',
+  description: 'This is a custom modal',
+  content: (close) => <div>Modal content here</div>,
+  onClose: () => console.log('Modal closed'),
+})
+
+// Close the modal programmatically
+close()
+```
+
+### `api.ui.injectCss(css)`
+
+**Returns:** Disposer function `() => void`
+
+Injects a stylesheet into the page. Returns a disposer that removes the style tag. The disposer also runs automatically when the plugin stops.
+
+```typescript
+const dispose = api.ui.injectCss(`
+  .my-custom-class {
+    color: red;
+  }
+`)
+```
+
+### SolidJS Components
+
+The `api.ui` object also provides SolidJS components styled to match Yapin's interface:
+
+- **`api.ui.Button`** — a button styled like Yapin's `.btn`.
+- **`api.ui.Hint`** — inline hint text in Yapin's `.hint` style.
+- **`api.ui.Panel`** — a card-like container in Yapmod's style.
+- **`api.ui.Icon`** — an inline SVG icon from Yapmod's built-in set.
+
+## Settings
+
+The `api.settings` object lets you register settings sections in the Yapmod settings panel.
+
+### `api.settings.registerSection(section)`
+
+**Returns:** Disposer function `() => void`
+
+Adds a section to the Yapmod settings group. The section unregisters automatically when the plugin stops.
+
+```typescript
+import { createSignal } from 'solid-js'
+
+const dispose = api.settings.registerSection({
+  id: 'my-section',
+  label: 'My Plugin Settings',
+  icon: 'settings',
+  render: () => {
+    const [count, setCount] = createSignal(0)
+    return (
+      <div>
+        <p>Count: {count()}</p>
+        <button onClick={() => setCount((c) => c + 1)}>Increment</button>
+      </div>
+    )
+  },
+})
+```
+
+## Next steps
+
+Learn about the different [plugin types](/docs/development/plugin-types) and how user-installed plugins differ from client-registered plugins.

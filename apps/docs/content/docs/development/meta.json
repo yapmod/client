@@ -1,0 +1,17 @@
+{
+  "title": "Plugin Development",
+  "icon": "Puzzle",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "fundamentals",
+    "---How It Works---",
+    "how-plugins-work",
+    "reverse-engineering",
+    "---API Reference---",
+    "plugin-api",
+    "plugin-types",
+    "---Distribution---",
+    "distribution"
+  ]
+}

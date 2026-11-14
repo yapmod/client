@@ -137,4 +137,13 @@ html > body[data-scroll-locked] {
   html {
     @apply font-sans;
   }
+  /* Apply Geist Pixel to all headings in blog prose content */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    font-family: var(--font-geist-pixel-square);
+  }
 }

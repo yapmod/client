@@ -1,0 +1,61 @@
+---
+title: Prerequisites
+description: Install the required tools for Yapmod plugin development.
+---
+
+Before you can build a Yapmod plugin, you need a few tools installed on your machine.
+
+## Node.js
+
+Yapmod plugin development requires **Node.js 22** or later. You can install it using your preferred method:
+
+- **[nvm](https://github.com/nvm-sh/nvm)** (Node Version Manager) — recommended for easily switching between Node versions.
+- **[fnm](https://github.com/Schniz/fnm)** (Fast Node Manager) — a faster alternative to nvm.
+- Direct download from [nodejs.org](https://nodejs.org/).
+
+Verify your installation:
+
+```bash
+node --version
+# Should output v22.x.x or higher
+```
+
+## pnpm
+
+We use **pnpm** as the package manager. It's fast, disk-space efficient, and the builder tool depends on it.
+
+Install pnpm via npm:
+
+```bash
+npm install -g pnpm
+```
+
+Or install it using [pnpm's install script](https://pnpm.io/installation).
+
+Verify your installation:
+
+```bash
+pnpm --version
+# Should output 12.x.x or higher
+```
+
+## Alternative runtimes
+
+While pnpm and Node.js are the recommended setup, you can also use **Bun** as your JavaScript runtime. The plugin builder and the final plugin code do not depend on any specific runtime, so Bun works well for development.
+
+If you prefer Bun:
+
+```bash
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Use Bun to run pnpm commands
+bun install
+bun run build
+```
+
+Bun can replace Node.js for running the build scripts, but pnpm is still used for dependency management.
+
+## Next steps
+
+Once your tools are installed, move on to [cloning the starter repo](/docs/setup/starter-repo) to get a pre-configured project ready for development.

@@ -1,13 +1,32 @@
 ---
-title: Hello World
-description: Your first document
+title: Introduction
+description: Learn how to build Yapmod plugins for the Yapin chat app.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+If you're here, it probably means you want to learn how to create Yapmod plugins. You've come to the right place.
 
-## What is Next?
+This documentation is focused on **plugin development** for Yapmod. If you're looking for information on how to install or use Yapmod itself, head over to the [landing page](/) which covers features, installation, and getting started as a user.
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+## What you'll learn
+
+This documentation is designed as a **guide** to help you go from zero to your first working plugin. It covers:
+
+- **How to build a plugin** — the structure, the plugin object, and what each property does.
+- **API reference** — the tools and methods available to your plugin at runtime.
+- **How Yapmod works** — how Yapmod injects itself into the Yapin interface, how it customizes the DOM, and how the plugin runtime operates behind the scenes.
+- **External plugins** — how to distribute and load plugins from external sources.
+- **Reverse engineering Yapin** — how to inspect the Yapin website, find the right hooks and DOM nodes, and understand the patterns you'll work with.
+
+## What's not covered
+
+This documentation does **not** cover themes. Themes use a different system and can be created by anyone without going through the plugin API. They are built in and handled separately.
+
+## Prerequisites
+
+To get the most out of this guide, you should be familiar with:
+
+- JavaScript or TypeScript
+- Basic DOM manipulation concepts
+- How browser extensions or content scripts work (helpful but not required)
+
+Ready? Start with the [Setup guide](/docs/setup) to get your development environment ready, then move on to [Plugin Development](/docs/development) to learn how to build your first plugin.

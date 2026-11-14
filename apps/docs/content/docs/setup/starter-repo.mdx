@@ -1,0 +1,52 @@
+---
+title: Starter Repository
+description: Clone the pre-configured starter repo to begin building your plugin.
+---
+
+:::warning[Documentation not yet valid]
+The starter repository has not been published yet. This page describes the planned setup process. Check back once the repo is available.
+:::
+
+## What is the starter repo
+
+The starter repository is a pre-configured project that gives you everything you need to build a Yapmod plugin. It includes:
+
+- The **Yapmod plugin builder** tool that bundles your code into the correct format.
+- A basic project structure with TypeScript and SolidJS support out of the box.
+- Build scripts configured for pnpm.
+- Example plugin code to help you get started.
+
+## Why use it instead of starting from scratch
+
+Building a Yapmod plugin requires bundling your code into a specific format that the Yapmod runtime can load. The starter repo handles all of this configuration for you, so you can focus on writing your plugin logic instead of wrestling with build tools.
+
+With the starter repo, you can:
+
+- Write **TypeScript** and have it compiled automatically.
+- Use **JSX syntax** and **SolidJS components** in a natural way.
+- Run a single build command to produce a ready-to-upload plugin file.
+
+## How to set it up
+
+Once the starter repo is available, you will clone it and install dependencies:
+
+```bash
+# Clone the starter repository
+git clone https://github.com/yapmod/plugin-starter.git my-plugin
+cd my-plugin
+
+# Install dependencies
+pnpm install
+```
+
+## After cloning
+
+After cloning and installing dependencies, you can:
+
+1. Modify the plugin source code in the `src` directory.
+2. Run `pnpm build` to compile your plugin.
+3. Upload the built file to Yapmod.
+
+## Next steps
+
+Learn how to [build your plugin](/docs/setup/building) and produce the final plugin file.
