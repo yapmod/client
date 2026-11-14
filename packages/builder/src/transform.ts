@@ -20,6 +20,7 @@ const SHARED_MODULES: Record<string, string> = {
   'solid-js': 'solid',
   'solid-js/web': 'solidWeb',
   'solid-js/store': 'solidStore',
+  '@yapmod/ui': 'ui',
 };
 
 /** Fresh `yapmod.solid...` access — one node per use, never shared. */
