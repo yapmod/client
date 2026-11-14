@@ -1,56 +1,53 @@
 ---
 title: Hot Reloading
-description: Enable hot module replacement for instant plugin updates while developing.
+description: See your plugin changes in real time without rebuilding or re-uploading.
 ---
 
-Hot reloading lets you see your plugin changes in real time without manually rebuilding and re-uploading after every edit.
+Hot reloading lets you see your plugin changes in Yapin instantly — just save your file and the
+update appears.
+
+## Quick start
+
+1. Enable **Developer features** in Yapmod settings on Yapin.
+2. Run the dev server from your plugin project:
+
+   ```bash
+   yapmod dev --entry src/index.ts
+   ```
+
+3. Open the control page it prints (`http://127.0.0.1:5173`), then click **Open Yapin**.
+4. Keep the control page tab open. Every save is rebuilt and pushed into Yapin automatically.
+
+### Options
+
+| Flag       | Description                          |
+| ---------- | ------------------------------------ |
+| `--entry`  | Plugin entry file (required)         |
+| `--port`   | Dev server port (default: 5173)      |
+| `--host`   | Dev server host (default: 127.0.0.1) |
+| `--minify` | Minify the bundle                    |
 
 ## How it works
 
-The starter repo includes a development server that watches your source files for changes. When you save a file:
+The builder watches your source files and rebuilds on every save. The control page opens Yapin and
+pushes each new build into it via `window.postMessage` — the only channel that survives Yapin's
+Content-Security-Policy. Yapmod evaluates the new code and restarts the plugin in place, keeping
+its storage intact.
 
-1. The builder recompiles your plugin.
-2. The dev server sends the updated code to the Yapmod client connected to your browser.
-3. Your plugin reloads instantly without refreshing the page.
+A broken save never disrupts the running plugin: the new code is evaluated **before** the old one
+is stopped, so a syntax error leaves the working version running.
 
-## Enabling developer features
-
-Hot reloading requires **developer features** to be enabled in Yapmod:
-
-1. Open the Yapmod settings panel in Yapin.
-2. Find the **Developer Features** option.
-3. Toggle it on.
-
-This allows Yapmod to accept connections from the development server and apply hot updates.
-
-## Starting the dev server
-
-From your plugin project directory, run:
-
-```bash
-pnpm dev
-```
-
-This starts the watch mode build. Keep this terminal open while you develop. Any changes you make to your plugin source will be reflected immediately in the browser.
-
-## Using with Bun
-
-If you are using Bun as your runtime:
-
-```bash
-bun run dev
-```
+<Callout type="info">
+  A dev plugin appears with a `dev:` id prefix and a **Dev** badge. Deleting it removes the
+  installed code but keeps its per-plugin storage.
+</Callout>
 
 ## Workflow
 
-With hot reloading enabled, your development loop becomes:
+Your development loop becomes:
 
 1. Edit your plugin code.
 2. Save the file.
-3. See the changes appear in Yapin within seconds.
+3. See the changes appear in Yapin.
 
 No manual rebuild, no re-upload, no page refresh.
-
-## Next steps
-
-To make your development experience even smoother, check out the [recommended editor tools](/docs/setup/editor-tools) that can help catch errors before they reach the browser.

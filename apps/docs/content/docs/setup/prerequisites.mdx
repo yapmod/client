@@ -22,7 +22,7 @@ node --version
 
 ## pnpm
 
-We use **pnpm** as the package manager. It's fast, disk-space efficient, and the builder tool depends on it.
+We use **pnpm** as the package manager. It's fast and disk-space efficient.
 
 Install pnpm via npm:
 
@@ -39,22 +39,30 @@ pnpm --version
 # Should output 12.x.x or higher
 ```
 
-## Alternative runtimes
+## The Yapmod CLI
 
-While pnpm and Node.js are the recommended setup, you can also use **Bun** as your JavaScript runtime. The plugin builder and the final plugin code do not depend on any specific runtime, so Bun works well for development.
-
-If you prefer Bun:
+The `@yapmod/builder` package provides the `yapmod` CLI for building and developing plugins. Install it as a dev dependency in your plugin project:
 
 ```bash
-# Install Bun
-curl -fsSL https://bun.sh/install | bash
-
-# Use Bun to run pnpm commands
-bun install
-bun run build
+pnpm add -D @yapmod/builder
 ```
 
-Bun can replace Node.js for running the build scripts, but pnpm is still used for dependency management.
+After installation, the `yapmod` command is available via `npx`:
+
+```bash
+npx yapmod --help
+```
+
+You can also add npm scripts to your `package.json` for convenience:
+
+```json
+{
+  "scripts": {
+    "build": "yapmod build --entry src/index.ts --outfile dist/plugin.js",
+    "dev": "yapmod dev --entry src/index.ts"
+  }
+}
+```
 
 ## Next steps
 
