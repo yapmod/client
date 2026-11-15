@@ -23,11 +23,9 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm install -g npm@latest
-
-      - name: Configure npm registry for OIDC
-        run: npm config set registry https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
 
@@ -40,7 +38,8 @@ jobs:
       - name: Version and publish
         working-directory: packages/builder
         run: |
-          # Unset NODE_AUTH_TOKEN so npm uses OIDC Trusted Publisher instead of token auth
+          # Unset NODE_AUTH_TOKEN so npm uses OIDC Trusted Publisher
+          unset NODE_AUTH_TOKEN
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "${{ github.event.inputs.version }}" ]; then
             npm version ${{ github.event.inputs.version }} --no-git-tag-version
