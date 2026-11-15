@@ -19,17 +19,13 @@ Think of `@yapmod/types` as having three doors, each leading to something differ
 
 Each entry point serves a specific purpose, so you only get what you actually need.
 
-### Why UI prop types are reliable
+### UI prop types are derived from components
 
-Here is something that used to be a problem. UI component prop types like `ButtonProps` and `SwitchProps` used to be hand written mirrors of the actual component signatures. That meant they could drift over time and become inaccurate.
+UI component prop types like `ButtonProps` and `SwitchProps` are defined inside the `@yapmod/ui` components themselves, then re-exported from `@yapmod/types`. The types come directly from the component implementations, so they stay in sync automatically. When a component changes, the props change, and the types reflect that immediately.
 
-Not anymore. Now those prop types are defined right inside the `@yapmod/ui` components themselves, and then re exported from `@yapmod/types`. The types are derived directly from the components, so they can never get out of sync. When a component changes, its props change, and the types change with it.
+### Ambient declarations are explicitly opted in
 
-### Why ambient declarations are separate
-
-You might wonder why the `yapmod` global declaration is not just included automatically when you install `@yapmod/types`. The reason is simple: we do not want it leaking into projects where `yapmod` does not actually exist at runtime.
-
-Instead, the global declaration lives in `@yapmod/types/plugin-env`, a separate entry point that you explicitly add to your TypeScript configuration. This way, only your plugin project gets the `yapmod` global type, and your other projects stay clean.
+The `yapmod` global declaration lives in `@yapmod/types/plugin-env`, a separate entry point you add to your TypeScript configuration. This keeps the global type out of projects where `yapmod` does not exist at runtime. Only your plugin project gets the `yapmod` global type, and your other projects stay clean.
 
 ## Installing the types
 
