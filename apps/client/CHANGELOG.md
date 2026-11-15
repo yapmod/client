@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## v1.0.1
 
 [compare changes](https://github.com/yapmod/client/compare/v0.0.0...v1.0.1)
@@ -41,4 +40,3 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Semantic-release-bot <semantic-release-bot@martynus.net>
-

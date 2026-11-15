@@ -68,20 +68,29 @@ jobs:
               pnpm changelogen --release --no-github $FLAG
             else
               # Exact version already set, just generate changelog
-              pnpm changelogen --no-github
+              pnpm changelogen --no-github || true
             fi
           else
             if [ "$VERSION_TYPE" = "major" ] || [ "$VERSION_TYPE" = "minor" ] || [ "$VERSION_TYPE" = "patch" ]; then
               pnpm changelogen --release --no-github $VERSION_TYPE
             else
               # Exact version already set, just generate changelog
-              pnpm changelogen --no-github
+              pnpm changelogen --no-github || true
             fi
           fi
         working-directory: apps/client
         env:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create changelog if empty
+        if: ${{ !hashFiles('apps/client/CHANGELOG.md') }}
+        run: |
+          cat > apps/client/CHANGELOG.md << 'CHANGELOG'
+          # Changelog
+
+          All notable changes to this project will be documented in this file.
+          CHANGELOG
 
       - name: Commit changelog and tag
         run: |
