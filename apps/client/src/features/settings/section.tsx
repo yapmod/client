@@ -50,7 +50,7 @@ export const yapmodGroup: SettingsGroup = {
             <Hint style={{ display: 'block', 'margin-top': '8px', 'margin-bottom': '10px' }}>
               {devStatus().connected
                 ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
-                : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
+                : 'Not connected.'}
               {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
             </Hint>
 
