@@ -26,6 +26,7 @@
 - **types:** derive UI prop types from @yapmod/ui components instead of hand-written mirrors (#47)
 - **client:** use satisfies operator for runtime ui object construction (#47)
 - **ci:** use npm Trusted Publisher (OIDC) instead of NPM_TOKEN for all npm publish workflows
+- **ci:** migrate entire release pipeline from semantic-release to changelogen, replacing all workflows with manually triggered workflows for client and npm packages (#49)
 
 ### Fixed
 
