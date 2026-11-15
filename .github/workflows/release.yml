@@ -1,17 +1,10 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g. v1.0.0)'
-        required: true
-        default: 'v1.0.0'
-      prerelease:
-        description: 'Mark as prerelease'
-        required: false
-        type: boolean
-        default: false
+  push:
+    branches:
+      - main
+      - develop
 
 permissions:
   contents: write
@@ -33,11 +26,7 @@ jobs:
 
       - run: pnpm build
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.version }}
-          name: ${{ inputs.version }}
-          prerelease: ${{ inputs.prerelease }}
-          files: apps/client/dist/yapmod-client.js
-          generate_release_notes: true
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
