@@ -15,6 +15,8 @@
 ### Added
 
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
+- **docs:** expand type safety documentation with all 27 exportable types from @yapmod/types, including usage examples, builder import rewriting explanation, and typed storage patterns (#45)
+- **docs:** add type safety callouts to fundamentals, how-plugins-work, plugin-api, ui-components, starter-repo, and building documentation pages (#45)
 
 ### Changed
 
