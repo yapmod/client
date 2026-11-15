@@ -49,6 +49,12 @@ When you upload a plugin file to Yapmod, it reads the file content and evaluates
 
 If the plugin loads successfully, Yapmod calls the `start()` hook, passing the `YapmodPluginApi` object. This is where you set up your plugin's behavior: observe DOM elements, register settings, inject styles, and so on.
 
+<Callout type="info">
+  The `api` parameter in `start(api)` is fully typed as `YapmodPluginApi` from `@yapmod/types`. You
+  can import the type explicitly for clarity: `import type {YapmodPluginApi} from '@yapmod/types'`.
+  See the [Type Safety](/docs/development/type-safety) page for details.
+</Callout>
+
 ### 3. Running
 
 While the plugin is active, it can interact with the page through the API. The plugin's storage persists across page reloads, and any DOM observers continue running until the plugin stops.
