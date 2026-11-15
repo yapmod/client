@@ -28,8 +28,8 @@ export const yapmodGroup: SettingsGroup = {
       icon: 'settings',
       render: () => (
         <SettingsPage
-          title="Yapmod"
-          description="A client mod for Yapin. It adds this group to the settings navigation and follows Yapin's own styles."
+          title="Settings"
+          description="Manage hot reload and client plugin visibility."
         >
           <Section label="Developer">
             <SettingRow
