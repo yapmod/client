@@ -1,12 +1,17 @@
 import type { Component, JSX } from 'solid-js';
 import type {
   ButtonProps,
+  Divider,
   HintProps,
   IconName,
   IconProps,
   InputProps,
   PanelProps,
   SelectProps,
+  SettingsPageProps,
+  SettingRowProps,
+  SettingTextProps,
+  SectionProps,
   SwitchProps,
   TextareaProps,
 } from '@yapmod/ui';
@@ -75,6 +80,16 @@ export interface PluginUi {
   Textarea: Component<TextareaProps>;
   /** A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style. */
   Select: Component<SelectProps>;
+  /** Top-level wrapper for a settings page with title and description. */
+  SettingsPage: Component<SettingsPageProps>;
+  /** Grouped block with a section heading. */
+  Section: Component<SectionProps>;
+  /** A single setting row with label, hint, and control. */
+  SettingRow: Component<SettingRowProps>;
+  /** A read-only setting row that displays a text value. */
+  SettingText: Component<SettingTextProps>;
+  /** Horizontal separator between sections. */
+  Divider: Component<typeof Divider>;
 }
 
 /** A settings section a plugin registers inside the Yapmod settings group. */

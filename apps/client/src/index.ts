@@ -2,11 +2,16 @@ import { createClient } from '@yapmod/core';
 import type { ClientHandle, PluginUi } from '@yapmod/types';
 import {
   Button,
+  Divider,
   Hint,
   Icon,
   Input,
   Panel,
   Select,
+  SettingsPage,
+  SettingRow,
+  SettingText,
+  Section,
   Switch,
   Textarea,
   injectStyles,
@@ -87,6 +92,11 @@ function bootstrap(): YapmodClientHandle {
     Input,
     Textarea,
     Select,
+    SettingsPage,
+    Section,
+    SettingRow,
+    SettingText,
+    Divider,
   };
 
   const handle: YapmodClientHandle = Object.freeze({

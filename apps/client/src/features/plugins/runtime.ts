@@ -1,11 +1,16 @@
 import type { Client } from '@yapmod/types';
 import {
   Button,
+  Divider,
   Hint,
   Icon,
   Input,
   Panel,
   Select,
+  SettingsPage,
+  SettingRow,
+  SettingText,
+  Section,
   Switch,
   Textarea,
   injectStyle,
@@ -162,6 +167,11 @@ function createPluginApi(
       Input,
       Textarea,
       Select,
+      SettingsPage,
+      Section,
+      SettingRow,
+      SettingText,
+      Divider,
     },
     settings: {
       registerSection(section) {
