@@ -1,4 +1,11 @@
-import type { SettingRowProps } from '@yapmod/types';
+import type { JSX } from 'solid-js';
+
+/** Props for the {@link SettingRow} component. */
+export interface SettingRowProps {
+  label: string;
+  hint?: string | JSX.Element;
+  children: JSX.Element;
+}
 
 /**
  * A single setting row with a label, optional hint, and a control.

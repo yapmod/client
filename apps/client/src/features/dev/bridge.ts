@@ -163,8 +163,8 @@ export function installDev(client: Client): void {
  *
  * `window.opener` is only set when the page was opened by another page,
  * which is exactly the dev server's control page. The message is sent with
- * a wildcard target because the opener's origin is unknown at this point —
- * the dev server is the one that verifies the sender's origin.
+ * a wildcard target because the opener's origin is unknown at this point.
+ * The dev server is the one that verifies the sender's origin.
  */
 function announceToOpener(): void {
   const opener = window.opener;

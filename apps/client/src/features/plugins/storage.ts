@@ -65,8 +65,8 @@ export interface ReactivePluginStorage {
  *
  * Each storage property gets its own Solid signal so that reading
  * `yapmod.storage.channel` inside a component render is tracked
- * reactively — plugin authors no longer need to wrap the read in
- * `createMemo()`.  A top-level write updates both the internal state
+ * reactively. Plugin authors no longer need to wrap the read in
+ * `createMemo()`. A top-level write updates both the internal state
  * and the per-property signal, then persists immediately.
  *
  * Deeper writes (`storage.nested.x = 1`) reach the plain object the state

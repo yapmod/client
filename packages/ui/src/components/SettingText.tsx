@@ -1,4 +1,11 @@
-import type { SettingTextProps } from '@yapmod/types';
+import type { JSX } from 'solid-js';
+
+/** Props for the {@link SettingText} component. */
+export interface SettingTextProps {
+  label: string;
+  hint?: string;
+  value: string | JSX.Element;
+}
 
 /**
  * A read-only setting row that displays a text value.

@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@yapmod/types": "workspace:*",
     "solid-js": "^1.9.18"
   },
   "devDependencies": {

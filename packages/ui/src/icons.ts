@@ -1,5 +1,5 @@
 /** SVG path data for the built-in icons. */
-import type { IconName as TypesIconName } from '@yapmod/types';
+import type { IconName } from './components/Icon';
 
 /**
  * One path of an icon.
@@ -73,8 +73,8 @@ const paths = {
   ],
 } as const;
 
-/** Names of the built-in icons — re-exported from the single source of truth. */
-export type IconName = TypesIconName;
+/** Names of the built-in icons, re-exported from the component. */
+export { type IconName } from './components/Icon';
 
 /** SVG path data for the built-in icons, keyed by name. */
 export const iconPaths: Record<IconName, readonly IconPath[]> = paths;

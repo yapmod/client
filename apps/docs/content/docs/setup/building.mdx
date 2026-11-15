@@ -3,49 +3,54 @@ title: Building Your Plugin
 description: Compile and bundle your plugin code into a file ready for Yapmod.
 ---
 
-Once you have your plugin code written, you need to build it into a single file that Yapmod can load.
+Once you have written your plugin code, the next step is building it. Building takes all your TypeScript files, compiles them, and bundles everything into a single JavaScript file that Yapmod can load.
 
 ## The build command
 
-From your plugin project directory, run:
+Open your terminal in your plugin project directory and run:
 
 ```bash
 yapmod build --entry src/index.ts --outfile dist/plugin.js
 ```
 
-This command uses the Yapmod CLI to:
+Let me break down what happens when you run this command:
 
-1. Read your TypeScript source files.
-2. Perform type checking and catch type errors before bundling.
-3. Compile any JSX syntax and SolidJS components.
-4. Bundle everything into a single JavaScript file.
-5. Write the loadable expression to the output file.
+1. The builder reads your TypeScript source files starting from the entry point you specified
+2. It runs TypeScript type checking to catch any errors before bundling
+3. It compiles any JSX syntax and SolidJS components into plain JavaScript
+4. It bundles everything into a single file
+5. It writes the final output to the path you specified
 
 <Callout type="info">
-  The builder runs TypeScript type checking during compilation. If your plugin has type errors — for
-  example, using a UI component with invalid props — the build will fail with a clear error message.
-  See the [Type Safety](/docs/development/type-safety) page for details on available types.
+  The builder runs TypeScript type checking as part of the build process. If your plugin has type
+  errors, for example if you pass invalid props to a UI component, the build will fail and show you
+  a clear error message. This helps you catch mistakes before they reach users. See the [Type
+  Safety](/docs/development/type-safety) page for details on all available types.
 </Callout>
 
-## Options
+## Command options
 
-| Flag        | Description                  |
-| ----------- | ---------------------------- |
-| `--entry`   | Plugin entry file (required) |
-| `--outfile` | Output file path (required)  |
-| `--minify`  | Minify the bundle            |
+Here are the flags you can use with the build command:
 
-## Loading the plugin into Yapmod
+| Flag        | Description                                   |
+| ----------- | --------------------------------------------- |
+| `--entry`   | Your plugin entry file (required)             |
+| `--outfile` | Where the built file will be saved (required) |
+| `--minify`  | Minify the output bundle to reduce file size  |
 
-After building, you can load your plugin into Yapmod:
+The `--entry` flag tells the builder where your plugin starts, and `--outfile` tells it where to save the result. Both are required. The `--minify` flag is optional and will compress the output for smaller file size.
 
-1. Open Yapin with Yapmod installed.
-2. Go to the Yapmod settings panel.
-3. Navigate to the plugins section.
-4. Upload the built file.
+## Loading your plugin into Yapmod
 
-Your plugin will be loaded and active immediately.
+Once the build succeeds, you will have a `.js` file ready to load. Here is how to get it running:
 
-## Next steps
+1. Open Yapin in your browser with Yapmod installed
+2. Open the Yapmod settings panel
+3. Go to the plugins section
+4. Upload the built file from your `dist` folder
 
-For a faster development workflow, set up [hot reloading](/docs/setup/hot-reloading) so your plugin updates automatically when you make changes.
+Yapmod will evaluate the file and your plugin will be active immediately. You should see it appear in the list of installed plugins.
+
+## What comes next
+
+Building and uploading works fine, but doing it every time you make a change gets tedious quickly. The next page shows you how to set up [hot reloading](/docs/setup/hot-reloading) so your plugin updates automatically the moment you save a file.

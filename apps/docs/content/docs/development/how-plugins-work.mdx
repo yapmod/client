@@ -3,16 +3,16 @@ title: How Plugins Work
 description: Understand the plugin lifecycle, evaluation, and how Yapmod loads your code.
 ---
 
-This page explains how Yapmod plugins work from the moment you write the code to when it runs in the browser. Understanding this lifecycle is key to building reliable plugins.
+This page explains everything that happens from the moment you write plugin code to when it runs in the browser. Understanding this lifecycle will help you build plugins that are reliable and easy to maintain.
 
 ## The plugin object
 
-At its core, a Yapmod plugin is a JavaScript object that describes what the plugin does. The plugin object has two main parts:
+At its core, a Yapmod plugin is simply a JavaScript object that describes what the plugin does. This object has two main parts:
 
-1. **Manifest** — metadata about the plugin (name, author, description, version).
-2. **Lifecycle hooks** — functions that run at specific points, like when the plugin starts or when it stops.
+1. **The manifest**. This is metadata about your plugin: its name, author, description, and version.
+2. **Lifecycle hooks**. These are functions that run at specific points, like when your plugin starts up or when it is stopped.
 
-Here's a basic example of what a plugin looks like:
+Here is a basic example of what a plugin looks like:
 
 ```typescript
 export default {
@@ -33,75 +33,81 @@ export default {
 };
 ```
 
+The `manifest` tells Yapmod who you are and what your plugin is called. The `start` function is where your plugin comes to life, and the `stop` function is where you clean up when your plugin is no longer needed.
+
 <Callout type="info">
-**Plugin source must be an expression** — the plugin code must be an expression that returns the plugin object (or a function that returns one). It cannot be a statement block. This is because Yapmod evaluates the plugin through a temporary inline `<script>` tag due to browser Content Security Policy restrictions.
+  Your plugin source code must be an expression that returns the plugin object or a function that
+  returns one. It cannot be a statement block. This requirement exists because Yapmod evaluates
+  plugins through a temporary inline script tag, which is required by browser Content Security
+  Policy.
 </Callout>
 
 ## The plugin lifecycle
 
-Every plugin goes through a series of stages:
+Every plugin goes through four stages from start to finish:
 
 ### 1. Loading
 
-When you upload a plugin file to Yapmod, it reads the file content and evaluates it as JavaScript. The result must be a plugin object with at least a `manifest` property.
+When you upload a plugin file to Yapmod, it reads the file content and evaluates it as JavaScript. The result of that evaluation must be a plugin object with at least a `manifest` property. If the evaluation fails or the result is not a valid plugin object, Yapmod will reject the file.
 
 ### 2. Starting
 
-If the plugin loads successfully, Yapmod calls the `start()` hook, passing the `YapmodPluginApi` object. This is where you set up your plugin's behavior: observe DOM elements, register settings, inject styles, and so on.
+If the plugin loads successfully, Yapmod calls your `start()` hook and passes it the `YapmodPluginApi` object. This is where you set up everything your plugin needs: observing DOM elements, registering settings pages, injecting styles, and so on.
 
 <Callout type="info">
-  The `api` parameter in `start(api)` is fully typed as `YapmodPluginApi` from `@yapmod/types`. You
-  can import the type explicitly for clarity: `import type {YapmodPluginApi} from '@yapmod/types'`.
-  See the [Type Safety](/docs/development/type-safety) page for details.
+  The `api` parameter in `start(api)` is fully typed as `YapmodPluginApi` from `@yapmod/types`. If
+  you want to be explicit, you can import the type: `import type {YapmodPluginApi} from
+  '@yapmod/types'`. See the [Type Safety](/docs/development/type-safety) page for more details.
 </Callout>
 
 ### 3. Running
 
-While the plugin is active, it can interact with the page through the API. The plugin's storage persists across page reloads, and any DOM observers continue running until the plugin stops.
+While your plugin is active, it can interact with the page through the API. Your plugin's storage persists across page reloads, so any data you save will still be there when the user refreshes. Any DOM observers you set up will continue running, watching for elements as they appear and disappear.
 
 ### 4. Stopping
 
-When the plugin is disabled, removed, or when Yapmod itself unloads, the `stop()` hook runs. This is your chance to clean up: remove event listeners, dispose of observers, and save any pending state.
+When your plugin is disabled, removed, or when Yapmod itself unloads, the `stop()` hook runs. This is your opportunity to clean up after yourself. Remove any event listeners you added, dispose of observers, and save any pending state.
 
 <Callout type="warn">
-  **Always clean up** — use `api.onDispose()` to register cleanup functions that run when the plugin
-  stops. This ensures your plugin doesn't leave behind orphaned observers or event listeners.
+  Always clean up after your plugin. Use `api.onDispose()` to register cleanup functions that run
+  automatically when the plugin stops. This ensures you do not leave behind orphaned observers or
+  event listeners that continue running after your plugin is gone.
 </Callout>
 
-## How Yapmod evaluates plugins
+## How Yapmod evaluates your code
 
-Yapmod cannot use `eval()` or `new Function()` to run plugin code because of the browser's Content Security Policy (CSP). Instead, it creates a temporary inline `<script>` tag, injects the plugin source, and evaluates it that way.
+Yapmod cannot use `eval()` or `new Function()` to run plugin code. The browser's Content Security Policy (CSP) blocks these methods for security reasons. Instead, Yapmod creates a temporary inline `<script>` tag, injects your plugin source into it, and evaluates it that way.
 
-This means:
+This has a few important consequences:
 
-- The plugin source must be valid JavaScript that evaluates to a plugin object.
-- The plugin runs in the same context as the rest of the page, so it has access to the DOM and global APIs.
-- External stylesheets are blocked by CSP, so online themes are fetched and inlined into a `<style>` tag.
+- Your plugin source must be valid JavaScript that evaluates to a plugin object
+- Your plugin runs in the same context as the rest of the page, so it has full access to the DOM and global browser APIs
+- External stylesheets are blocked by CSP, which is why online themes are fetched and inlined into a `<style>` tag instead
 
 ## The builder approach
 
-When you use the starter repo, the builder tool handles all of this for you:
+When you use the starter repo, the builder tool takes care of all the complicated parts:
 
-1. You write your plugin in TypeScript with SolidJS support.
-2. The builder compiles and bundles your code into a single JavaScript file.
-3. The output is a valid plugin file that Yapmod can load directly.
+1. You write your plugin in TypeScript with SolidJS support, using normal import syntax
+2. The builder compiles and bundles your code into a single JavaScript file
+3. The output is a valid plugin file that Yapmod can load without any extra steps
 
-This is why the starter repo is the recommended approach. It handles the bundling, compilation, and formatting so you can focus on writing your plugin logic.
+This is why we recommend the starter repo. It handles bundling, compilation, and formatting so you can focus on writing your plugin logic instead of wrestling with build configuration.
 
-## Manual approach
+## The manual approach
 
-If you choose not to use the builder, you can write your plugin as a plain JavaScript file. The file must export or return a plugin object that conforms to the expected structure. However, you'll need to handle:
+If you choose not to use the builder, you can write your plugin as a plain JavaScript file. The file must return a plugin object that follows the expected structure. But you will need to handle everything yourself:
 
-- Bundling any imports into a single file.
-- Compiling TypeScript or JSX syntax yourself.
-- Ensuring the output is a valid expression that Yapmod can evaluate.
+- Bundling any imports into a single file
+- Compiling TypeScript or JSX syntax
+- Making sure the output is a valid expression that Yapmod can evaluate
 
 <Callout type="error">
-  The manual approach is not recommended for most users. Without the builder, you lose TypeScript
-  support, SolidJS JSX compilation, and the convenience of the build tool. Use it only if you have a
-  specific reason to avoid the starter repo.
+  We do not recommend the manual approach for most users. Without the builder, you lose TypeScript
+  support, SolidJS JSX compilation, and all the convenience the build tool provides. Only use this
+  approach if you have a specific reason to avoid the starter repo.
 </Callout>
 
-## Next steps
+## What comes next
 
-Now that you understand how plugins work, explore the [Plugin API](/docs/development/plugin-api) to see what tools are available to your plugin at runtime.
+Now that you understand the plugin lifecycle, let us look at the tools available to you. Head over to the [Plugin API](/docs/development/plugin-api) page to see every method and property your plugin can use at runtime.

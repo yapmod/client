@@ -122,8 +122,8 @@ export function setPluginEnabledRecord(id: string, enabled: boolean): void {
 
 /**
  * The persisted part of client-registered plugins: the user's explicit
- * enable/disable choices. The definitions themselves are never persisted —
- * they come from the host application on every page load.
+ * enable/disable choices. The definitions themselves are never persisted.
+ * They come from the host application on every page load.
  */
 interface ClientPluginState {
   overrides: Record<string, boolean>;

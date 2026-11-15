@@ -1,5 +1,11 @@
 import { splitProps } from 'solid-js';
-import type { ButtonProps } from '@yapmod/types';
+import type { JSX } from 'solid-js';
+
+/** Props for the {@link Button} component. */
+export type ButtonProps = JSX.IntrinsicElements['button'] & {
+  variant?: 'default' | 'primary' | 'accent' | 'secondary' | 'ghost' | 'danger';
+  size?: 'medium' | 'small';
+};
 
 /**
  * A button styled by Yapmod's own stylesheet to match Yapin's `.btn`.

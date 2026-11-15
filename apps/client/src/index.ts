@@ -78,7 +78,7 @@ function bootstrap(): YapmodClientHandle {
   client.onDispose(closeAllModals);
   client.onDispose(disposeToasts);
 
-  const ui: PluginUi = {
+  const ui = {
     showToast,
     openModal,
     injectCss() {
@@ -97,7 +97,7 @@ function bootstrap(): YapmodClientHandle {
     SettingRow,
     SettingText,
     Divider,
-  };
+  } satisfies PluginUi;
 
   const handle: YapmodClientHandle = Object.freeze({
     version,

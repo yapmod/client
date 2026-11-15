@@ -44,7 +44,7 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
 ## Runtime model
 
 - `apps/client/src/index.ts` runs `bootstrap()` at import time. The bundle is a side-effect
-  IIFE, not a library — importing the entry boots it.
+  IIFE, not a library. Importing the entry boots it.
 - `createClient()` is the disposal scope. Every feature gets the client and registers
   teardown with `client.onDispose(fn)`. `dispose()` runs all cleanups (each isolated in
   try/catch) and clears `globalThis.YapmodClient`.
@@ -80,7 +80,7 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
 - Types: the root `tsconfig.json` is strict (`noUncheckedIndexedAccess`,
   `verbatimModuleSyntax`, `noUnused*`). Use `import type` for type-only imports and handle
   possibly-undefined indexed access.
-- Formatting: Oxfmt — 2 spaces, single quotes, semicolons, trailing commas, width 100.
+- Formatting: Oxfmt, 2 spaces, single quotes, semicolons, trailing commas, width 100.
   Lint: `unicorn/prefer-global-this` is an error (use `globalThis`); disable a rule only with
   `// oxlint-disable-next-line <rule> -- <reason>`.
 - Naming: lowercase single-word files (`store.ts`, `runtime.ts`, `section.tsx`), PascalCase
@@ -102,7 +102,7 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
 - **The host is React and replaces DOM nodes.** The settings integration uses scoped
   `MutationObserver`s and structural CSS/data attributes (`data-yp-section`,
   `data-yp-current`) to keep Yapmod nav and panels attached. Don't replace this with
-  framework state — it will go stale.
+  framework state, as it will go stale.
 - **Build target is `es2020`** even though TS targets ES2022. Avoid newer APIs such as
   `Array.prototype.toSorted`.
 - Plugin source must be an expression that returns the plugin object (or a function returning

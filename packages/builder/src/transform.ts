@@ -9,7 +9,7 @@ import presetTypescript from '@babel/preset-typescript';
  * Pass 1 strips TypeScript and compiles JSX with the Solid preset, which
  * injects its helpers (`template`, `insert`, `Show`, ...) as `solid-js*`
  * imports. Pass 2 rewrites every such import onto the shared instance hanging
- * off the `yapmod` API, so the bundle never resolves — and can never carry —
+ * off the `yapmod` API, so the bundle never resolves and can never carry
  * a second copy of Solid. What remains is module code without any `solid-js`
  * imports, ready for esbuild (or a bundler recipe) to wrap in the expression
  * from `expression.ts`.
@@ -23,7 +23,7 @@ const SHARED_MODULES: Record<string, string> = {
   '@yapmod/ui': 'ui',
 };
 
-/** Fresh `yapmod.solid...` access — one node per use, never shared. */
+/** Fresh `yapmod.solid...` access, one node per use, never shared. */
 function sharedAccess(namespace: string) {
   return t.memberExpression(t.identifier('yapmod'), t.identifier(namespace));
 }

@@ -1,7 +1,13 @@
 import { createSignal, splitProps } from 'solid-js';
 import type { JSX } from 'solid-js';
-import type { SwitchProps } from '@yapmod/types';
 import { cx } from '../cx';
+
+/** Props for the {@link Switch} component. */
+export type SwitchProps = Omit<JSX.IntrinsicElements['input'], 'type' | 'checked' | 'onChange'> & {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (checked: boolean) => void;
+};
 
 /**
  * A toggle styled by Yapmod's stylesheet to match Yapin's `.switch`.

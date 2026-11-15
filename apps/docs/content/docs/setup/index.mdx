@@ -3,25 +3,27 @@ title: Setup Overview
 description: Get your development environment ready for building Yapmod plugins.
 ---
 
-This section walks you through setting up everything you need to build Yapmod plugins, from installing dependencies to your first successful build.
+This section will walk you through everything you need to set up before building your first Yapmod plugin. By the end, you will have a working development environment and your first plugin ready to go.
 
-## What you'll do
+## What we will cover
 
-1. **Install prerequisites** — Node.js (or Bun) and pnpm for package management.
-2. **Clone the starter repo** — a pre-configured project with the Yapmod plugin builder already set up.
-3. **Build your plugin** — compile your TypeScript and SolidJS code into a single bundled plugin file.
-4. **Load it into Yapmod** — upload the built file to your Yapmod instance.
-5. **Set up hot reloading** — enable the hot reload toggle in Yapmod settings for instant feedback while coding.
-6. **Configure your editor** — optional extensions that make plugin development smoother.
+Here is the path we will follow:
 
-## Why use the builder
+1. **Install prerequisites**. You will need Node.js and pnpm to manage packages and run the build tools.
+2. **Clone the starter repo**. This gives you a project that is already configured with the Yapmod plugin builder, so you can start coding right away.
+3. **Build your plugin**. We will compile your TypeScript and SolidJS code into a single file that Yapmod can load.
+4. **Load it into Yapmod**. Once built, you will upload the plugin file to your Yapmod instance and see it come to life.
+5. **Set up hot reloading**. This lets you see changes instantly as you code, without manually rebuilding or reuploading anything.
+6. **Configure your editor** (optional). A few extensions and settings that make the whole experience smoother.
 
-Yapmod plugins are loaded as a single JavaScript file in the browser. The builder tool handles:
+## Why the builder matters
 
-- Bundling your TypeScript code into a format that Yapmod can load.
-- Compiling JSX syntax so you can use SolidJS components naturally.
-- Producing a valid plugin file that conforms to the Yapmod plugin format.
+Yapmod plugins run in the browser as a single JavaScript file. But you will be writing your plugin in TypeScript with SolidJS components and JSX syntax. The builder tool bridges that gap for you. It takes care of:
 
-Without the builder, you would need to configure all of this manually. The starter repo takes care of it for you.
+- Bundling all your TypeScript code into one file that Yapmod understands
+- Compiling JSX so you can write SolidJS components the natural way
+- Making sure the output follows the exact format Yapmod expects
 
-Ready? Start with [Prerequisites](/docs/setup/prerequisites) to install the required tools.
+You could technically do all of this manually, but why would you? The starter repo handles every bit of configuration so you can focus on what actually matters: writing your plugin.
+
+Ready to get started? Head over to [Prerequisites](/docs/setup/prerequisites) and we will install the tools you need.

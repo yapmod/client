@@ -8,7 +8,7 @@ import { expressionBanner, expressionFooter } from './expression.ts';
  * alive so every save produces a fresh expression.
  *
  * The expression is the unit the client evaluates, so the watch output is
- * exactly what `buildPlugin` would have written to disk — a dev session and
+ * exactly what `buildPlugin` would have written to disk. A dev session and
  * a release build cannot differ.
  */
 

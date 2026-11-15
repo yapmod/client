@@ -62,7 +62,7 @@
   box-sizing: border-box;
 }
 
-/* Isolate from the docs theme — reset inherited styles on all descendants */
+/* Isolate from the docs theme, reset inherited styles on all descendants */
 .yp-preview > * {
   font-family: inherit;
   font-size: inherit;

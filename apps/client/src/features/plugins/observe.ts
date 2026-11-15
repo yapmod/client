@@ -4,7 +4,7 @@
  * The callback fires once per element: for everything already in the page
  * when the observer starts, and for each element added later. A `WeakSet`
  * remembers what was reported, so moving an element around does not fire
- * twice — and removed nodes are not kept alive by the observer.
+ * twice. Also, removed nodes are not kept alive by the observer.
  *
  * Only insertions are watched. Yapin rebuilds its interface by replacing
  * nodes, which always shows up as an addition, so watching attributes as

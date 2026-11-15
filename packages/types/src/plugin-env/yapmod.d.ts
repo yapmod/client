@@ -8,9 +8,11 @@
  * ```json
  * {
  *   "compilerOptions": {
- *     "types": ["@yapmod/types"]
+ *     "types": ["@yapmod/types/plugin-env"]
  *   }
  * }
  * ```
+ *
+ * @module
  */
-declare const yapmod: import('.').YapmodPluginApi;
+declare const yapmod: import('../plugin').YapmodPluginApi;

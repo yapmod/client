@@ -3,94 +3,95 @@ title: Reverse Engineering Yapin
 description: Learn how to inspect and understand the Yapin interface to build better plugins.
 ---
 
-To build effective Yapmod plugins, you need to understand how Yapin works under the hood. This page covers the techniques and tools for reverse engineering the Yapin interface so you can find the right elements, data, and patterns to target.
+To build effective Yapmod plugins, you need to understand how Yapin works under the hood. This page covers the techniques and tools you will use to reverse engineer the Yapin interface, so you can find the right elements, data, and patterns to target in your plugins.
 
-## Why reverse engineering matters
+## Why this matters
 
-Yapmod plugins run inside the Yapin page, which is a React application. Unlike a public API with documented endpoints, you'll be working with the DOM, CSS selectors, and network requests that Yapin uses internally. Reverse engineering helps you:
+Yapmod plugins run inside the Yapin page, which is a React application. Unlike working with a public API that has documented endpoints, you will be working with the DOM, CSS selectors, and network requests that Yapin uses internally. Reverse engineering helps you:
 
-- Find the right DOM elements to observe and modify.
-- Understand how Yapin structures its data and state.
-- Identify stable selectors that won't break when Yapin updates.
-- Discover API endpoints and data formats used by the app.
+- Find the right DOM elements to observe and modify
+- Understand how Yapin structures its data and state
+- Identify stable selectors that are less likely to break when Yapin updates
+- Discover API endpoints and data formats used by the app
 
 <Callout type="warn">
   Yapin's internal structure may change without notice. Always use the most stable selectors you can
-  find, and test your plugin after Yapin updates.
+  find, and make sure to test your plugin after Yapin updates.
 </Callout>
 
 ## Inspecting the DOM structure
 
-The first step in reverse engineering is understanding the DOM tree of the Yapin interface.
+The first step in any reverse engineering effort is understanding the DOM tree of the Yapin interface.
 
 ### Finding elements
 
-Use your browser's **Elements** (or **Inspector**) panel to explore the page:
+Your browser's **Elements** panel (called **Inspector** in some browsers) is your main tool for exploring the page:
 
-1. Right-click any element on the Yapin page and select **Inspect**.
-2. Navigate the DOM tree to see parent, child, and sibling relationships.
-3. Look for patterns in class names, data attributes, and element structure.
+1. Right click on any element on the Yapin page and select **Inspect**
+2. Navigate the DOM tree to see parent, child, and sibling relationships
+3. Look for patterns in class names, data attributes, and overall element structure
 
 ### Identifying stable selectors
 
-Not all selectors are created equal. Some are more stable than others:
+Not all selectors are equally reliable. Some are much more stable than others, and choosing the right ones will save you from broken plugins later:
 
-- **Data attributes** — the most reliable. Yapin uses data attributes like `data-yp-section` and `data-yp-current` for internal state. These are less likely to change.
-- **Class names** — moderately reliable. Yapin uses consistent class names like `.ss2-card`, `.settings-main`, `.hint`, `.toggle-row`. However, React may add hash suffixes or change class names in updates.
-- **CSS variables** — Yapin uses CSS custom properties like `--bg-side`, `--text`, `--accent`. These are stable for styling purposes.
-- **Element text content** — fragile. Text can change with localization or UI updates.
-- **DOM position** — very fragile. Never rely on element position in the DOM tree.
+- **Data attributes** are the most reliable option. Yapin uses data attributes like `data-yp-section` and `data-yp-current` for internal state management. These are unlikely to change.
+- **Class names** are moderately reliable. Yapin uses consistent class names like `.ss2-card`, `.settings-main`, `.hint`, and `.toggle-row`. However, React may add hash suffixes or change class names in future updates.
+- **CSS variables** are stable for styling purposes. Yapin uses CSS custom properties like `--bg-side`, `--text`, and `--accent`.
+- **Element text content** is fragile. Text can change with localization or UI updates, so avoid targeting elements by their text.
+- **DOM position** is very fragile. Never rely on an element's position in the DOM tree, as React re-renders can change the structure at any time.
 
 <Callout type="idea">
-  When targeting elements, prefer data attributes first, then class names, and avoid relying on DOM
-  structure or text content.
+  When targeting elements, always prefer data attributes first, then class names. Avoid relying on
+  DOM structure or text content, as these are the most likely to break.
 </Callout>
 
-## Understanding React rendering
+## Understanding how React renders
 
-Yapin is built with React, which means the DOM is managed by React's virtual DOM. This has important implications:
+Yapin is built with React, which means the DOM is managed by React's virtual DOM. This has important implications for how you interact with elements.
 
-### DOM nodes can be replaced
+### DOM nodes can be replaced at any time
 
-React may remove and re-create DOM nodes during re-renders. If you hold a direct reference to a DOM element, it may become stale after a re-render.
+React may remove and recreate DOM nodes during re-renders. If your plugin holds a direct reference to a DOM element, that reference can become stale after a re-render.
 
-**Solution:** Use `api.observe()` which handles this automatically with `MutationObserver`. It will call your callback for both existing elements and new elements that appear later.
+**The solution is to use `api.observe()`.** It handles this problem automatically using `MutationObserver`. It will call your callback for both elements that already exist and new elements that appear later, so you never have to worry about stale references.
 
-### React component patterns
+### Recognizing React component patterns
 
-Look for these patterns in the DOM:
+As you inspect the DOM, look for these common patterns:
 
-- **Fragment wrappers** — React often wraps content in `<div>` fragments with no meaningful class names.
-- **Key attributes** — React adds `data-reactroot` or similar attributes to mark component boundaries.
-- **Event handlers** — React attaches event handlers to elements. You can see these in the Elements panel as `onclick`, `onmouseover`, etc.
+- **Fragment wrappers**. React often wraps content in `<div>` elements with no meaningful class names
+- **Key attributes**. React adds attributes like `data-reactroot` to mark component boundaries
+- **Event handlers**. React attaches event handlers directly to elements. You can see these in the Elements panel as `onclick`, `onmouseover`, and so on
 
 ## Analyzing network traffic
 
-The **Network** panel in your browser dev tools is invaluable for understanding how Yapin communicates with its backend.
+The **Network** panel in your browser dev tools is invaluable for understanding how Yapin communicates with its backend servers.
 
 ### Finding API endpoints
 
-1. Open the Network panel and filter by **Fetch/XHR** to see API requests.
-2. Look at the request URL, method, headers, and payload.
-3. Note the response format (usually JSON) and structure.
+1. Open the Network panel and filter by **Fetch/XHR** to see API requests
+2. Examine the request URL, method, headers, and payload
+3. Note the response format, which is usually JSON, and its structure
 
 ### Understanding data flow
 
 By observing network traffic, you can:
 
-- See what data Yapin fetches when you perform actions.
-- Understand the request/response format for API calls.
-- Identify authentication tokens and headers.
-- Discover endpoints that might be useful for your plugin.
+- See what data Yapin fetches when you perform different actions
+- Understand the request and response format for API calls
+- Identify authentication tokens and headers
+- Discover endpoints that might be useful for your plugin
 
 <Callout type="info">
-  You don't need to replicate Yapin's API calls in your plugin. The plugin API gives you access to
-  the data and UI you need. Network analysis is mainly for understanding how the app works.
+  You do not need to replicate Yapin's API calls in your plugin. The plugin API gives you access to
+  the data and UI you need. Network analysis is mainly useful for understanding how the app works
+  under the hood.
 </Callout>
 
 ## Using the Console for exploration
 
-The browser **Console** panel is your best friend for quick exploration:
+The browser **Console** panel is your best tool for quick exploration and testing.
 
 ### Querying elements
 
@@ -106,62 +107,62 @@ document.querySelector('[data-yp-section]') !== null;
 ### Inspecting objects
 
 ```javascript
-// Inspect a DOM element
+// Inspect a DOM element in detail
 inspect(document.querySelector('.settings-main'));
 
-// Check CSS variables
+// Check CSS variable values
 getComputedStyle(document.documentElement).getPropertyValue('--bg-side');
 ```
 
 ### Testing selectors
 
-Before writing your plugin, test your selectors in the console to make sure they match the elements you expect:
+Before you commit to a selector in your plugin code, test it in the console first:
 
 ```javascript
-// Test a selector
+// Test a selector and see what it matches
 const elements = document.querySelectorAll('.message-input');
 console.log(`Found ${elements.length} elements`);
 elements.forEach((el, i) => console.log(`${i}:`, el));
 ```
 
-## Finding CSS patterns
+## Understanding CSS patterns
 
-Yapin uses a consistent set of CSS classes and variables. Understanding these helps you style your plugin's UI to match the host interface.
+Yapin uses a consistent set of CSS classes and variables. Knowing these will help you style your plugin's UI to match the host interface seamlessly.
 
 ### Common Yapin classes
 
-- `.ss2-card` — card-like containers
-- `.settings-main` — main settings panel content
-- `.hint` — inline hint text
-- `.toggle-row` — settings toggle rows
-- `.input` — text input fields
-- `.switch` — toggle switches
-- `.overlay` — modal overlays
-- `.modal` — modal dialog containers
-- `.btn` — button styles
+- `.ss2-card` for card like containers
+- `.settings-main` for main settings panel content
+- `.hint` for inline hint text
+- `.toggle-row` for settings toggle rows
+- `.input` for text input fields
+- `.switch` for toggle switches
+- `.overlay` for modal overlays
+- `.modal` for modal dialog containers
+- `.btn` for button styles
 
 ### CSS variables
 
-Yapin uses CSS custom properties for theming:
+Yapin uses CSS custom properties for theming, which means your plugin can automatically adapt to the current theme:
 
-- `--bg-side` — sidebar background color
-- `--text` — primary text color
-- `--accent` — accent color
-- `--bg-primary` — primary background
-- `--bg-secondary` — secondary background
+- `--bg-side` for sidebar background color
+- `--text` for primary text color
+- `--accent` for accent color
+- `--bg-primary` for primary background
+- `--bg-secondary` for secondary background
 
-Use these variables in your plugin's CSS to ensure your UI adapts to the current theme.
+Use these variables in your plugin's CSS instead of hardcoding colors. This way your UI will automatically adapt when the user changes themes.
 
-## Practical tips
+## Practical tips for reverse engineering
 
-- **Start small** — begin by inspecting one element and understanding its structure before moving to the next.
-- **Use the Elements panel** — it's your primary tool for understanding the DOM.
-- **Test selectors in the console** — before committing to a selector in your plugin, verify it works.
-- **Look for data attributes** — they are the most stable way to target elements.
-- **Understand React patterns** — knowing how React renders helps you predict how the DOM will change.
-- **Check the network** — understanding API calls helps you understand the data flow.
-- **Be prepared for changes** — Yapin may update its interface, so design your plugin to be resilient.
+- **Start small**. Begin by inspecting one element and understanding its structure before moving on to the next
+- **Use the Elements panel constantly**. It is your primary tool for understanding the DOM
+- **Test selectors in the console first**. Before committing to a selector in your plugin, verify it matches what you expect
+- **Look for data attributes**. They are the most stable way to target elements
+- **Learn React patterns**. Understanding how React renders helps you predict how the DOM will change
+- **Monitor network traffic**. Understanding API calls gives you insight into the data flow
+- **Expect changes**. Yapin may update its interface at any time, so design your plugin to be resilient and handle missing elements gracefully
 
-## Next steps
+## What comes next
 
 Now that you know how to reverse engineer the Yapin interface, head over to [Distribution](/docs/development/distribution) to learn how plugins are shared and loaded.
