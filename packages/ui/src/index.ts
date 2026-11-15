@@ -1,16 +1,35 @@
 export { uiCss, injectStyle, injectStyles, removeStyle, removeStyles } from './styles';
 export { mountIsolated } from './mount';
-export { createIcon, iconPaths, type IconName, type CreateIconOptions } from './icons';
-export { Icon, type IconProps } from './components/Icon';
-export { Button, type ButtonProps } from './components/Button';
-export { Hint, type HintProps } from './components/Hint';
-export { Panel, type PanelProps } from './components/Panel';
-export { Input, type InputProps } from './components/Input';
-export { Textarea, type TextareaProps } from './components/Textarea';
-export { Switch, type SwitchProps } from './components/Switch';
-export { Select, type SelectProps, type SelectOption } from './components/Select';
-export { SettingsPage, type SettingsPageProps } from './components/SettingsPage';
-export { Section, type SectionProps, type SectionSpacing } from './components/Section';
-export { SettingRow, type SettingRowProps } from './components/SettingRow';
-export { SettingText, type SettingTextProps } from './components/SettingText';
+export { createIcon, iconPaths, type CreateIconOptions } from './icons';
+export { Icon } from './components/Icon';
+export { Button } from './components/Button';
+export { Hint } from './components/Hint';
+export { Panel } from './components/Panel';
+export { Input } from './components/Input';
+export { Textarea } from './components/Textarea';
+export { Switch } from './components/Switch';
+export { Select } from './components/Select';
+export { SettingsPage } from './components/SettingsPage';
+export { Section } from './components/Section';
+export { SettingRow } from './components/SettingRow';
+export { SettingText } from './components/SettingText';
 export { Divider } from './components/Divider';
+
+/** Re-export all prop types from the single source of truth. */
+export type {
+  IconName,
+  IconProps,
+  ButtonProps,
+  HintProps,
+  PanelProps,
+  InputProps,
+  TextareaProps,
+  SwitchProps,
+  SelectOption,
+  SelectProps,
+  SettingsPageProps,
+  SectionSpacing,
+  SectionProps,
+  SettingRowProps,
+  SettingTextProps,
+} from '@yapmod/types';

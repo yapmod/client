@@ -1,20 +1,108 @@
 import type { Component, JSX } from 'solid-js';
-import type {
-  ButtonProps,
-  Divider,
-  HintProps,
-  IconName,
-  IconProps,
-  InputProps,
-  PanelProps,
-  SelectProps,
-  SettingsPageProps,
-  SettingRowProps,
-  SettingTextProps,
-  SectionProps,
-  SwitchProps,
-  TextareaProps,
-} from '@yapmod/ui';
+
+/*
+ * Inline UI prop types.
+ *
+ * These mirror the prop shapes from @yapmod/ui so this package remains a
+ * pure-types dependency with no runtime coupling to the UI component library.
+ */
+
+/** Names of the built-in icons. */
+export type IconName =
+  | 'settings'
+  | 'puzzle'
+  | 'trash'
+  | 'palette'
+  | 'upload'
+  | 'refresh'
+  | 'plus'
+  | 'pencil'
+  | 'close';
+
+export type ButtonProps = JSX.IntrinsicElements['button'] & {
+  variant?: 'default' | 'primary' | 'accent' | 'secondary' | 'ghost' | 'danger';
+  size?: 'medium' | 'small';
+};
+
+export type HintProps = JSX.IntrinsicElements['span'];
+
+export type PanelProps = JSX.IntrinsicElements['div'];
+
+export type IconProps = {
+  name: IconName;
+  size?: number;
+  label?: string;
+  class?: string;
+};
+
+export type SwitchProps = Omit<JSX.IntrinsicElements['input'], 'type' | 'checked' | 'onChange'> & {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (checked: boolean) => void;
+};
+
+export type InputProps = Omit<JSX.IntrinsicElements['input'], 'value' | 'onChange'> & {
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+};
+
+export type TextareaProps = Omit<JSX.IntrinsicElements['textarea'], 'value' | 'onChange'> & {
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+};
+
+export interface SelectOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export type SelectProps = {
+  options: readonly SelectOption[];
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  id?: string;
+  name?: string;
+  required?: boolean;
+  class?: string;
+  classList?: Record<string, boolean | undefined>;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
+};
+
+export interface SettingsPageProps {
+  title: string;
+  description?: string;
+  children: JSX.Element;
+}
+
+export type SectionSpacing = 'normal' | 'large';
+
+export interface SectionProps {
+  label: string;
+  children: JSX.Element;
+  spacing?: SectionSpacing;
+}
+
+export interface SettingRowProps {
+  label: string;
+  hint?: string | JSX.Element;
+  children: JSX.Element;
+}
+
+export interface SettingTextProps {
+  label: string;
+  hint?: string;
+  value: string | JSX.Element;
+}
+
+/** A horizontal separator component that takes no props. */
+export type DividerProps = {};
 
 /*
  * Plugin-facing contracts: the single source of truth for the plugin API.
@@ -89,7 +177,7 @@ export interface PluginUi {
   /** A read-only setting row that displays a text value. */
   SettingText: Component<SettingTextProps>;
   /** Horizontal separator between sections. */
-  Divider: Component<typeof Divider>;
+  Divider: Component<DividerProps>;
 }
 
 /** A settings section a plugin registers inside the Yapmod settings group. */
