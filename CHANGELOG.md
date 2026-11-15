@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
+
 ### Fixed
 
 - **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
