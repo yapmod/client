@@ -1,8 +1,6 @@
 # Changelog
 
-
 ## v1.2.2-1.0.0.0
-
 
 ### 🚀 Enhancements
 
@@ -84,7 +82,6 @@
 
 ## v1.2.2-0
 
-
 ### 🚀 Enhancements
 
 - **plugins:** Add client-registered plugin support ([#1](https://github.com/yapmod/client/pull/1))
@@ -164,7 +161,6 @@
 
 ## v1.2.1-1.0.0.0
 
-
 ### 🚀 Enhancements
 
 - **plugins:** Add client-registered plugin support ([#1](https://github.com/yapmod/client/pull/1))
@@ -238,4 +234,3 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - Semantic-release-bot <semantic-release-bot@martynus.net>
 - Hdzilyes ([@ilyeshdz](http://github.com/ilyeshdz))
-

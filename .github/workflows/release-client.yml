@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.3.0)'
+        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.0.0)'
         required: true
         default: 'patch'
       prerelease:
@@ -12,6 +12,10 @@ on:
         required: false
         type: boolean
         default: false
+      prerelease_type:
+        description: 'Prerelease identifier (e.g., nightly, alpha, beta)'
+        required: false
+        default: 'nightly'
 
 permissions:
   contents: write
@@ -42,24 +46,52 @@ jobs:
       - name: Build client
         run: pnpm build
 
+      - name: Set exact version if provided
+        if: ${{ github.event.inputs.version != 'major' && github.event.inputs.version != 'minor' && github.event.inputs.version != 'patch' }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
+            VERSION="$VERSION-${{ github.event.inputs.prerelease_type }}"
+          fi
+          node -e "const pkg = require('./apps/client/package.json'); pkg.version = '$VERSION'; require('fs').writeFileSync('./apps/client/package.json', JSON.stringify(pkg, null, 2) + '\n')"
+
       - name: Generate changelog & bump version
         run: |
           VERSION_TYPE="${{ github.event.inputs.version }}"
           if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
-            case "$VERSION_TYPE" in
-              major) FLAG="--premajor" ;;
-              minor) FLAG="--preminor" ;;
-              patch) FLAG="--prepatch" ;;
-              *) FLAG="--prerelease $VERSION_TYPE" ;;
-            esac
-            pnpm changelogen --release --no-github $FLAG
+            if [ "$VERSION_TYPE" = "major" ] || [ "$VERSION_TYPE" = "minor" ] || [ "$VERSION_TYPE" = "patch" ]; then
+              case "$VERSION_TYPE" in
+                major) FLAG="--premajor ${{ github.event.inputs.prerelease_type }}" ;;
+                minor) FLAG="--preminor ${{ github.event.inputs.prerelease_type }}" ;;
+                patch) FLAG="--prepatch ${{ github.event.inputs.prerelease_type }}" ;;
+              esac
+              pnpm changelogen --release --no-github $FLAG
+            else
+              # Exact version already set, just generate changelog
+              pnpm changelogen --no-github
+            fi
           else
-            pnpm changelogen --release --no-github $VERSION_TYPE
+            if [ "$VERSION_TYPE" = "major" ] || [ "$VERSION_TYPE" = "minor" ] || [ "$VERSION_TYPE" = "patch" ]; then
+              pnpm changelogen --release --no-github $VERSION_TYPE
+            else
+              # Exact version already set, just generate changelog
+              pnpm changelogen --no-github
+            fi
           fi
         working-directory: apps/client
         env:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit changelog and tag
+        run: |
+          VERSION=$(node -p "require('./apps/client/package.json').version")
+          git add apps/client/package.json apps/client/CHANGELOG.md
+          git commit -m "release: v$VERSION" || true
+          git tag -f v$VERSION
+        working-directory: .
+        env:
+          HUSKY: 0
 
       - name: Read new version
         id: version
