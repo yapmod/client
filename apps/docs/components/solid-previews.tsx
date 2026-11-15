@@ -372,9 +372,9 @@ export function IconPreview() {
               aria-hidden="true"
             >
               {icon.paths.map((p, j) => {
-                const attrs: { 'fill-rule'?: string } = {};
-                if ('fillRule' in p && p.fillRule) attrs['fill-rule'] = p.fillRule;
-                return <path key={j} d={p.d} {...attrs} />;
+                const pathProps: { d: string; fillRule?: 'evenodd' | 'nonzero' } = { d: p.d };
+                if ('fillRule' in p && p.fillRule) pathProps.fillRule = p.fillRule;
+                return <path key={j} {...pathProps} />;
               })}
             </svg>
             <span className="yp-hint" style={{ fontSize: '10px' }}>
