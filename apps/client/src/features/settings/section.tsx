@@ -1,5 +1,4 @@
 import { Hint, Section, SettingRow, SettingsPage, Switch } from '@yapmod/ui';
-import { Show } from 'solid-js';
 import { devStatus } from '../dev/status';
 import { stopDevPlugins } from '../dev/apply';
 import { PluginsPage } from '../plugins/section';
@@ -48,14 +47,12 @@ export const yapmodGroup: SettingsGroup = {
               />
             </SettingRow>
 
-            <Show when={developerFeatures()}>
-              <Hint style={{ display: 'block', 'margin-top': '8px', 'margin-bottom': '10px' }}>
-                {devStatus().connected
-                  ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
-                  : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
-                {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
-              </Hint>
-            </Show>
+            <Hint style={{ display: 'block', 'margin-top': '8px', 'margin-bottom': '10px' }}>
+              {devStatus().connected
+                ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
+                : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
+              {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
+            </Hint>
 
             <SettingRow
               label="Show client plugins"
