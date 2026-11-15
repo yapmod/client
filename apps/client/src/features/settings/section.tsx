@@ -49,26 +49,24 @@ export const yapmodGroup: SettingsGroup = {
             </SettingRow>
 
             <Show when={developerFeatures()}>
-              <>
-                <Hint style={{ display: 'block', 'margin-top': '8px', 'margin-bottom': '10px' }}>
-                  {devStatus().connected
-                    ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
-                    : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
-                  {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
-                </Hint>
-
-                <SettingRow
-                  label="Show client plugins"
-                  hint="Reveal plugins that the application running Yapmod registers in code, instead of ones you installed. Hiding them keeps the running ones active."
-                >
-                  <Switch
-                    checked={showClientPlugins()}
-                    aria-label="Show client plugins"
-                    onChange={setShowClientPlugins}
-                  />
-                </SettingRow>
-              </>
+              <Hint style={{ display: 'block', 'margin-top': '8px', 'margin-bottom': '10px' }}>
+                {devStatus().connected
+                  ? `Connected to ${devStatus().plugin ?? 'the dev server'}.`
+                  : 'Waiting for a dev server. Open the control page it prints and click "Open Yapin".'}
+                {devStatus().error ? ` Last error: ${devStatus().error}` : ''}
+              </Hint>
             </Show>
+
+            <SettingRow
+              label="Show client plugins"
+              hint="Reveal plugins that the application running Yapmod registers in code, instead of ones you installed. Hiding them keeps the running ones active."
+            >
+              <Switch
+                checked={showClientPlugins()}
+                aria-label="Show client plugins"
+                onChange={setShowClientPlugins}
+              />
+            </SettingRow>
           </Section>
         </SettingsPage>
       ),
