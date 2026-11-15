@@ -172,3 +172,54 @@ export function getBabelPresets() {
 export function getSharedImportsPlugin() {
   return rewriteSharedImports();
 }
+
+/**
+ * Babel plugin that rewrites `yapmod.<ns>` member expressions to the
+ * `globalThis.YapmodClient` handle, so external tooling (e.g. a browser
+ * extension bundler) can produce a bundle that accesses the shared instance
+ * without leaving `yapmod` as an unresolved free variable.
+ *
+ * `ui` → `globalThis.YapmodClient.ui` (top-level)
+ * `solid` / `solidWeb` / `solidStore` → `globalThis.YapmodClient.api.<ns>`
+ */
+function rewriteYapmodGlobal(): PluginObj {
+  return {
+    name: 'yapmod:rewrite-yapmod-global',
+    visitor: {
+      MemberExpression(path) {
+        const node = path.node;
+        if (
+          t.isIdentifier(node.object) &&
+          node.object.name === 'yapmod' &&
+          t.isIdentifier(node.property)
+        ) {
+          const ns = node.property.name;
+          if (ns === 'ui') {
+            path.replaceWith(
+              t.memberExpression(
+                t.memberExpression(t.identifier('globalThis'), t.identifier('YapmodClient')),
+                t.identifier('ui'),
+              ),
+            );
+          } else {
+            const handle = t.memberExpression(
+              t.memberExpression(t.identifier('globalThis'), t.identifier('YapmodClient')),
+              t.identifier('api'),
+            );
+            path.replaceWith(t.memberExpression(handle, t.identifier(ns)));
+          }
+        }
+      },
+    },
+  };
+}
+
+/**
+ * Returns the global-rewrite Babel plugin.
+ * Exported so external tooling (e.g. tsup plugins in browser extensions) can
+ * resolve the `yapmod` free variable to `globalThis.YapmodClient` after
+ * applying the shared-imports rewrite.
+ */
+export function getYapmodGlobalPlugin() {
+  return rewriteYapmodGlobal();
+}
