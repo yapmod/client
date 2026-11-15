@@ -9,3 +9,8 @@ export { Input, type InputProps } from './components/Input';
 export { Textarea, type TextareaProps } from './components/Textarea';
 export { Switch, type SwitchProps } from './components/Switch';
 export { Select, type SelectProps, type SelectOption } from './components/Select';
+export { SettingsPage, type SettingsPageProps } from './components/SettingsPage';
+export { Section, type SectionProps, type SectionSpacing } from './components/Section';
+export { SettingRow, type SettingRowProps } from './components/SettingRow';
+export { SettingText, type SettingTextProps } from './components/SettingText';
+export { Divider } from './components/Divider';

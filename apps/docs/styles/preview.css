@@ -62,6 +62,36 @@
   box-sizing: border-box;
 }
 
+/* Isolate from the docs theme — reset inherited styles on all descendants */
+.yp-preview > * {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+/* Reset specific HTML elements that have strong browser/theme defaults */
+.yp-preview h1,
+.yp-preview h2,
+.yp-preview h3,
+.yp-preview h4,
+.yp-preview h5,
+.yp-preview h6,
+.yp-preview p,
+.yp-preview div,
+.yp-preview span {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
 /* Card */
 .yp-preview .yp-card {
   display: flex;
@@ -366,4 +396,40 @@
   height: 32px;
   padding: 0 12px;
   font-size: 14px;
+}
+
+/* Section label */
+.yp-preview .yp-section-label {
+  color: var(--yp-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 18px;
+  margin-bottom: 10px;
+}
+
+/* Toggle row (label + control pattern) */
+.yp-preview .yp-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+}
+
+.yp-preview .yp-toggle-label {
+  font-size: 15px;
+  color: var(--yp-text);
+}
+
+.yp-preview .yp-toggle-row .yp-hint {
+  margin-top: 2px;
+}
+
+/* Divider */
+.yp-preview .yp-divider {
+  border: none;
+  border-top: 1px solid var(--yp-border);
+  margin: 18px 0;
 }

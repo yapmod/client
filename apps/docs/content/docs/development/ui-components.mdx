@@ -222,13 +222,126 @@ import { Icon } from '@yapmod/ui';
 | `size`  | `number` | Width and height in pixels (default: 16)          |
 | `label` | `string` | Accessible label (without it, icon is decorative) |
 
+## Settings layout
+
+Layout components abstract away Yapin's host CSS classes and spacing conventions, making it easy to build consistent settings pages without hand-coding boilerplate. Use them together to compose a complete settings page structure.
+
+### SettingsPage
+
+Top-level wrapper for a settings page. Renders the page `<h2>` title and optional description hint.
+
+<SettingsPagePreview />
+
+```tsx
+import { SettingsPage } from '@yapmod/ui';
+
+<SettingsPage title="My Plugin" description="Configure my plugin settings">
+  {/* Sections and settings go here */}
+</SettingsPage>;
+```
+
+**Props:**
+
+| Prop          | Type          | Description                          |
+| ------------- | ------------- | ------------------------------------ |
+| `title`       | `string`      | Page title rendered as `<h2>`        |
+| `description` | `string`      | Optional description below the title |
+| `children`    | `JSX.Element` | Nested content                       |
+
+### Section
+
+Grouped block with a section heading. Renders a `.section-label` with consistent top margin.
+
+<SectionPreview />
+
+```tsx
+import { Section } from '@yapmod/ui';
+
+<Section label="Appearance">{/* Settings rows go here */}</Section>;
+```
+
+**Props:**
+
+| Prop       | Type                  | Description                                            |
+| ---------- | --------------------- | ------------------------------------------------------ |
+| `label`    | `string`              | Section heading text                                   |
+| `spacing`  | `"normal" \| "large"` | Top margin: `18px` (normal, default) or `22px` (large) |
+| `children` | `JSX.Element`         | Nested content                                         |
+
+### SettingRow
+
+A single setting row with a label, optional hint, and a control. Renders the `.toggle-row` pattern: label and hint on the left, control on the right.
+
+<SettingRowPreview />
+
+```tsx
+import { SettingRow } from '@yapmod/ui';
+
+<SettingRow label="Dark mode" hint="Use dark theme">
+  <Switch checked={dark()} onChange={setDark} />
+</SettingRow>;
+```
+
+**Props:**
+
+| Prop       | Type                    | Description                                      |
+| ---------- | ----------------------- | ------------------------------------------------ |
+| `label`    | `string`                | Setting label                                    |
+| `hint`     | `string \| JSX.Element` | Optional description below the label             |
+| `children` | `JSX.Element`           | Control component (Switch, Button, Select, etc.) |
+
+### SettingText
+
+A read-only setting row that displays a text value. Useful for displaying information like version numbers or paths.
+
+<SettingTextPreview />
+
+```tsx
+import { SettingText } from '@yapmod/ui';
+
+<SettingText label="Version" hint="Current version" value="v1.0.0" />;
+```
+
+**Props:**
+
+| Prop    | Type                    | Description                            |
+| ------- | ----------------------- | -------------------------------------- |
+| `label` | `string`                | Setting label                          |
+| `hint`  | `string`                | Optional description below the label   |
+| `value` | `string \| JSX.Element` | Read-only value displayed on the right |
+
+### Divider
+
+A horizontal separator between sections. Renders a styled `<hr>` using CSS variables for the border color.
+
+<DividerPreview />
+
+```tsx
+import { Divider } from '@yapmod/ui';
+
+<Divider />;
+```
+
 ## Example: a settings panel
 
 Here's how it all looks together in a plugin that uses the builder:
 
+<SettingsExamplePreview />
+
 ```tsx
 import { createSignal } from 'solid-js';
-import { Switch, Input, Button, Panel, Hint } from '@yapmod/ui';
+import {
+  SettingsPage,
+  Section,
+  SettingRow,
+  SettingText,
+  Divider,
+  Switch,
+  Input,
+  Select,
+  Button,
+  Hint,
+} from '@yapmod/ui';
 
 export default function (yapmod) {
   return {
@@ -246,21 +359,43 @@ export default function (yapmod) {
         render: () => {
           const [enabled, setEnabled] = createSignal(true);
           const [name, setName] = createSignal('');
+          const [theme, setTheme] = createSignal('default');
 
           return (
-            <Panel>
-              <div class="toggle-row">
-                <span>Enabled</span>
-                <Switch checked={enabled()} onChange={setEnabled} />
-              </div>
+            <SettingsPage title="My Plugin" description="Configure my plugin settings">
+              <Section label="General">
+                <SettingRow label="Enabled" hint="Toggle the plugin on or off">
+                  <Switch checked={enabled()} onChange={setEnabled} />
+                </SettingRow>
 
-              <Input value={name()} onChange={setName} placeholder="Your name" />
-              <Hint>Enter your display name</Hint>
+                <SettingRow label="Display name">
+                  <Input value={name()} onChange={setName} placeholder="Your name" />
+                </SettingRow>
+                <Hint>Enter your display name</Hint>
+
+                <SettingRow label="Theme" hint="Choose a color theme">
+                  <Select
+                    value={theme()}
+                    onChange={setTheme}
+                    options={[
+                      { value: 'default', label: 'Default' },
+                      { value: 'nord', label: 'Nord' },
+                      { value: 'gruvbox', label: 'Gruvbox' },
+                    ]}
+                  />
+                </SettingRow>
+              </Section>
+
+              <Divider />
+
+              <Section label="Info">
+                <SettingText label="Version" hint="Current version" value="v1.0.0" />
+              </Section>
 
               <div style={{ marginTop: '1rem' }}>
                 <Button variant="primary">Save</Button>
               </div>
-            </Panel>
+            </SettingsPage>
           );
         },
       });

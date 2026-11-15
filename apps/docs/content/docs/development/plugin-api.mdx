@@ -183,7 +183,7 @@ const dispose = api.ui.injectCss(`
 
 ### SolidJS Components
 
-The `api.ui` object provides SolidJS components styled to match Yapin's interface — Button, Switch, Input, Textarea, Select, Panel, Hint, and Icon.
+The `api.ui` object provides SolidJS components styled to match Yapin's interface — Button, Switch, Input, Textarea, Select, Panel, Hint, Icon, and settings layout components (SettingsPage, Section, SettingRow, SettingText, Divider).
 
 See the [UI Components](/docs/development/ui-components) guide for the full reference, including how to access them via the builder (recommended) or manually through `yapmod.ui`.
 
@@ -197,24 +197,40 @@ The `api.settings` object lets you register settings sections in the Yapmod sett
 
 Adds a section to the Yapmod settings group. The section unregisters automatically when the plugin stops.
 
-```typescript
-import { createSignal } from 'solid-js'
+```tsx
+import { createSignal } from 'solid-js';
+import { SettingsPage, Section, SettingRow, Switch, Input } from '@yapmod/ui';
 
 const dispose = api.settings.registerSection({
   id: 'my-section',
   label: 'My Plugin Settings',
   icon: 'settings',
   render: () => {
-    const [count, setCount] = createSignal(0)
+    const [enabled, setEnabled] = createSignal(true);
+    const [name, setName] = createSignal('');
+
     return (
-      <div>
-        <p>Count: {count()}</p>
-        <button onClick={() => setCount((c) => c + 1)}>Increment</button>
-      </div>
-    )
+      <SettingsPage title="My Plugin" description="Configure my plugin settings">
+        <Section label="General">
+          <SettingRow label="Enabled" hint="Toggle the plugin on or off">
+            <Switch checked={enabled()} onChange={setEnabled} />
+          </SettingRow>
+
+          <SettingRow label="Display name">
+            <Input value={name()} onChange={setName} placeholder="Your name" />
+          </SettingRow>
+        </Section>
+      </SettingsPage>
+    );
   },
-})
+});
 ```
+
+<Callout type="info">
+  Use the settings layout components (SettingsPage, Section, SettingRow, etc.) from `@yapmod/ui` to
+  build settings pages that match Yapin's native look. See the [UI
+  Components](/docs/development/ui-components) guide for the full reference.
+</Callout>
 
 ## Next steps
 

@@ -57,7 +57,7 @@ const paths = {
     },
   ],
   /** Add a new item. */
-  plus: [{ d: 'M15 10H10V15H8V10H3V8H8V3H10V8H15V8Z' }],
+  plus: [{ d: 'M20 14H14V20H10V14H4V10H10V4H14V10H20V14Z' }],
   /** Edit existing content. */
   pencil: [
     {

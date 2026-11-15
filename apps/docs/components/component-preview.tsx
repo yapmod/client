@@ -4,11 +4,17 @@
 
 export {
   ButtonPreview,
+  DividerPreview,
   HintPreview,
   IconPreview,
   InputPreview,
   PanelPreview,
   SelectPreview,
+  SectionPreview,
+  SettingsExamplePreview,
+  SettingRowPreview,
+  SettingTextPreview,
+  SettingsPagePreview,
   SwitchPreview,
   TextareaPreview,
 } from './solid-previews';
