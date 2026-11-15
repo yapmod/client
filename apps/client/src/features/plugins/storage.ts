@@ -63,10 +63,11 @@ export interface ReactivePluginStorage {
 /**
  * Loads one plugin's persisted data as a signal-backed store.
  *
- * Every read goes through the signal, so anything rendered from
- * `yapmod.storage` re-renders when a top-level value it read changes. A
- * top-level write copies the state, swaps the signal and persists
- * immediately — the common case of `storage.count = n` needs no flush.
+ * Each storage property gets its own Solid signal so that reading
+ * `yapmod.storage.channel` inside a component render is tracked
+ * reactively — plugin authors no longer need to wrap the read in
+ * `createMemo()`.  A top-level write updates both the internal state
+ * and the per-property signal, then persists immediately.
  *
  * Deeper writes (`storage.nested.x = 1`) reach the plain object the state
  * holds: they are not observed and not auto-persisted, exactly like before
@@ -80,16 +81,25 @@ export interface ReactivePluginStorage {
 export function createPluginStorage(id: string): ReactivePluginStorage {
   const [state, setState] = createSignal<StorageState>(loadPluginStorage(id) as StorageState);
 
+  // Per-property signals so that each property read is tracked by Solid's
+  // reactivity system even when accessed through a Proxy.
+  const memos = new Map<PropertyKey, ReturnType<typeof createSignal<unknown>>>();
+
   const persist = (): void => {
     savePluginStorage(id, state());
   };
 
   const storage = new Proxy({} as Record<string, unknown>, {
     get(_target, property) {
-      return state()[property];
+      if (!memos.has(property)) {
+        memos.set(property, createSignal(state()[property]));
+      }
+      return (memos.get(property) as ReturnType<typeof createSignal<unknown>>)[0]();
     },
     set(_target, property, value) {
       setState((prev) => ({ ...prev, [property]: value }));
+      const memo = memos.get(property);
+      if (memo) memo[1](value);
       persist();
       return true;
     },
@@ -99,6 +109,7 @@ export function createPluginStorage(id: string): ReactivePluginStorage {
         Reflect.deleteProperty(next, property);
         return next;
       });
+      memos.delete(property);
       persist();
       return true;
     },
