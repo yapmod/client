@@ -1,9 +1,27 @@
 ---
 title: Type Safety
-description: Full TypeScript type safety for Yapmod plugins — 27 exportable types, import rewriting, and typed storage patterns.
+description: Full TypeScript type safety for Yapmod plugins — single source of truth, isolated ambient declarations, and automated type contract tests.
 ---
 
 When writing plugins in TypeScript, `@yapmod/types` gives you full type safety for the entire plugin API — autocompletion, compile-time error checking, and precise types for every property, method, and UI component prop.
+
+## Type safety architecture
+
+`@yapmod/types` provides three entry points, each serving a different purpose:
+
+| Entry point                | Purpose                                                   | How to use                                                                    |
+| -------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `@yapmod/types`            | Main types: plugin API, client runtime, and UI prop types | Import types directly: `import type { YapmodPluginApi } from '@yapmod/types'` |
+| `@yapmod/types/plugin-env` | Ambient `yapmod` global declaration                       | Add to `tsconfig.json` `types` array (see below)                              |
+| `@yapmod/types/client-env` | Ambient `globalThis.YapmodClient` declaration             | Add to `tsconfig.json` `types` array for browser extensions                   |
+
+### UI prop types: single source of truth
+
+UI component prop types (ButtonProps, SwitchProps, etc.) are defined in `@yapmod/ui` components and re-exported from `@yapmod/types`. This means the types can never drift from the actual component signatures — they are derived from the components themselves.
+
+### Isolated ambient declarations
+
+The `yapmod` global declaration is no longer auto-picked up when you install `@yapmod/types`. Instead, it lives in a separate entry point (`@yapmod/types/plugin-env`) that you explicitly opt into. This prevents the declaration from leaking into contexts where `yapmod` doesn't exist at runtime.
 
 ## Install the types
 
@@ -15,14 +33,36 @@ npm install -D @yapmod/types
 
 ## Configure TypeScript
 
-Add `@yapmod/types` to your `tsconfig.json` `types` array so the `yapmod` global declaration is loaded automatically:
+### For plugin development (recommended)
+
+Add `@yapmod/types/plugin-env` to your `tsconfig.json` `types` array so the `yapmod` global declaration is loaded:
 
 ```json
 {
   "compilerOptions": {
-    "types": ["@yapmod/types"]
+    "types": ["@yapmod/types/plugin-env"]
   }
 }
+```
+
+### For browser extensions or embedders
+
+Add `@yapmod/types/client-env` to get the `globalThis.YapmodClient` type:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@yapmod/types/client-env"]
+  }
+}
+```
+
+### For type-only imports
+
+You can also import types directly without any `types` configuration:
+
+```typescript
+import type { YapmodPluginApi, PluginManifest } from '@yapmod/types';
 ```
 
 ## What you get
@@ -168,9 +208,9 @@ These types are used by the Yapmod client runtime and embedders, not typically b
 
 There are two ways to access the plugin API, both fully typed:
 
-### Global `yapmod` (default)
+### Global `yapmod` (with plugin-env)
 
-When `@yapmod/types` is in your `tsconfig.json` types array, the `yapmod` free variable is automatically typed as `YapmodPluginApi` everywhere:
+When `@yapmod/types/plugin-env` is in your `tsconfig.json` types array, the `yapmod` free variable is automatically typed as `YapmodPluginApi` everywhere:
 
 ```typescript
 // No import needed — yapmod is a typed global
@@ -283,6 +323,16 @@ function getStorage<T>(api: YapmodPluginApi, key: string, fallback: T): T {
 // Usage
 const theme = getStorage(api, 'theme', 'default');
 const counters = getStorage(api, 'counters', { clicks: 0, views: 0 });
+```
+
+## Automated type contract tests
+
+The `@yapmod/types` package includes automated type contract tests that verify type consistency across packages. These tests use TypeScript's type system to assert that UI prop types from `@yapmod/types` match those from `@yapmod/ui` exactly, and that core interfaces like `PluginUi`, `YapmodPluginApi`, and `ClientHandle` maintain their expected structure.
+
+Run the contract tests with:
+
+```bash
+pnpm --filter @yapmod/types test:contracts
 ```
 
 ## Next steps

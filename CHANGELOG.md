@@ -15,11 +15,16 @@
 ### Added
 
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
+- **types:** add plugin-env entry point for isolated yapmod ambient declaration (#47)
+- **types:** add client-env entry point for consumable YapmodClient global declaration (#47)
+- **types:** add automated type contract tests to verify type consistency across packages (#47)
 - **docs:** expand type safety documentation with all 27 exportable types from @yapmod/types, including usage examples, builder import rewriting explanation, and typed storage patterns (#45)
 - **docs:** add type safety callouts to fundamentals, how-plugins-work, plugin-api, ui-components, starter-repo, and building documentation pages (#45)
 
 ### Changed
 
+- **types:** derive UI prop types from @yapmod/ui components instead of hand-written mirrors (#47)
+- **client:** use satisfies operator for runtime ui object construction (#47)
 - **ci:** use npm Trusted Publisher (OIDC) instead of NPM_TOKEN for all npm publish workflows
 
 ### Fixed
