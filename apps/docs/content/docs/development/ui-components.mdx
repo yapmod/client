@@ -3,7 +3,7 @@ title: UI Components
 description: Use Yapmod's built-in SolidJS components to build plugin UI that matches Yapin's look.
 ---
 
-Yapmod provides a set of SolidJS components (`@yapmod/ui`) that reproduce Yapin's native look — buttons, switches, inputs, dropdowns, and more. Use them inside your plugin to build interfaces that feel at home on the page.
+Yapmod provides a set of SolidJS components through `@yapmod/ui` that reproduce Yapin's native look and feel. You get buttons, switches, inputs, dropdowns, layout components, and more. Use them inside your plugin to build interfaces that look like they belong on the page.
 
 ## Accessing components
 
@@ -11,19 +11,19 @@ There are two ways to access UI components, depending on how you build your plug
 
 ### With the builder (recommended)
 
-When you use `@yapmod/builder` (the `yapmod build` / `yapmod dev` CLI), you can import components using natural ES module syntax:
+When you use `@yapmod/builder` (the `yapmod build` and `yapmod dev` commands), you can import components using normal ES module syntax:
 
 ```tsx
 import { Switch, Input, Select } from '@yapmod/ui';
 
 export default function (yapmod) {
-  // Components work normally — the builder rewrites the imports at build time.
+  // Components work normally. The builder rewrites the imports at build time.
 }
 ```
 
-The builder automatically rewrites `import ... from '@yapmod/ui'` to reference the shared `yapmod.ui` object at runtime. This means you get clean import syntax in your source code, but the final bundle uses the host's shared components — no duplicate SolidJS, no extra CSS.
+Here is what happens behind the scenes: the builder automatically rewrites `import ... from '@yapmod/ui'` to reference the shared `yapmod.ui` object at runtime. This means you write clean import syntax in your source code, but the final bundle uses the host's shared components. You get no duplicate SolidJS bundles and no extra CSS.
 
-The same applies to `solid-js`, `solid-js/web`, and `solid-js/store`:
+The same rewriting applies to `solid-js`, `solid-js/web`, and `solid-js/store`:
 
 ```tsx
 import { createSignal } from 'solid-js';
@@ -31,41 +31,39 @@ import { render } from 'solid-js/web';
 import { Button, Input } from '@yapmod/ui';
 ```
 
-All of these imports are rewritten by the builder to use the shared instances (`yapmod.solid`, `yapmod.solidWeb`, `yapmod.ui`) instead of bundling their own copies.
+All of these imports are rewritten by the builder to use the shared instances (`yapmod.solid`, `yapmod.solidWeb`, `yapmod.ui`) instead of bundling separate copies.
 
 ### Without the builder (manual)
 
-If you write your plugin as a raw JavaScript file without the builder, access components through the `yapmod.ui` object:
+If you write your plugin as a raw JavaScript file without using the builder, you access components directly through the `yapmod.ui` object:
 
 ```js
 export default function (yapmod) {
   const { Switch, Input, Select } = yapmod.ui;
 
-  // Use them in JSX via yapmod.solid
+  // Use SolidJS through yapmod.solid
   const { createSignal } = yapmod.solid;
 }
 ```
 
 <Callout type="info">
   The builder approach is strongly recommended. It gives you TypeScript support, JSX compilation,
-  and clean import syntax — all handled automatically.
+  and clean import syntax, all handled automatically without any extra configuration.
 </Callout>
 
-All component prop types (`ButtonProps`, `SwitchProps`, `InputProps`, `SelectProps`, etc.) are
-importable from `@yapmod/types` for typed component usage. See the
-[Type Safety](/docs/development/type-safety) page for the complete list of prop types.
+All component prop types (`ButtonProps`, `SwitchProps`, `InputProps`, `SelectProps`, and so on) are importable from `@yapmod/types` if you want typed component usage. See the [Type Safety](/docs/development/type-safety) page for the complete list of available prop types.
 
 ## Form controls
 
-Form controls follow a consistent **controlled / uncontrolled** pattern:
+All form controls follow a consistent **controlled and uncontrolled** pattern:
 
-- Pass `value` (or `checked` for Switch) to make the component **controlled** — its state is driven entirely by the prop.
+- Pass `value` (or `checked` for Switch) to make the component **controlled**. Its state is driven entirely by the prop you pass.
 - Pass `defaultValue` (or `defaultChecked`) for an **uncontrolled** component that manages its own internal state.
-- `onChange` always receives the new value directly, not a DOM event.
+- `onChange` always receives the new value directly, not a DOM event object.
 
 ### Switch
 
-A toggle switch matching Yapin's `.switch` style.
+A toggle switch that matches Yapin's `.switch` style.
 
 <SwitchPreview />
 
@@ -90,7 +88,7 @@ import { Switch } from '@yapmod/ui';
 
 ### Input
 
-A single-line text field matching Yapin's `.input` style.
+A single line text field that matches Yapin's `.input` style.
 
 <InputPreview />
 
@@ -110,11 +108,11 @@ import { Input } from '@yapmod/ui';
 | `type`         | `string`                  | Input type (`text`, `search`, `url`, etc.) |
 | `placeholder`  | `string`                  | Placeholder text                           |
 
-All standard `<input>` attributes (disabled, maxlength, inputmode, etc.) are passed through.
+All standard `<input>` attributes like `disabled`, `maxlength`, and `inputmode` are passed through to the underlying element.
 
 ### Textarea
 
-A multi-line text field matching Yapin's `textarea.input` style.
+A multi line text field that matches Yapin's `textarea.input` style.
 
 <TextareaPreview />
 
@@ -135,7 +133,7 @@ import { Textarea } from '@yapmod/ui';
 
 ### Select
 
-A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style.
+A dropdown that matches Yapin's `.dd-trigger` and `.dd-menu` style.
 
 <SelectPreview />
 
@@ -164,7 +162,7 @@ const options = [
 
 ### Button
 
-A button matching Yapin's `.btn` style.
+A button that matches Yapin's `.btn` style.
 
 <ButtonPreview />
 
@@ -184,7 +182,7 @@ import { Button } from '@yapmod/ui';
 
 ### Panel
 
-A card surface matching Yapin's `.ss2-card`.
+A card surface that matches Yapin's `.ss2-card` style.
 
 <PanelPreview />
 
@@ -196,7 +194,7 @@ import { Panel } from '@yapmod/ui';
 
 ### Hint
 
-Secondary helper text matching Yapin's `.hint`.
+Secondary helper text that matches Yapin's `.hint` style.
 
 <HintPreview />
 
@@ -208,7 +206,7 @@ import { Hint } from '@yapmod/ui';
 
 ### Icon
 
-Renders an SVG icon from the bundled icon set. Available icons: `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil`, `close`.
+Renders an SVG icon from the bundled icon set. The available icons are: `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil`, and `close`.
 
 <IconPreview />
 
@@ -228,11 +226,11 @@ import { Icon } from '@yapmod/ui';
 
 ## Settings layout
 
-Layout components abstract away Yapin's host CSS classes and spacing conventions, making it easy to build consistent settings pages without hand-coding boilerplate. Use them together to compose a complete settings page structure.
+The settings layout components handle Yapin's CSS classes and spacing conventions for you, so you can build consistent settings pages without writing boilerplate. Use them together to compose a complete settings page.
 
 ### SettingsPage
 
-Top-level wrapper for a settings page. Renders the page `<h2>` title and optional description hint.
+The top level wrapper for a settings page. It renders the page title as an `<h2>` element and an optional description below it.
 
 <SettingsPagePreview />
 
@@ -254,7 +252,7 @@ import { SettingsPage } from '@yapmod/ui';
 
 ### Section
 
-Grouped block with a section heading. Renders a `.section-label` with consistent top margin.
+A grouped block with a section heading. It renders a `.section-label` with consistent top margin spacing.
 
 <SectionPreview />
 
@@ -274,7 +272,7 @@ import { Section } from '@yapmod/ui';
 
 ### SettingRow
 
-A single setting row with a label, optional hint, and a control. Renders the `.toggle-row` pattern: label and hint on the left, control on the right.
+A single setting row with a label, optional hint text, and a control element. It renders the `.toggle-row` pattern with the label and hint on the left and the control on the right.
 
 <SettingRowPreview />
 
@@ -296,7 +294,7 @@ import { SettingRow } from '@yapmod/ui';
 
 ### SettingText
 
-A read-only setting row that displays a text value. Useful for displaying information like version numbers or paths.
+A read only setting row that displays a text value. This is useful for showing information like version numbers or file paths.
 
 <SettingTextPreview />
 
@@ -316,7 +314,7 @@ import { SettingText } from '@yapmod/ui';
 
 ### Divider
 
-A horizontal separator between sections. Renders a styled `<hr>` using CSS variables for the border color.
+A horizontal separator line between sections. It renders a styled `<hr>` element that uses CSS variables for the border color.
 
 <DividerPreview />
 
@@ -326,9 +324,9 @@ import { Divider } from '@yapmod/ui';
 <Divider />;
 ```
 
-## Example: a settings panel
+## Example: a complete settings panel
 
-Here's how it all looks together in a plugin that uses the builder:
+Here is how all these components look together in a real plugin that uses the builder:
 
 <SettingsExamplePreview />
 
@@ -408,4 +406,4 @@ export default function (yapmod) {
 }
 ```
 
-The builder compiles this into a single `.js` file where all the `import` statements are rewritten to use the shared `yapmod` API — no bundling SolidJS or `@yapmod/ui` yourself.
+The builder compiles all of this into a single `.js` file where every `import` statement is rewritten to use the shared `yapmod` API. You do not need to bundle SolidJS or `@yapmod/ui` yourself.

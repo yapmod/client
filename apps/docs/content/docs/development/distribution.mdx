@@ -6,61 +6,62 @@ description: How plugins are shared and installed, and what Yapmod does not prov
 This page explains how Yapmod plugins are distributed and what the project does not provide in terms of plugin infrastructure.
 
 <Callout type="warn">
-  **No plugin submission system** — Yapmod does not provide a way to submit, publish, or discover
-  plugins through the application. This section is not planned for future implementation.
+  Yapmod does not provide a way to submit, publish, or discover plugins through the application.
+  This is not planned for future implementation either. Plugin distribution is entirely up to the
+  community.
 </Callout>
 
 ## How plugins are distributed
 
-All Yapmod plugins are distributed manually. If you want to use a plugin:
+Every Yapmod plugin is distributed manually. If you want to use a plugin created by someone else, here is the process:
 
-1. Find the plugin source (e.g., on GitHub, a forum, or shared directly by someone).
-2. Build or download the plugin file (a `.js` file).
-3. Upload it to your Yapmod instance through the settings panel.
+1. Find the plugin source. This might be on GitHub, a forum, a personal website, or shared directly by someone
+2. Build or download the plugin file. This is a `.js` file containing the compiled plugin code
+3. Upload it to your Yapmod instance through the settings panel
 
-There is no central repository, no plugin marketplace, and no automatic installation. Every plugin you use is one you chose to install yourself.
+There is no central repository, no plugin marketplace, and no automatic installation. Every plugin you use is one you deliberately chose to install yourself.
 
 ## No official community plugins
 
-Yapmod does not maintain a list of official or recommended community plugins. The project team does not curate, review, or endorse any plugins.
+Yapmod does not maintain a list of official or recommended community plugins. The project team does not curate, review, or endorse any plugins created by the community.
 
-This is intentional. The philosophy behind Yapmod is that the community should decide what plugins are valuable, not the project maintainers. The team focuses on providing a stable plugin API and runtime, not on being better at building plugins than the community.
+This is a deliberate choice. The philosophy behind Yapmod is that the community should decide what plugins are valuable, not the project maintainers. The team focuses on providing a stable plugin API and a reliable runtime. Everything else is up to you.
 
 <Callout type="idea">
-  **The community drives plugins** — if you build a useful plugin, share it however you want:
-  GitHub, personal website, social media, forums. There is no official channel, but there is no
-  restriction either.
+  The community drives plugins. If you build something useful, share it however you want: GitHub,
+  your personal website, social media, forums. There is no official channel, but there are no
+  restrictions either.
 </Callout>
 
 ## No plugin marketplace
 
-Yapmod will not implement a plugin marketplace, gallery, or discovery system. Plugins are not something the project manages or distributes.
+Yapmod will not implement a plugin marketplace, gallery, or discovery system. Managing and distributing plugins is not something the project will do.
 
-If you want to create a community plugin gallery or directory, you are welcome to do so independently. The project will not provide infrastructure for it, but we won't stand in your way.
+If you want to create a community plugin gallery or directory yourself, you are welcome to do so. The project will not provide infrastructure for it, but we will not stand in your way either.
 
-## Sharing your plugin
+## Ways to share your plugin
 
-Since there is no built-in distribution system, here are some ways you can share your plugin with others:
+Since there is no built in distribution system, here are some practical ways you can share your plugin with others:
 
-- **GitHub repository** — host your plugin source code on GitHub so others can clone, build, and use it.
-- **Direct file sharing** — share the built `.js` file directly with others.
-- **Blog post or tutorial** — write about your plugin and link to the source or built file.
-- **Community forums** — share your plugin on Yapin's Discord or other community spaces.
+- **GitHub repository**. Host your plugin source code on GitHub so others can clone, build, and use it
+- **Direct file sharing**. Share the built `.js` file directly with friends or in community channels
+- **Blog post or tutorial**. Write about what your plugin does and link to the source or built file
+- **Community forums**. Share your plugin on Yapin's Discord server or other community spaces
 
-## Security consideration
+## Security considerations
 
 <Callout type="error">
-  **Only install plugins you trust** — since there is no review process, any plugin can do anything
-  that browser JavaScript can do. Read the source code before installing a plugin from an unknown
+  Only install plugins you trust. Since there is no review process, any plugin can do anything that
+  browser JavaScript can do. Always read the source code before installing a plugin from an unknown
   source.
 </Callout>
 
-Because plugins run in the context of the Yapin page, they have access to the DOM, localStorage, and any data visible on the page. Always verify the plugin's source before installing it.
+Plugins run in the same context as the Yapin page. This means they have access to the DOM, localStorage, and any data visible on the page. A malicious plugin could read your messages, modify the interface in harmful ways, or exfiltrate data. Always verify the plugin's source code before installing it.
 
 ## Summary
 
-- Yapmod does not provide plugin submission, publication, or discovery.
-- There are no official community plugins or curated lists.
-- All plugins are installed manually by the user.
-- The community is free to share and distribute plugins however they choose.
-- The project team focuses on the plugin API and runtime, not on plugin curation.
+- Yapmod does not provide plugin submission, publication, or discovery
+- There are no official community plugins or curated lists
+- All plugins are installed manually by the user
+- The community is free to share and distribute plugins however they choose
+- The project team focuses on the plugin API and runtime, not on plugin curation

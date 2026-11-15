@@ -3,51 +3,58 @@ title: Hot Reloading
 description: See your plugin changes in real time without rebuilding or re-uploading.
 ---
 
-Hot reloading lets you see your plugin changes in Yapin instantly — just save your file and the
-update appears.
+Hot reloading is the best way to develop Yapmod plugins. Instead of building, uploading, and refreshing every time you make a change, you simply save your file and see the update appear in Yapin instantly.
 
-## Quick start
+## Getting started
 
-1. Enable the **Enable hot reload** toggle in the Yapmod Settings page on Yapin.
-2. Run the dev server from your plugin project:
+Setting up hot reloading takes just a few steps:
+
+1. Open Yapin with Yapmod installed and go to the Yapmod Settings page. Find and enable the **Enable hot reload** toggle.
+2. In your plugin project, start the dev server:
 
    ```bash
    yapmod dev --entry src/index.ts
    ```
 
-3. Open the control page it prints (`http://127.0.0.1:5173`), then click **Open Yapin** to connect.
-4. Keep the control page tab open. Every save is rebuilt and pushed into Yapin automatically.
+3. The dev server will print a control page URL, usually `http://127.0.0.1:5173`. Open that URL in your browser, then click the **Open Yapin** button to connect.
+4. Keep that control page tab open while you work. Every time you save a file, the builder recompiles your plugin and pushes the update into Yapin automatically.
 
-### Options
+That is all there is to it. You are now in hot reload mode.
+
+### Available options
+
+Here are the flags you can use with the dev command:
 
 | Flag       | Description                          |
 | ---------- | ------------------------------------ |
-| `--entry`  | Plugin entry file (required)         |
+| `--entry`  | Your plugin entry file (required)    |
 | `--port`   | Dev server port (default: 5173)      |
 | `--host`   | Dev server host (default: 127.0.0.1) |
 | `--minify` | Minify the bundle                    |
 
-## How it works
+The `--entry` flag is required and tells the dev server where your plugin starts. The other flags are optional and useful if you need to change the default port or host.
 
-The builder watches your source files and rebuilds on every save. The control page opens Yapin and
-pushes each new build into it via `window.postMessage` — the only channel that survives Yapin's
-Content-Security-Policy. Yapmod evaluates the new code and restarts the plugin in place, keeping
-its storage intact.
+## How hot reloading works
 
-A broken save never disrupts the running plugin: the new code is evaluated **before** the old one
-is stopped, so a syntax error leaves the working version running.
+Understanding how this works helps you use it more effectively. Here is what happens behind the scenes:
+
+The builder watches all your source files for changes. When you save a file, it immediately rebuilds your plugin. The control page then pushes the new build into Yapin using `window.postMessage`. This is the only communication channel that works within Yapin's Content Security Policy restrictions.
+
+Once Yapmod receives the new code, it evaluates it and restarts your plugin in place. Your plugin's storage is preserved, so any data you had saved remains intact.
+
+One important detail: if you make a mistake and save broken code, your running plugin is not affected. The new code is evaluated before the old one is stopped, so a syntax error simply leaves your working version running. You can fix the error and save again without any disruption.
 
 <Callout type="info">
-  A dev plugin appears with a `dev:` id prefix and a **Dev** badge. Deleting it removes the
-  installed code but keeps its per-plugin storage.
+  Plugins running in dev mode appear with a `dev:` prefix in their ID and show a **Dev** badge. If
+  you delete a dev plugin, the installed code is removed but your per plugin storage is kept.
 </Callout>
 
-## Workflow
+## Your new development workflow
 
-Your development loop becomes:
+With hot reloading set up, your development loop is simple:
 
-1. Edit your plugin code.
-2. Save the file.
-3. See the changes appear in Yapin.
+1. Edit your plugin code in your editor
+2. Save the file
+3. Watch the changes appear in Yapin
 
-No manual rebuild, no re-upload, no page refresh.
+No manual rebuild, no reupload, no page refresh. Just edit, save, and see the result.

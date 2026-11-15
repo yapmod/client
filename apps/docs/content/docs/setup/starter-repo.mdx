@@ -8,53 +8,53 @@ description: Clone the pre-configured starter repo to begin building your plugin
   Check back once the repo is available.
 </Callout>
 
-## What is the starter repo
+## What the starter repo gives you
 
-The starter repository is a pre-configured project that gives you everything you need to build a Yapmod plugin. It includes:
+The starter repository is a project that comes pre configured with everything you need to build a Yapmod plugin. Instead of setting up build tools, configuring TypeScript, and wiring up SolidJS from scratch, you get all of that ready to go. Here is what is included:
 
-- The **Yapmod CLI** (`@yapmod/builder`) that bundles your code into the correct format.
-- A basic project structure with TypeScript and SolidJS support out of the box.
-- `@yapmod/types` configured in `tsconfig.json` for full API autocompletion.
-- Build scripts configured for pnpm.
-- Example plugin code to help you get started.
+- The **Yapmod CLI** (`@yapmod/builder`) that bundles your code into the exact format Yapmod expects
+- A clean project structure with TypeScript and SolidJS support from the start
+- `@yapmod/types` already configured in `tsconfig.json`, so you get full autocompletion for the entire plugin API
+- Build scripts set up for pnpm so you can compile with a single command
+- Example plugin code that shows you the basic structure
 
-The starter repo includes `@yapmod/types` configuration out of the box, so you get TypeScript
-autocompletion for the entire plugin API immediately. See the
-[Type Safety](/docs/development/type-safety) page for details on all available types.
+Since `@yapmod/types` is configured from the beginning, your editor will suggest every property, method, and UI component prop as you type. If you want to understand all the available types in detail, check out the [Type Safety](/docs/development/type-safety) page.
 
-## Why use it instead of starting from scratch
+## Why not start from scratch?
 
-Building a Yapmod plugin requires bundling your code into a specific format that the Yapmod runtime can load. The starter repo handles all of this configuration for you, so you can focus on writing your plugin logic instead of wrestling with build tools.
+You could technically create a project from scratch and configure everything yourself. But building a Yapmod plugin requires bundling your code into a very specific format that the Yapmod runtime can load. Getting that right means configuring bundlers, setting up TypeScript compilation, handling JSX transforms, and making sure the output is valid.
 
-With the starter repo, you can:
+The starter repo handles all of that for you. With it, you can:
 
-- Write **TypeScript** and have it compiled automatically.
-- Use **JSX syntax** and **SolidJS components** in a natural way.
-- Run a single CLI command to produce a ready-to-upload plugin file.
+- Write **TypeScript** without worrying about compilation
+- Use **JSX syntax** and **SolidJS components** naturally
+- Produce a ready to upload plugin file with a single command
 
 ## How to set it up
 
-Once the starter repo is available, you will clone it and install dependencies:
+Once the starter repo is available, setting it up is straightforward:
 
 ```bash
 # Clone the starter repository
 git clone https://github.com/yapmod/plugin-starter.git my-plugin
 cd my-plugin
 
-# Install dependencies
+# Install all dependencies
 pnpm install
 ```
 
-## After cloning
+That is it. Your project is ready.
 
-After cloning and installing dependencies, you can:
+## What to do after cloning
 
-1. Modify the plugin source code in the `src` directory.
-2. Run `yapmod build --entry src/index.ts --outfile dist/plugin.js` to compile your plugin.
-3. Upload the built file to Yapmod.
+Once your project is set up, here is your workflow:
 
-For development with hot reload, run `yapmod dev --entry src/index.ts` instead.
+1. Open the `src` directory and start modifying the example plugin code
+2. Run `yapmod build --entry src/index.ts --outfile dist/plugin.js` to compile your plugin into a file Yapmod can load
+3. Upload the built file from the `dist` folder to Yapmod through the settings panel
 
-## Next steps
+If you want to develop with hot reload so your changes appear instantly, run `yapmod dev --entry src/index.ts` instead of the build command. We will cover hot reloading in more detail on the next page.
 
-Learn how to [build your plugin](/docs/setup/building) and produce the final plugin file.
+## What comes next
+
+Now that you understand the starter repo, let us look at how to [build your plugin](/docs/setup/building) and produce the final file you will upload to Yapmod.

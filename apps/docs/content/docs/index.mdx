@@ -3,30 +3,30 @@ title: Introduction
 description: Learn how to build Yapmod plugins for the Yapin chat app.
 ---
 
-If you're here, it probably means you want to learn how to create Yapmod plugins. You've come to the right place.
+Welcome. If you are here, you probably want to learn how to create plugins for Yapmod, and you have come to the right place.
 
-This documentation is focused on **plugin development** for Yapmod. If you're looking for information on how to install or use Yapmod itself, head over to the [landing page](/) which covers features, installation, and getting started as a user.
+This documentation is all about **building plugins** for Yapmod. If you are looking for information on how to install or use Yapmod as a user, head over to the [landing page](/) instead. That side of things covers features, installation, and getting started.
 
-## What you'll learn
+## What you will learn
 
-This documentation is designed as a **guide** to help you go from zero to your first working plugin. It covers:
+Think of this documentation as a step by step guide that takes you from knowing nothing about Yapmod plugins to having your first one running. Here is what we will cover together:
 
-- **How to build a plugin** — the structure, the plugin object, and what each property does.
-- **API reference** — the tools and methods available to your plugin at runtime.
-- **How Yapmod works** — how Yapmod injects itself into the Yapin interface, how it customizes the DOM, and how the plugin runtime operates behind the scenes.
-- **External plugins** — how to distribute and load plugins from external sources.
-- **Reverse engineering Yapin** — how to inspect the Yapin website, find the right hooks and DOM nodes, and understand the patterns you'll work with.
+- **How to build a plugin** and what a plugin looks like. You will learn about the plugin object, its structure, and what each property does.
+- **The full API reference** so you know every tool and method available to your plugin while it runs.
+- **How Yapmod works under the hood**. You will see how Yapmod injects itself into the Yapin interface, customizes the DOM, and manages the plugin runtime behind the scenes.
+- **How to share your plugin** with others, since Yapmod does not have a built in marketplace.
+- **How to reverse engineer Yapin** so you can inspect the website, find the right DOM elements and hooks, and understand the patterns you will work with.
 
-## What's not covered
+## What is not covered
 
-This documentation does **not** cover themes. Themes use a different system and can be created by anyone without going through the plugin API. They are built in and handled separately.
+This documentation does not cover themes. Themes work with a completely different system, and anyone can create one without touching the plugin API. They are handled separately and built into Yapmod directly.
 
-## Prerequisites
+## What you should already know
 
-To get the most out of this guide, you should be familiar with:
+To get the most out of this guide, you should feel comfortable with:
 
-- JavaScript or TypeScript
-- Basic DOM manipulation concepts
-- How browser extensions or content scripts work (helpful but not required)
+- **JavaScript or TypeScript**. You do not need to be an expert, but you should understand the basics like variables, functions, and how modules work.
+- **Basic DOM concepts**. Knowing what the DOM is and how elements are structured will help a lot.
+- **Browser extensions or content scripts**. This is helpful to know about, but not required. We will explain things as we go.
 
-Ready? Start with the [Setup guide](/docs/setup) to get your development environment ready, then move on to [Plugin Development](/docs/development) to learn how to build your first plugin.
+If you have these basics down, you are ready to start. Head over to the [Setup guide](/docs/setup) to get your development environment ready, and then move on to [Plugin Development](/docs/development) where we will build your first plugin together.

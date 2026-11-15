@@ -3,64 +3,68 @@ title: Plugin Types
 description: Understand the difference between user-installed and client-registered plugins.
 ---
 
-Yapmod supports two types of plugins. Understanding the difference between them is important for knowing how your plugin will be loaded, managed, and distributed.
+Yapmod supports two types of plugins. Understanding the difference between them will help you know how your plugin will be loaded, managed, and distributed.
 
-## User-installed plugins
+## User installed plugins
 
-User-installed plugins are plugins that you, the user, manually add to your Yapmod instance. These are the most common type of plugin.
+These are plugins that you, as a user, manually add to your Yapmod instance. This is the most common type of plugin and the one you will encounter if you are building something for yourself or sharing it with others.
 
 ### How they work
 
-1. You write or download a plugin file (a `.js` file containing the plugin code).
+The process is straightforward:
+
+1. You write or download a plugin file. This is a `.js` file containing your plugin code.
 2. You upload it through the Yapmod settings panel in the plugins section.
-3. Yapmod evaluates the plugin and loads it into the current session.
-4. The plugin is saved to your local Yapmod configuration and persists across page reloads.
+3. Yapmod evaluates the plugin and loads it into your current session.
+4. The plugin is saved to your local Yapmod configuration, so it persists across page reloads.
 
-### Characteristics
+### Key characteristics
 
-- **Manual installation** — you must upload each plugin file yourself. There is no automatic discovery or installation.
-- **Local storage** — the plugin source and its settings are stored in your browser's `localStorage`.
-- **Per-user** — each user manages their own set of plugins. Plugins are not shared between users.
-- **Reactive storage** — each plugin gets its own isolated storage space backed by `localStorage`, so data survives page reloads.
+- **You install them manually**. There is no automatic discovery or installation system. You upload each plugin file yourself.
+- **They live in your browser**. The plugin source and its settings are stored in your browser's `localStorage`.
+- **They are per user**. Each user manages their own set of plugins. Plugins are not shared between users automatically.
+- **Each plugin has its own storage**. Every plugin gets an isolated storage space backed by `localStorage`, so its data survives page reloads.
 
 <Callout type="info">
-  When you delete a user-installed plugin, its per-plugin storage is intentionally kept. This means
-  if you reinstall the same plugin later, your data is still there.
+  When you delete a user installed plugin, Yapmod intentionally keeps its storage. This means if you
+  reinstall the same plugin later, all your saved data is still there.
 </Callout>
 
-## Client-registered plugins
+## Client registered plugins
 
-Client-registered plugins are plugins that are built into the Yapmod client itself. They are registered in code and loaded automatically when Yapmod starts.
+These are plugins that are built into the Yapmod client itself. They are registered in code and loaded automatically every time Yapmod starts. You do not need to do anything to enable them.
 
 ### How they work
 
-1. The plugin code is written as part of the Yapmod client source.
-2. It is registered using a code-based approach during the Yapmod bootstrap process.
-3. The plugin is loaded automatically every time Yapmod injects into the page.
+1. The plugin code is written as part of the Yapmod client source code.
+2. It is registered programmatically during the Yapmod bootstrap process.
+3. The plugin loads automatically every time Yapmod injects into the page.
 
-### Characteristics
+### Key characteristics
 
-- **Built-in** — these plugins ship with Yapmod and are always available.
-- **No manual installation** — they are loaded automatically, no user action required.
-- **Part of the client** — they are developed and maintained as part of the Yapmod codebase.
-- **Same API** — client-registered plugins use the exact same `YapmodPluginApi` as user-installed plugins.
+- **They are built in**. These plugins ship with Yapmod and are always available.
+- **No installation needed**. They load automatically without any user action.
+- **Part of the Yapmod codebase**. They are developed and maintained as part of the Yapmod project itself.
+- **They use the same API**. Client registered plugins use the exact same `YapmodPluginApi` as user installed plugins. There is no difference in what they can do.
 
 ### When to use each type
 
-- **User-installed** — for community plugins, personal customizations, and plugins that users can share and distribute on their own.
-- **Client-registered** — for core functionality that should always be available to every Yapmod user, maintained as part of the Yapmod project.
+- **User installed plugins** are for community creations, personal customizations, and anything you want to share and distribute on your own.
+- **Client registered plugins** are for core functionality that should always be available to every Yapmod user. These are maintained as part of the Yapmod project.
 
-## Key differences
+## Comparing the two
 
-| Feature      | User-installed          | Client-registered       |
-| ------------ | ----------------------- | ----------------------- |
-| Installation | Manual upload           | Automatic on startup    |
-| Distribution | Shared as files         | Bundled with Yapmod     |
-| Maintenance  | User-managed            | Maintained by Yapmod    |
-| Storage      | Per-plugin localStorage | Per-plugin localStorage |
-| API access   | Full `YapmodPluginApi`  | Full `YapmodPluginApi`  |
-| Removal      | User can disable/delete | Always present          |
+Here is a quick overview of the key differences:
 
-## Next steps
+| Feature      | User installed             | Client registered       |
+| ------------ | -------------------------- | ----------------------- |
+| Installation | Manual upload              | Automatic on startup    |
+| Distribution | Shared as files            | Bundled with Yapmod     |
+| Maintenance  | Managed by the user        | Maintained by Yapmod    |
+| Storage      | Per plugin localStorage    | Per plugin localStorage |
+| API access   | Full `YapmodPluginApi`     | Full `YapmodPluginApi`  |
+| Removal      | User can disable or delete | Always present          |
 
-Learn about [plugin distribution](/docs/development/distribution) and how plugins are shared (and what Yapmod does not provide).
+## What comes next
+
+Now that you understand the two plugin types, learn about [plugin distribution](/docs/development/distribution) and how plugins are shared, since Yapmod does not provide a built in marketplace.

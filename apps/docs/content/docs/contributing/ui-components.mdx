@@ -3,27 +3,27 @@ title: UI Components
 description: Reference for the @yapmod/ui SolidJS components used in the Yapmod client.
 ---
 
-The `@yapmod/ui` package provides SolidJS components that reproduce Yapin's native look. All client feature panels (settings, themes, plugins) use these components — never raw HTML form controls.
+The `@yapmod/ui` package provides SolidJS components that reproduce Yapin's native look and feel. Every feature panel in the client (settings, themes, plugins) uses these components. You should never use raw HTML form controls in the client codebase.
 
-In the client codebase, import components directly from the package:
+Import components directly from the package in your code:
 
 ```ts
 import { Button, Switch, Input, Textarea, Select } from '@yapmod/ui';
 ```
 
-These components are also exposed through `YapmodClient.ui` so plugins can use them. For plugin authors, see the [UI Components](/docs/development/ui-components) guide in the Plugin Development section.
+These same components are also exposed through `YapmodClient.ui` so plugins can use them. If you are a plugin author looking for the full guide, see the [UI Components](/docs/development/ui-components) page in the Plugin Development section instead.
 
 ## Form controls
 
-Form controls follow a consistent **controlled / uncontrolled** pattern:
+All form controls follow a consistent **controlled and uncontrolled** pattern:
 
-- Pass `value` (or `checked` for Switch) to make the component **controlled** — its state is driven entirely by the prop.
+- Pass `value` (or `checked` for Switch) to make the component **controlled**. Its state is driven entirely by the prop you pass.
 - Pass `defaultValue` (or `defaultChecked`) for an **uncontrolled** component that manages its own internal state.
-- `onChange` always receives the new value directly (not a DOM event).
+- `onChange` always receives the new value directly, not a DOM event object.
 
 ### Switch
 
-A toggle switch matching Yapin's `.switch` style. Under the hood it renders a real `<input type="checkbox">` with `role="switch"`, so keyboard interaction (Space to toggle) and focus rings work natively.
+A toggle switch that matches Yapin's `.switch` style. Under the hood, it renders a real `<input type="checkbox">` element with `role="switch"`, so keyboard interaction (Space to toggle) and focus rings work natively.
 
 ```tsx
 import { Switch } from '@yapmod/ui';
@@ -46,7 +46,7 @@ import { Switch } from '@yapmod/ui';
 
 ### Input
 
-A single-line text field matching Yapin's `.input` style.
+A single line text field that matches Yapin's `.input` style.
 
 ```tsx
 import { Input } from '@yapmod/ui';
@@ -69,11 +69,11 @@ import { Input } from '@yapmod/ui';
 | `placeholder`  | `string`                  | Placeholder text                           |
 | `id`           | `string`                  | Element ID for label association           |
 
-All standard `<input>` attributes (disabled, maxlength, inputmode, etc.) are passed through.
+All standard `<input>` attributes like `disabled`, `maxlength`, and `inputmode` are passed through to the underlying element.
 
 ### Textarea
 
-A multi-line text field matching Yapin's `textarea.input` style. Behaves like `Input` but with vertical resize support.
+A multi line text field that matches Yapin's `textarea.input` style. It behaves like `Input` but supports vertical resizing.
 
 ```tsx
 import { Textarea } from '@yapmod/ui';
@@ -94,7 +94,7 @@ All standard `<textarea>` attributes are passed through.
 
 ### Select
 
-A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style. The trigger is a button with `role="combobox"` and the option list is a portalled `listbox`. Keyboard navigation (arrow keys, Enter, Escape) matches Yapin's native dropdown behavior.
+A dropdown that matches Yapin's `.dd-trigger` and `.dd-menu` style. The trigger is a button with `role="combobox"` and the option list is rendered in a portalled `listbox`. Keyboard navigation with arrow keys, Enter, and Escape matches Yapin's native dropdown behavior.
 
 ```tsx
 import { Select } from '@yapmod/ui';
@@ -125,7 +125,7 @@ const options = [
 
 ### Button
 
-A button matching Yapin's `.btn` style.
+A button that matches Yapin's `.btn` style.
 
 ```tsx
 import { Button } from '@yapmod/ui';
@@ -144,7 +144,7 @@ import { Button } from '@yapmod/ui';
 
 ### Panel
 
-A card surface matching Yapin's `.ss2-card`.
+A card surface that matches Yapin's `.ss2-card` style.
 
 ```tsx
 import { Panel } from '@yapmod/ui';
@@ -154,7 +154,7 @@ import { Panel } from '@yapmod/ui';
 
 ### Hint
 
-Secondary helper text matching Yapin's `.hint`.
+Secondary helper text that matches Yapin's `.hint` style.
 
 ```tsx
 import { Hint } from '@yapmod/ui';
@@ -179,9 +179,9 @@ import { Icon } from '@yapmod/ui';
 | `name` | `IconName` | Name of the icon from the bundled set |
 | `size` | `number`   | Icon size in pixels                   |
 
-## Style injection
+## Injecting styles
 
-The UI package bundles all component CSS. Inject it into the page with:
+The UI package bundles all component CSS. To inject it into the page, use the `injectStyles` function:
 
 ```tsx
 import { injectStyles } from '@yapmod/ui';
@@ -190,4 +190,4 @@ import { injectStyles } from '@yapmod/ui';
 injectStyles();
 ```
 
-Components carry `yp-` prefixed classes only. Colors, hover states, and focus rings come from the bundled CSS, which prefers host theme CSS variables (`--bg-side`, `--text`, `--accent`) with `--yp-*` fallbacks.
+Components use `yp-` prefixed class names only. Colors, hover states, and focus rings come from the bundled CSS. The CSS prefers host theme CSS variables like `--bg-side`, `--text`, and `--accent`, with `--yp-*` fallbacks for when those are not available.

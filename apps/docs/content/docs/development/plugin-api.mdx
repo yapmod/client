@@ -3,19 +3,19 @@ title: Plugin API
 description: Reference for the YapmodPluginApi object available to every plugin.
 ---
 
-Every plugin receives a `YapmodPluginApi` object when it starts. This page documents all the properties and methods available through that API.
+Every plugin receives a `YapmodPluginApi` object when it starts. This is your gateway to everything Yapmod offers: storage, DOM observation, UI components, settings registration, and more. This page documents every property and method available through that API.
 
 <Callout type="info">
-  The built-in Plugin API is the recommended way to build plugins. You can technically do everything
-  manually by manipulating the DOM yourself, but the API methods are more performant, easier to use,
-  and handle cleanup automatically.
+  The built in Plugin API is the recommended way to build plugins. You could technically do
+  everything manually by manipulating the DOM yourself, but the API methods are more performant,
+  easier to use, and handle cleanup automatically for you.
 </Callout>
 
 <Callout type="idea">
-  All properties and methods documented on this page are available as TypeScript types from
-  `@yapmod/types`. Install the package and add it to your `tsconfig.json` to get full
-  autocompletion. See the [Type Safety](/docs/development/type-safety) page for setup instructions
-  and a complete list of all 27 exportable types.
+  Every property and method documented here is available as a TypeScript type from `@yapmod/types`.
+  Install the package and add it to your `tsconfig.json` to get full autocompletion in your editor.
+  See the [Type Safety](/docs/development/type-safety) page for setup instructions and a complete
+  list of all 27 exportable types.
 </Callout>
 
 ## Properties
@@ -24,31 +24,31 @@ Every plugin receives a `YapmodPluginApi` object when it starts. This page docum
 
 **Type:** `1` (readonly)
 
-The current API contract version. Plugins can check this before using v1 features.
+The current API contract version. You can check this value before using features that are specific to API version 1.
 
 ### `api.id`
 
 **Type:** `string` (readonly)
 
-The stable ID of this plugin, also used as its storage key.
+A stable identifier for your plugin. This ID is also used as the key for your plugin's storage in `localStorage`.
 
 ### `api.manifest`
 
 **Type:** `PluginManifest` (readonly)
 
-Metadata from the plugin's manifest, including `name`, `author`, `description`, `version`, and `hash`.
+The metadata from your plugin's manifest object. This includes `name`, `author`, `description`, `version`, and `hash`.
 
 ### `api.storage`
 
 **Type:** `Record<string, unknown>` (readonly)
 
-Reactive per-plugin storage backed by a Solid signal. Top-level property assignments persist automatically. For deeper mutations, call `api.flushStorage()` after changing nested values.
+This is your plugin's reactive storage, backed by a Solid signal. When you assign a value at the top level, it persists automatically. If you mutate nested values, you need to call `api.flushStorage()` afterward to save the changes.
 
 ```typescript
-// Top-level set — persists automatically
+// Top-level assignment persists automatically
 api.storage.count = (api.storage.count as number | undefined) ?? 0 + 1;
 
-// Nested mutation — call flushStorage after
+// Nested mutation requires flushStorage
 const data = api.storage.data as { items: string[] } | undefined;
 if (data) {
   data.items.push('new item');
@@ -57,49 +57,49 @@ if (data) {
 ```
 
 <Callout type="warn">
-  Storage is backed by `localStorage`. Large amounts of data may impact performance. Keep stored
-  data minimal.
+  Storage is backed by `localStorage`, which has limited capacity. Storing large amounts of data can
+  impact performance. Keep your stored data minimal and only save what you actually need.
 </Callout>
 
 ### `api.ui`
 
 **Type:** `PluginUi` (readonly)
 
-UI helpers and Solid components available to every plugin. See [UI Helpers](#ui-helpers) below.
+Everything you need for user interface interactions. This includes toast notifications, modals, CSS injection, and all SolidJS components. See the [UI Helpers](#ui-helpers) section below for details.
 
 ### `api.settings`
 
 **Type:** `PluginSettings` (readonly)
 
-Settings hooks for registering sections in the Yapmod settings panel. See [Settings](#settings) below.
+Hooks for registering settings sections in the Yapmod settings panel. See the [Settings](#settings) section below.
 
 ### `api.solid`
 
 **Type:** `solid-js` (readonly)
 
-The shared SolidJS instance from the bundle. Use this instead of bundling your own copy of SolidJS.
+The shared SolidJS instance bundled with Yapmod. Use this instead of bundling your own copy of SolidJS. It gives you access to `createSignal`, `createEffect`, `createMemo`, and all other SolidJS primitives.
 
 ### `api.solidWeb`
 
 **Type:** `solid-js/web` (readonly)
 
-The shared SolidJS/web instance for DOM rendering, portals, and DOM helpers.
+The shared SolidJS/web instance. Use this for DOM rendering, portals, and other DOM-related helpers.
 
 ### `api.solidStore`
 
 **Type:** `solid-js/store` (readonly)
 
-The shared SolidJS/store instance for `createStore` and `unwrap`.
+The shared SolidJS/store instance. Use this for `createStore` and `unwrap` when you need fine-grained reactive state management.
 
 ## Methods
 
 ### `api.flushStorage()`
 
-Writes the current `storage` state to `localStorage`. Call this after mutating nested values that won't trigger automatic persistence.
+Writes the current state of `storage` to `localStorage`. You should call this after mutating nested values that would not trigger automatic persistence on their own.
 
 ### `api.log(...args)`
 
-Logs to the console with a `[yapmod:<id>]` prefix, making it easy to filter your plugin's output in the dev tools console.
+Logs a message to the console with a `[yapmod:<id>]` prefix. This makes it easy to filter your plugin's output from everything else in the dev tools console.
 
 ```typescript
 api.log('Plugin started with config:', config);
@@ -109,7 +109,7 @@ api.log('Plugin started with config:', config);
 
 **Returns:** Disposer function `() => void`
 
-Watches for elements matching the CSS selector. Calls `onFound` for every matching element already on the page, and for any new elements that appear later. Returns a disposer function that stops the observer.
+Watches the page for elements matching the given CSS selector. It calls your `onFound` callback for every matching element that already exists on the page, and for any new elements that appear later. It returns a disposer function you can call to stop the observer.
 
 ```typescript
 const dispose = api.observe('.message-input', (element) => {
@@ -122,13 +122,14 @@ dispose();
 ```
 
 <Callout type="idea">
-  The disposer returned by `observe()` also runs automatically when the plugin stops. You can also
-  register it with `api.onDispose()` for explicit cleanup.
+  The disposer returned by `observe()` runs automatically when your plugin stops, so you do not
+  always need to call it manually. But you can also register it with `api.onDispose()` if you want
+  explicit control over cleanup.
 </Callout>
 
 ### `api.onDispose(dispose)`
 
-Registers a cleanup function that runs when the plugin stops or when Yapmod unloads. Use this to clean up event listeners, observers, and other resources.
+Registers a cleanup function that runs when your plugin stops or when Yapmod unloads. Use this to clean up event listeners, observers, timers, and any other resources your plugin creates.
 
 ```typescript
 api.onDispose(() => {
@@ -138,18 +139,18 @@ api.onDispose(() => {
 
 ### `api.showSettings()`
 
-Opens the plugin's settings modal, if the plugin exported a `settings` hook. Use this to programmatically open your plugin's settings panel.
+Programmatically opens your plugin's settings modal. This only works if your plugin has registered a settings section. Useful for adding a "Open Settings" button inside your plugin's UI.
 
 ## UI Helpers
 
-The `api.ui` object provides UI tools for interacting with the user.
+The `api.ui` object gives you everything you need to interact with the user through the interface.
 
 ### `api.ui.showToast(message, kind?)`
 
-Shows a short-lived toast message over the page.
+Shows a short toast notification that appears over the page and disappears after a few seconds.
 
-- `message` — the text to display.
-- `kind` — optional, `'success'` or `'error'`. Defaults to `'success'`.
+- `message` is the text to display
+- `kind` is optional and can be `'success'` or `'error'`. It defaults to `'success'`
 
 ```typescript
 api.ui.showToast('Plugin activated!', 'success');
@@ -160,7 +161,7 @@ api.ui.showToast('Something went wrong', 'error');
 
 **Returns:** Close function `() => void`
 
-Opens a modal dialog styled like Yapin's native modals.
+Opens a modal dialog that looks and behaves like Yapin's native modals. You can customize the title, description, content, and footer.
 
 ```typescript
 const close = api.ui.openModal({
@@ -178,7 +179,7 @@ close()
 
 **Returns:** Disposer function `() => void`
 
-Injects a stylesheet into the page. Returns a disposer that removes the style tag. The disposer also runs automatically when the plugin stops.
+Injects a `<style>` tag into the page with your custom CSS. Returns a disposer function that removes the style tag when called. The disposer also runs automatically when your plugin stops.
 
 ```typescript
 const dispose = api.ui.injectCss(`
@@ -190,19 +191,19 @@ const dispose = api.ui.injectCss(`
 
 ### SolidJS Components
 
-The `api.ui` object provides SolidJS components styled to match Yapin's interface — Button, Switch, Input, Textarea, Select, Panel, Hint, Icon, and settings layout components (SettingsPage, Section, SettingRow, SettingText, Divider).
+The `api.ui` object provides SolidJS components that are styled to match Yapin's interface. These include Button, Switch, Input, Textarea, Select, Panel, Hint, Icon, and settings layout components like SettingsPage, Section, SettingRow, SettingText, and Divider.
 
-See the [UI Components](/docs/development/ui-components) guide for the full reference, including how to access them via the builder (recommended) or manually through `yapmod.ui`.
+See the [UI Components](/docs/development/ui-components) guide for the complete reference, including how to access them through the builder (recommended) or manually through `yapmod.ui`.
 
 ## Settings
 
-The `api.settings` object lets you register settings sections in the Yapmod settings panel.
+The `api.settings` object lets you add settings sections to the Yapmod settings panel. This is how users configure your plugin.
 
 ### `api.settings.registerSection(section)`
 
 **Returns:** Disposer function `() => void`
 
-Adds a section to the Yapmod settings group. The section unregisters automatically when the plugin stops.
+Adds a new section to the Yapmod settings group. The section is automatically unregistered when your plugin stops.
 
 ```tsx
 import { createSignal } from 'solid-js';
@@ -234,11 +235,11 @@ const dispose = api.settings.registerSection({
 ```
 
 <Callout type="info">
-  Use the settings layout components (SettingsPage, Section, SettingRow, etc.) from `@yapmod/ui` to
-  build settings pages that match Yapin's native look. See the [UI
-  Components](/docs/development/ui-components) guide for the full reference.
+  Use the settings layout components from `@yapmod/ui` (SettingsPage, Section, SettingRow, and so
+  on) to build settings pages that match Yapin's native look and feel. See the [UI
+  Components](/docs/development/ui-components) guide for the full component reference.
 </Callout>
 
-## Next steps
+## What comes next
 
-Learn about the different [plugin types](/docs/development/plugin-types) and how user-installed plugins differ from client-registered plugins.
+Now that you know the full API, learn about the different [plugin types](/docs/development/plugin-types) and how user installed plugins differ from client registered plugins.
