@@ -3,19 +3,31 @@ name: Publish to npm
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: 'Package to publish'
+        required: true
+        default: 'builder'
+        type: choice
+        options:
+          - builder
+          - types
+          - both
       version:
-        description: 'Version to publish (major, minor, patch, or exact version)'
+        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.3.0)'
         required: true
         default: 'patch'
 
 jobs:
-  publish:
+  publish-builder:
+    if: ${{ github.event.inputs.package == 'builder' || github.event.inputs.package == 'both' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # Required for npm Trusted Publisher (OIDC)
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -35,15 +47,55 @@ jobs:
       - name: Typecheck
         run: pnpm --filter @yapmod/builder typecheck
 
-      - name: Version and publish
+      - name: Generate changelog & bump version
+        run: pnpm changelogen --bump ${{ github.event.inputs.version }}
+        working-directory: packages/builder
+        env:
+          HUSKY: 0
+
+      - name: Publish to npm
         working-directory: packages/builder
         run: |
-          # Unset NODE_AUTH_TOKEN so npm uses OIDC Trusted Publisher
           unset NODE_AUTH_TOKEN
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if [ "$CURRENT_VERSION" != "${{ github.event.inputs.version }}" ]; then
-            npm version ${{ github.event.inputs.version }} --no-git-tag-version
-          else
-            echo "Version is already $CURRENT_VERSION, skipping bump."
-          fi
+          npm publish --provenance --access public
+
+  publish-types:
+    if: ${{ github.event.inputs.package == 'types' || github.event.inputs.package == 'both' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for npm Trusted Publisher (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build @yapmod/types
+        run: pnpm --filter @yapmod/types build
+
+      - name: Typecheck
+        run: pnpm --filter @yapmod/types typecheck
+
+      - name: Generate changelog & bump version
+        run: pnpm changelogen --bump ${{ github.event.inputs.version }}
+        working-directory: packages/types
+        env:
+          HUSKY: 0
+
+      - name: Publish to npm
+        working-directory: packages/types
+        run: |
+          unset NODE_AUTH_TOKEN
           npm publish --provenance --access public
