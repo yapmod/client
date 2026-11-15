@@ -1,10 +1,16 @@
-## [1.0.1-develop.2](https://github.com/yapmod/client/compare/v1.0.1-develop.1...v1.0.1-develop.2) (2026-11-15)
+## [1.0.2](https://github.com/yapmod/client/compare/v1.0.1...v1.0.2) (2026-11-15)
 
 ### Bug Fixes
 
-- **builder:** correct YapmodGlobal Babel plugin to produce instead of ([adc8af2](https://github.com/yapmod/client/commit/adc8af2cb48ed7278ef6c908294965aee9ba130f))
+- **storage:** make proxy properties reactive in SolidJS without createMemo ([#38](https://github.com/yapmod/client/issues/38)) ([938318d](https://github.com/yapmod/client/commit/938318dfb5f9b6941c2a5f0c56527321b39dd76a)), closes [#37](https://github.com/yapmod/client/issues/37)
 
-## [1.0.1-develop.1](https://github.com/yapmod/client/compare/v1.0.0...v1.0.1-develop.1) (2026-11-15)
+## [Unreleased]
+
+### Fixed
+
+- **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
+
+## [1.0.1](https://github.com/yapmod/client/compare/v1.0.0...v1.0.1) (2026-11-15)
 
 ### Bug Fixes
 
