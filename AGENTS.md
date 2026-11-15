@@ -60,8 +60,8 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   Vite config.
 - **Form controls come from `@yapmod/ui`.** The client must not hand-write `<input>`,
   `<select>` or `<textarea>` elements: use `Switch`, `Input`, `Textarea` and `Select` from
-  `@yapmod/ui`, which already reproduce Yapin's own controls. `pnpm lint` fails when a raw
-  form control appears in `apps/client/src` (file inputs excepted).
+  `@yapmod/ui`, which already reproduce Yapin's own controls. This is enforced by convention
+  (file inputs excepted).
 - Use Solid idioms: `createSignal`/`createMemo`, `For`/`Show`, `class` (not `className`),
   `classList`, kebab-case style keys. Render outside a component tree with `render()` from
   `solid-js/web` (see `lib/modal.tsx`).
