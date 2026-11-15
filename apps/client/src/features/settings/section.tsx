@@ -34,12 +34,12 @@ export const yapmodGroup: SettingsGroup = {
         >
           <Section label="Developer">
             <SettingRow
-              label="Developer features"
+              label="Enable hot reload"
               hint="Accept hot updates from a local dev server. While this is on, the client evaluates the code a dev server on localhost pushes into the page. Turn it off when you are done."
             >
               <Switch
                 checked={developerFeatures()}
-                aria-label="Developer features"
+                aria-label="Enable hot reload"
                 onChange={(enabled) => {
                   setDeveloperFeatures(enabled);
                   // Dev plugins were started by a dev server; they stop with it.
