@@ -1,9 +1,9 @@
 ---
 title: Type Safety
-description: Get TypeScript autocompletion for the yapmod free variable in your plugins.
+description: Full TypeScript type safety for Yapmod plugins — 27 exportable types, import rewriting, and typed storage patterns.
 ---
 
-When writing plugins in TypeScript, you can get full type safety for the `yapmod` free variable — autocompletion for `yapmod.storage`, `yapmod.ui.Button`, `yapmod.settings.registerSection`, and more.
+When writing plugins in TypeScript, `@yapmod/types` gives you full type safety for the entire plugin API — autocompletion, compile-time error checking, and precise types for every property, method, and UI component prop.
 
 ## Install the types
 
@@ -59,18 +59,230 @@ You get autocompletion for:
 - **`yapmod.solid`** — shared SolidJS signals and control flow
 - **`yapmod.log()`** — prefixed console logging
 
-## Importing types
+## All exportable types
 
-You can also import individual types for use in your plugin code:
+`@yapmod/types` exports **27 types** organized into categories. You can import any of them individually for use in your plugin code.
+
+### Plugin lifecycle types
+
+These types describe the core plugin contract — how a plugin identifies itself, starts, and interacts with the Yapmod runtime.
+
+| Type                    | Description                                                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `YapmodPluginApi`       | The full API object every started plugin receives. This is the type of the `yapmod` global and the `api` parameter in `start(api)`. |
+| `PluginManifest`        | The metadata object for a plugin: `name`, `author`, `description`, `version`, and `hash`.                                           |
+| `PluginFunction`        | A function a plugin may export as one of its lifecycle hooks.                                                                       |
+| `PluginSettings`        | The settings hooks on the plugin API, including `registerSection()`.                                                                |
+| `PluginSettingsSection` | A settings section a plugin registers in the Yapmod settings group, with `id`, `label`, `icon`, and `render`.                       |
+| `PluginModalOptions`    | Options accepted by `ui.openModal`: `title`, `description`, `wide`, `content`, `footer`, and `onClose`.                             |
+| `ToastKind`             | Message kinds for `ui.showToast`: `'success'` or `'error'`.                                                                         |
 
 ```typescript
-import type { YapmodPluginApi, PluginManifest } from '@yapmod/types';
+import type { YapmodPluginApi, PluginManifest, PluginSettingsSection } from '@yapmod/types';
 
-const manifest: PluginManifest = {
-  name: 'My Plugin',
-  author: 'Me',
-  description: 'Does something useful',
-};
+// Type the api parameter explicitly
+export function start(api: YapmodPluginApi) {
+  api.settings.registerSection({
+    id: 'my-section',
+    label: 'My Plugin',
+    icon: 'settings',
+    render: () => <div>Settings content</div>,
+  } satisfies PluginSettingsSection);
+}
+```
+
+### UI component prop types
+
+Every UI component from `@yapmod/ui` has a corresponding prop type you can import. Use these when you need to type component props, create wrapper components, or validate configuration.
+
+| Type            | Component  | Description                                                                                                                               |
+| --------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `ButtonProps`   | `Button`   | Variants (`default`, `primary`, `accent`, `secondary`, `ghost`, `danger`) and sizes (`medium`, `small`).                                  |
+| `SwitchProps`   | `Switch`   | Toggle state: `checked`, `defaultChecked`, `onChange`.                                                                                    |
+| `InputProps`    | `Input`    | Single-line text: `value`, `defaultValue`, `onChange`.                                                                                    |
+| `TextareaProps` | `Textarea` | Multi-line text: `value`, `defaultValue`, `onChange`.                                                                                     |
+| `SelectProps`   | `Select`   | Dropdown: `options`, `value`, `defaultValue`, `onChange`, `placeholder`.                                                                  |
+| `SelectOption`  | —          | A single dropdown option: `value`, `label`, `disabled`.                                                                                   |
+| `IconProps`     | `Icon`     | SVG icon: `name`, `size`, `label`, `class`.                                                                                               |
+| `IconName`      | —          | Union of built-in icon names: `'settings'`, `'puzzle'`, `'trash'`, `'palette'`, `'upload'`, `'refresh'`, `'plus'`, `'pencil'`, `'close'`. |
+| `HintProps`     | `Hint`     | Inline hint text (extends native `<span>` attributes).                                                                                    |
+| `PanelProps`    | `Panel`    | Card container (extends native `<div>` attributes).                                                                                       |
+
+**Settings layout prop types:**
+
+| Type                | Component      | Description                                                              |
+| ------------------- | -------------- | ------------------------------------------------------------------------ |
+| `SettingsPageProps` | `SettingsPage` | Top-level wrapper: `title`, `description`, `children`.                   |
+| `SectionProps`      | `Section`      | Grouped block: `label`, `children`, `spacing` (`'normal'` or `'large'`). |
+| `SectionSpacing`    | —              | Spacing variant for Section: `'normal'` or `'large'`.                    |
+| `SettingRowProps`   | `SettingRow`   | Single row: `label`, `hint`, `children`.                                 |
+| `SettingTextProps`  | `SettingText`  | Read-only row: `label`, `hint`, `value`.                                 |
+
+```typescript
+import type { SwitchProps, SelectOption } from '@yapmod/types';
+
+// Type a custom wrapper component
+function ToggleSetting(props: SwitchProps & { label: string }) {
+  return (
+    <SettingRow label={props.label}>
+      <Switch {...props} />
+    </SettingRow>
+  );
+}
+
+// Type dropdown options
+const themeOptions: readonly SelectOption[] = [
+  { value: 'default', label: 'Default' },
+  { value: 'nord', label: 'Nord' },
+];
+```
+
+### Shared SolidJS types
+
+These types describe the shared SolidJS instances that the builder injects, ensuring all plugins use the same reactive runtime.
+
+| Type          | Description                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `SharedSolid` | The bundle's single copy of SolidJS, exposing `solid`, `solidWeb`, and `solidStore` module objects.                     |
+| `PluginUi`    | The full UI interface: `showToast`, `openModal`, `injectCss`, and all SolidJS components (Button, Switch, Input, etc.). |
+
+```typescript
+import type { SharedSolid } from '@yapmod/types';
+
+// Access shared SolidJS with full types
+const solid: SharedSolid['solid'] = yapmod.solid;
+const { createSignal, createEffect } = solid;
+```
+
+### Client runtime types
+
+These types are used by the Yapmod client runtime and embedders, not typically by plugin authors. They are included here for completeness.
+
+| Type           | Description                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| `Client`       | The client runtime created through `createClient()`. Manages lifecycle state and disposal.               |
+| `ClientHandle` | The minimal handle exposed on `globalThis.YapmodClient`. Reveals version, state, shared SolidJS, and UI. |
+| `ClientState`  | Lifecycle states of the client runtime: `'ready'` or `'disposed'`.                                       |
+
+## The `start(api)` pattern vs. the global `yapmod`
+
+There are two ways to access the plugin API, both fully typed:
+
+### Global `yapmod` (default)
+
+When `@yapmod/types` is in your `tsconfig.json` types array, the `yapmod` free variable is automatically typed as `YapmodPluginApi` everywhere:
+
+```typescript
+// No import needed — yapmod is a typed global
+export function onLoad() {
+  yapmod.log('loaded');
+}
+```
+
+### Explicit `start(api)` parameter
+
+When using the builder, you can type the `api` parameter explicitly for clarity or when the global declaration is not available:
+
+```typescript
+import type { YapmodPluginApi } from '@yapmod/types';
+
+export default function (api: YapmodPluginApi) {
+  return {
+    start(api: YapmodPluginApi) {
+      api.log('Plugin started with explicit typing');
+    },
+  };
+}
+```
+
+Both approaches give identical autocompletion and type checking. The global approach is more concise; the explicit parameter approach makes the dependency clear at the call site.
+
+## Builder import rewriting and type safety
+
+When you use `@yapmod/builder`, imports from `solid-js`, `@yapmod/ui`, `solid-js/web`, and `solid-js/store` are rewritten at build time to use the shared runtime instances instead of bundling their own copies.
+
+**Your source code:**
+
+```tsx
+import { createSignal } from 'solid-js';
+import { Button, Switch } from '@yapmod/ui';
+```
+
+**What the builder produces at runtime:**
+
+```js
+// Imports are rewritten to use shared instances
+const { createSignal } = yapmod.solid;
+const { Button, Switch } = yapmod.ui;
+```
+
+This rewriting preserves full type safety at compile time because:
+
+1. TypeScript sees the original import statements and resolves types from your local `node_modules`.
+2. The builder replaces the imports only in the final bundle, not in your source files.
+3. The shared runtime instances match the types exactly, so runtime behavior aligns with compile-time types.
+
+This means you get clean import syntax, full IDE autocompletion, and zero duplicate SolidJS bundles — all at the same time.
+
+## Typed storage patterns
+
+`api.storage` is typed as `Record<string, unknown>`, meaning every value is `unknown` until you cast it. Use these patterns to work with storage safely:
+
+### Inline type assertion
+
+For simple values, assert the type at the point of use:
+
+```typescript
+// Read with a type guard
+const count = yapmod.storage.count as number | undefined;
+if (count !== undefined) {
+  yapmod.storage.count = count + 1;
+}
+```
+
+### Custom storage interface
+
+For complex storage shapes, define a custom interface and cast the entire storage object:
+
+```typescript
+import type { YapmodPluginApi } from '@yapmod/types';
+
+interface MyPluginStorage {
+  count?: number;
+  settings?: {
+    theme: 'default' | 'nord' | 'gruvbox';
+    enabled: boolean;
+  };
+  history?: string[];
+}
+
+export function start(api: YapmodPluginApi) {
+  const storage = api.storage as MyPluginStorage;
+
+  // Now you get autocompletion for known keys
+  storage.settings = storage.settings ?? { theme: 'default', enabled: true };
+  storage.settings.theme = 'nord';
+  api.flushStorage();
+}
+```
+
+### Generic storage helper
+
+For reusable type-safe access, create a helper function:
+
+```typescript
+function getStorage<T>(api: YapmodPluginApi, key: string, fallback: T): T {
+  const value = api.storage[key];
+  if (value === undefined) {
+    api.storage[key] = fallback;
+    return fallback;
+  }
+  return value as T;
+}
+
+// Usage
+const theme = getStorage(api, 'theme', 'default');
+const counters = getStorage(api, 'counters', { clicks: 0, views: 0 });
 ```
 
 ## Next steps
