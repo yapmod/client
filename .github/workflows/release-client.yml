@@ -44,10 +44,17 @@ jobs:
 
       - name: Generate changelog & bump version
         run: |
+          VERSION_TYPE="${{ github.event.inputs.version }}"
           if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
-            pnpm changelogen --release --no-github --prerelease ${{ github.event.inputs.version }}
+            case "$VERSION_TYPE" in
+              major) FLAG="--premajor" ;;
+              minor) FLAG="--preminor" ;;
+              patch) FLAG="--prepatch" ;;
+              *) FLAG="--prerelease $VERSION_TYPE" ;;
+            esac
+            pnpm changelogen --release --no-github $FLAG
           else
-            pnpm changelogen --release --no-github ${{ github.event.inputs.version }}
+            pnpm changelogen --release --no-github $VERSION_TYPE
           fi
         working-directory: apps/client
         env:
