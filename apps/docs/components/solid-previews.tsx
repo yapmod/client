@@ -196,6 +196,12 @@ const MODE_OPTIONS: PreviewOption[] = [
   { value: 'legacy', label: 'Legacy', disabled: true },
 ];
 
+const THEME_OPTIONS: PreviewOption[] = [
+  { value: 'default', label: 'Default' },
+  { value: 'nord', label: 'Nord' },
+  { value: 'gruvbox', label: 'Gruvbox' },
+];
+
 export function SelectPreview() {
   return (
     <div className="yp-preview">
@@ -429,6 +435,13 @@ export function SettingsExamplePreview() {
             <span className="yp-hint">Enter your display name</span>
           </div>
           <input className="yp-input" style={{ width: '180px' }} placeholder="Your name" />
+        </div>
+        <div className="yp-toggle-row">
+          <div>
+            <div className="yp-toggle-label">Theme</div>
+            <span className="yp-hint">Choose a color theme</span>
+          </div>
+          <DropdownSelect options={THEME_OPTIONS} defaultValue="default" />
         </div>
       </div>
 

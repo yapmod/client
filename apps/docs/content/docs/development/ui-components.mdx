@@ -338,6 +338,7 @@ import {
   Divider,
   Switch,
   Input,
+  Select,
   Button,
   Hint,
 } from '@yapmod/ui';
@@ -358,6 +359,7 @@ export default function (yapmod) {
         render: () => {
           const [enabled, setEnabled] = createSignal(true);
           const [name, setName] = createSignal('');
+          const [theme, setTheme] = createSignal('default');
 
           return (
             <SettingsPage title="My Plugin" description="Configure my plugin settings">
@@ -370,6 +372,18 @@ export default function (yapmod) {
                   <Input value={name()} onChange={setName} placeholder="Your name" />
                 </SettingRow>
                 <Hint>Enter your display name</Hint>
+
+                <SettingRow label="Theme" hint="Choose a color theme">
+                  <Select
+                    value={theme()}
+                    onChange={setTheme}
+                    options={[
+                      { value: 'default', label: 'Default' },
+                      { value: 'nord', label: 'Nord' },
+                      { value: 'gruvbox', label: 'Gruvbox' },
+                    ]}
+                  />
+                </SettingRow>
               </Section>
 
               <Divider />
