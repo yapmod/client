@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/yapmod/client/compare/v1.0.2...v1.0.3) (2026-11-15)
+
+### Bug Fixes
+
+* **ci:** remove NODE_AUTH_TOKEN interference for npm OIDC Trusted Publisher ([#43](https://github.com/yapmod/client/issues/43)) ([a75ad82](https://github.com/yapmod/client/commit/a75ad821d23b92534291985bbe4bcb370554081a))
+
 ## [1.0.2](https://github.com/yapmod/client/compare/v1.0.1...v1.0.2) (2026-11-15)
 
 ### Bug Fixes
