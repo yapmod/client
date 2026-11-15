@@ -19,7 +19,7 @@ export function Section(props: SectionProps) {
 
   return (
     <>
-      <div class="section-label" style={{ 'margin-top': marginTop }}>
+      <div class="section-label" style={{ 'margin-top': marginTop, 'margin-bottom': '10px' }}>
         {props.label}
       </div>
       {props.children}
