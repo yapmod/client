@@ -316,6 +316,9 @@ importers:
       '@typescript/typescript6':
         specifier: ^6.0.0
         version: 6.0.2
+      '@yapmod/types':
+        specifier: workspace:*
+        version: link:../types
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.32)(typescript@7.0.2)(yaml@2.9.1)
@@ -334,20 +337,19 @@ importers:
         version: 7.0.2
 
   packages/types:
-    dependencies:
-      '@yapmod/ui':
-        specifier: workspace:*
-        version: link:../ui
+    devDependencies:
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18
-    devDependencies:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
 
   packages/ui:
     dependencies:
+      '@yapmod/types':
+        specifier: workspace:*
+        version: link:../types
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18

@@ -1,15 +1,7 @@
 import { createSignal, splitProps } from 'solid-js';
 import type { JSX } from 'solid-js';
+import type { SwitchProps } from '@yapmod/types';
 import { cx } from '../cx';
-
-export type SwitchProps = Omit<JSX.IntrinsicElements['input'], 'type' | 'checked' | 'onChange'> & {
-  /** The current state. Makes the switch controlled. */
-  checked?: boolean;
-  /** The initial state of an uncontrolled switch. */
-  defaultChecked?: boolean;
-  /** Called with the new state whenever the switch is toggled. */
-  onChange?: (checked: boolean) => void;
-};
 
 /**
  * A toggle styled by Yapmod's stylesheet to match Yapin's `.switch`.

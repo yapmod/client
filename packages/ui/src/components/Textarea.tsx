@@ -1,15 +1,7 @@
 import { createSignal, splitProps } from 'solid-js';
 import type { JSX } from 'solid-js';
+import type { TextareaProps } from '@yapmod/types';
 import { cx } from '../cx';
-
-export type TextareaProps = Omit<JSX.IntrinsicElements['textarea'], 'value' | 'onChange'> & {
-  /** The current text. Makes the textarea controlled. */
-  value?: string;
-  /** The initial text of an uncontrolled textarea. */
-  defaultValue?: string;
-  /** Called with the new text on every keystroke. */
-  onChange?: (value: string) => void;
-};
 
 /**
  * A multi-line text field styled by Yapmod's stylesheet to match Yapin's

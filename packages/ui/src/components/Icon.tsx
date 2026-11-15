@@ -1,17 +1,7 @@
 import { For } from 'solid-js';
 import type { JSX } from 'solid-js';
-import { iconPaths, type IconName } from '../icons';
-
-export type IconProps = {
-  /** Which built-in icon to render. */
-  name: IconName;
-  /** Width and height in pixels. Defaults to 16. */
-  size?: number;
-  /** Accessible label. Without one the icon is decorative. */
-  label?: string;
-  /** Extra class on the `<svg>` element. */
-  class?: string;
-};
+import type { IconProps } from '@yapmod/types';
+import { iconPaths } from '../icons';
 
 /**
  * An inline SVG icon.

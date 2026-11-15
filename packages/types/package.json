@@ -1,7 +1,6 @@
 {
   "name": "@yapmod/types",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -9,11 +8,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
-  "dependencies": {
-    "@yapmod/ui": "workspace:*",
-    "solid-js": "^1.9.18"
-  },
   "devDependencies": {
+    "solid-js": "^1.9.18",
     "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.18"
   }
 }

@@ -1,46 +1,8 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, splitProps } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { JSX } from 'solid-js';
+import type { SelectProps } from '@yapmod/types';
 import { cx } from '../cx';
-
-/** One entry of a {@link Select}. */
-export interface SelectOption {
-  /** The value reported by `onChange`. */
-  value: string;
-  /** The text shown in the trigger and in the option list. */
-  label: string;
-  /** Disabled options are dimmed and cannot be picked. */
-  disabled?: boolean;
-}
-
-export type SelectProps = {
-  /** The options to offer, in display order. */
-  options: readonly SelectOption[];
-  /** The selected value. Makes the select controlled. */
-  value?: string;
-  /** The initially selected value of an uncontrolled select. */
-  defaultValue?: string;
-  /** Called with the newly selected value. */
-  onChange?: (value: string) => void;
-  /** Text shown while nothing is selected. */
-  placeholder?: string;
-  /** Disables the whole control. */
-  disabled?: boolean;
-  /** Id of the trigger button. */
-  id?: string;
-  /** Name of the hidden input that carries the selected value. */
-  name?: string;
-  /** Marks the control as required for form validation. */
-  required?: boolean;
-  /** Extra class on the trigger. */
-  class?: string;
-  /** Extra classes on the trigger. */
-  classList?: Record<string, boolean | undefined>;
-  /** Accessible name of the control. */
-  'aria-label'?: string;
-  /** Id of the element labelling the control. */
-  'aria-labelledby'?: string;
-};
 
 let uid = 0;
 

@@ -1,6 +1,4 @@
-import type { JSX } from 'solid-js';
-
-export type PanelProps = JSX.IntrinsicElements['div'];
+import type { PanelProps } from '@yapmod/types';
 
 /**
  * A card surface that matches Yapin's `.ss2-card`.

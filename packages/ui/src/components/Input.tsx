@@ -1,15 +1,7 @@
 import { createSignal, splitProps } from 'solid-js';
 import type { JSX } from 'solid-js';
+import type { InputProps } from '@yapmod/types';
 import { cx } from '../cx';
-
-export type InputProps = Omit<JSX.IntrinsicElements['input'], 'value' | 'onChange'> & {
-  /** The current text. Makes the input controlled. */
-  value?: string;
-  /** The initial text of an uncontrolled input. */
-  defaultValue?: string;
-  /** Called with the new text on every keystroke. */
-  onChange?: (value: string) => void;
-};
 
 /**
  * A single-line text field styled by Yapmod's stylesheet to match Yapin's

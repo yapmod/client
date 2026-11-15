@@ -1,15 +1,5 @@
 import { splitProps } from 'solid-js';
-import type { JSX } from 'solid-js';
-
-export type ButtonProps = JSX.IntrinsicElements['button'] & {
-  /**
-   * Visual variant. `default`, `primary` and `accent` all render the primary
-   * button; the other names map to Yapin's secondary, ghost and danger styles.
-   */
-  variant?: 'default' | 'primary' | 'accent' | 'secondary' | 'ghost' | 'danger';
-  /** Button size. Settings panels use small action buttons. */
-  size?: 'medium' | 'small';
-};
+import type { ButtonProps } from '@yapmod/types';
 
 /**
  * A button styled by Yapmod's own stylesheet to match Yapin's `.btn`.

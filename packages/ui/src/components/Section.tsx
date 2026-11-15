@@ -1,12 +1,4 @@
-import type { JSX } from 'solid-js';
-
-export type SectionSpacing = 'normal' | 'large';
-
-export interface SectionProps {
-  label: string;
-  children: JSX.Element;
-  spacing?: SectionSpacing;
-}
+import type { SectionProps } from '@yapmod/types';
 
 /**
  * Grouped block with a section heading.
