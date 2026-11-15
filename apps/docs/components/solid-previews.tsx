@@ -317,3 +317,135 @@ export function IconPreview() {
     </div>
   );
 }
+
+/* -------------------------------------------------- SettingsPage preview -- */
+
+export function SettingsPagePreview() {
+  return (
+    <div className="yp-preview">
+      <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: '600' }}>My Plugin</h2>
+      <span className="yp-hint">Configure my plugin settings</span>
+    </div>
+  );
+}
+
+/* -------------------------------------------------- Section preview -- */
+
+export function SectionPreview() {
+  return (
+    <div className="yp-preview">
+      <div className="yp-section-label">Appearance</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="yp-toggle-row">
+          <div>
+            <div className="yp-toggle-label">Dark mode</div>
+            <span className="yp-hint">Use dark theme</span>
+          </div>
+          <input type="checkbox" className="yp-switch" defaultChecked />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------- SettingRow preview -- */
+
+export function SettingRowPreview() {
+  return (
+    <div className="yp-preview">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div className="yp-toggle-row">
+          <div>
+            <div className="yp-toggle-label">Dark mode</div>
+            <span className="yp-hint">Use dark theme</span>
+          </div>
+          <input type="checkbox" className="yp-switch" defaultChecked />
+        </div>
+        <div className="yp-toggle-row">
+          <div className="yp-toggle-label">Display name</div>
+          <input className="yp-input" style={{ width: '180px' }} placeholder="Your name" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------- SettingText preview -- */
+
+export function SettingTextPreview() {
+  return (
+    <div className="yp-preview">
+      <div className="yp-toggle-row">
+        <div>
+          <div className="yp-toggle-label">Version</div>
+          <span className="yp-hint">Current version</span>
+        </div>
+        <span className="yp-hint">v1.0.0</span>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------- Divider preview -- */
+
+export function DividerPreview() {
+  return (
+    <div className="yp-preview">
+      <div className="yp-section-label">General</div>
+      <div className="yp-toggle-row">
+        <div className="yp-toggle-label">Enabled</div>
+        <input type="checkbox" className="yp-switch" defaultChecked />
+      </div>
+      <hr className="yp-divider" />
+      <div className="yp-section-label">Info</div>
+      <div className="yp-toggle-row">
+        <div className="yp-toggle-label">Version</div>
+        <span className="yp-hint">v1.0.0</span>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------- Full settings example preview -- */
+
+export function SettingsExamplePreview() {
+  return (
+    <div className="yp-preview">
+      <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: '600' }}>My Plugin</h2>
+      <span className="yp-hint">Configure my plugin settings</span>
+
+      <div className="yp-section-label">General</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="yp-toggle-row">
+          <div>
+            <div className="yp-toggle-label">Enabled</div>
+            <span className="yp-hint">Toggle the plugin on or off</span>
+          </div>
+          <input type="checkbox" className="yp-switch" defaultChecked />
+        </div>
+        <div className="yp-toggle-row">
+          <div>
+            <div className="yp-toggle-label">Display name</div>
+            <span className="yp-hint">Enter your display name</span>
+          </div>
+          <input className="yp-input" style={{ width: '180px' }} placeholder="Your name" />
+        </div>
+      </div>
+
+      <hr className="yp-divider" />
+
+      <div className="yp-section-label">Info</div>
+      <div className="yp-toggle-row">
+        <div>
+          <div className="yp-toggle-label">Version</div>
+          <span className="yp-hint">Current version</span>
+        </div>
+        <span className="yp-hint">v1.0.0</span>
+      </div>
+
+      <div style={{ marginTop: '1rem' }}>
+        <button className="yp-btn yp-btn-primary">Save</button>
+      </div>
+    </div>
+  );
+}

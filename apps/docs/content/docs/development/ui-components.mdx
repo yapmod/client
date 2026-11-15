@@ -230,6 +230,8 @@ Layout components abstract away Yapin's host CSS classes and spacing conventions
 
 Top-level wrapper for a settings page. Renders the page `<h2>` title and optional description hint.
 
+<SettingsPagePreview />
+
 ```tsx
 import { SettingsPage } from '@yapmod/ui';
 
@@ -250,6 +252,8 @@ import { SettingsPage } from '@yapmod/ui';
 
 Grouped block with a section heading. Renders a `.section-label` with consistent top margin.
 
+<SectionPreview />
+
 ```tsx
 import { Section } from '@yapmod/ui';
 
@@ -267,6 +271,8 @@ import { Section } from '@yapmod/ui';
 ### SettingRow
 
 A single setting row with a label, optional hint, and a control. Renders the `.toggle-row` pattern: label and hint on the left, control on the right.
+
+<SettingRowPreview />
 
 ```tsx
 import { SettingRow } from '@yapmod/ui';
@@ -288,6 +294,8 @@ import { SettingRow } from '@yapmod/ui';
 
 A read-only setting row that displays a text value. Useful for displaying information like version numbers or paths.
 
+<SettingTextPreview />
+
 ```tsx
 import { SettingText } from '@yapmod/ui';
 
@@ -306,6 +314,8 @@ import { SettingText } from '@yapmod/ui';
 
 A horizontal separator between sections. Renders a styled `<hr>` using CSS variables for the border color.
 
+<DividerPreview />
+
 ```tsx
 import { Divider } from '@yapmod/ui';
 
@@ -315,6 +325,8 @@ import { Divider } from '@yapmod/ui';
 ## Example: a settings panel
 
 Here's how it all looks together in a plugin that uses the builder:
+
+<SettingsExamplePreview />
 
 ```tsx
 import { createSignal } from 'solid-js';
