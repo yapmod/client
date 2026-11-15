@@ -1,4 +1,4 @@
-import { Button, Icon, Input, Switch } from '@yapmod/ui';
+import { Button, Icon, Input, SettingsPage, Switch } from '@yapmod/ui';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
@@ -237,13 +237,10 @@ export function ThemesPage() {
   });
 
   return (
-    <>
-      <h2>Themes ({visible().length})</h2>
-      <div class="hint" style={{ 'margin-bottom': '14px' }}>
-        Install CSS themes from a file or a direct link. Themes are stored in this browser and
-        applied to Yapin.
-      </div>
-
+    <SettingsPage
+      title="Themes"
+      description="Install CSS themes from a file or a direct link. Themes are stored in this browser and applied to Yapin."
+    >
       <div class="row-gap" style={{ 'margin-bottom': '14px' }}>
         <Input
           type="search"
@@ -301,6 +298,6 @@ export function ThemesPage() {
           </div>
         </Show>
       </Show>
-    </>
+    </SettingsPage>
   );
 }
