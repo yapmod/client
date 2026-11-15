@@ -1,0 +1,78 @@
+---
+title: Type Safety
+description: Get TypeScript autocompletion for the yapmod free variable in your plugins.
+---
+
+When writing plugins in TypeScript, you can get full type safety for the `yapmod` free variable — autocompletion for `yapmod.storage`, `yapmod.ui.Button`, `yapmod.settings.registerSection`, and more.
+
+## Install the types
+
+Add `@yapmod/types` as a dev dependency:
+
+```bash
+npm install -D @yapmod/types
+```
+
+## Configure TypeScript
+
+Add `@yapmod/types` to your `tsconfig.json` `types` array so the `yapmod` global declaration is loaded automatically:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@yapmod/types"]
+  }
+}
+```
+
+## What you get
+
+With this configuration, the `yapmod` variable is typed as `YapmodPluginApi` everywhere in your plugin source:
+
+```typescript
+// Fully typed — no imports needed
+export function onLoad() {
+  yapmod.log("plugin loaded");
+  yapmod.storage.count = (yapmod.storage.count as number) + 1;
+  yapmod.flushStorage();
+}
+
+export function settings() {
+  return {
+    render: () => (
+      <yapmod.ui.SettingsPage title="My Plugin">
+        <yapmod.ui.Section label="Options">
+          {/* ... */}
+        </yapmod.ui.Section>
+      </yapmod.ui.SettingsPage>
+    ),
+  };
+}
+```
+
+You get autocompletion for:
+
+- **`yapmod.storage`** — reactive per-plugin storage
+- **`yapmod.ui.*`** — all UI components (Button, Switch, Input, Select, etc.)
+- **`yapmod.settings.registerSection()`** — settings panel registration
+- **`yapmod.observe()`** — DOM element observation
+- **`yapmod.solid`** — shared SolidJS signals and control flow
+- **`yapmod.log()`** — prefixed console logging
+
+## Importing types
+
+You can also import individual types for use in your plugin code:
+
+```typescript
+import type { YapmodPluginApi, PluginManifest } from '@yapmod/types';
+
+const manifest: PluginManifest = {
+  name: 'My Plugin',
+  author: 'Me',
+  description: 'Does something useful',
+};
+```
+
+## Next steps
+
+Learn about the [plugin API reference](/docs/development/plugin-api) and the available [UI components](/docs/development/ui-components).
