@@ -33,7 +33,7 @@ export interface Client {
  * The minimal handle exposed on `globalThis.YapmodClient`.
  *
  * Beyond lifecycle it deliberately reveals little about internal
- * implementation details — the one exception is `api`, the shared SolidJS
+ * implementation details. The one exception is `api`, the shared SolidJS
  * instances embedders need to render into this bundle's reactive world.
  */
 export interface ClientHandle {

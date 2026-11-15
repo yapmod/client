@@ -6,7 +6,7 @@ import { dirname, join, parse } from 'node:path';
 import { watchPlugin } from './watch.ts';
 
 /**
- * Self-contained CSS for the dev control page — matches the Yapmod docs site
+ * Self-contained CSS for the dev control page. It matches the Yapmod docs site
  * without depending on Tailwind or Fumadocs at runtime.
  *
  * The tokens are converted from the oklch values in apps/docs/app/global.css:
@@ -233,14 +233,14 @@ function controlPage(options: {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Yapmod Dev — ${escapeHtml(options.manifest.name)}</title>
+    <title>Yapmod Dev - ${escapeHtml(options.manifest.name)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       ${uiCss}
 
-      /* Minimal hero layout — matches the docs landing page */
+      /* Minimal hero layout, matches the docs landing page */
       body {
         display: flex;
         justify-content: center;
@@ -313,7 +313,7 @@ function controlPage(options: {
         text-align: center;
       }
 
-      /* Action button — full width */
+      /* Action button, full width */
       .yp-btn {
         width: 100%;
       }
@@ -423,7 +423,7 @@ function controlPage(options: {
         }
 
         if (data.type === 'yapmod:dev:hello') {
-          // The Yapin page announced itself — it just (re)loaded, so the
+          // The Yapin page announced itself. It just (re)loaded, so the
           // current build is pushed again.
           target.window = event.source;
           connected = true;
@@ -474,7 +474,7 @@ function escapeHtml(value: string): string {
  *
  * The returned session serves the control page, the built expression and a
  * server-sent event stream the page listens to. Nothing here reaches into
- * the browser — the control page does that, over `postMessage`.
+ * the browser. The control page does that, over `postMessage`.
  */
 export async function startDevSession(options: DevSessionOptions): Promise<DevSession> {
   const host = options.host ?? '127.0.0.1';

@@ -9,7 +9,7 @@ import { transformPluginSource } from './transform.ts';
 
 /*
  * esbuild passes: first-party sources go through Babel, and any dependency
- * that still imports `solid-js` is a hard error — bundling it would put a
+ * that still imports `solid-js` is a hard error. Bundling it would put a
  * second Solid on the page and split signal state away from the host's.
  */
 const babelTransform: Plugin = {
@@ -80,7 +80,7 @@ export function createBuildOptions(options: {
  * imports, esbuild bundles everything else, and the result is wrapped in
  * the `function (yapmod) { ... }` shape from `expression.ts`.
  *
- * Returns the expression without touching the filesystem — `buildPlugin`
+ * Returns the expression without touching the filesystem. `buildPlugin`
  * adds the file writing.
  */
 export async function buildPluginExpression(options: {

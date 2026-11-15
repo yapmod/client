@@ -317,8 +317,8 @@ export function reloadPlugin(id: string, source: string): ReloadResult {
 /**
  * Starts one client-registered plugin.
  *
- * The definition's `setup` runs as ordinary trusted code — synchronously,
- * in the host application's own module — and its module goes through
+ * The definition's `setup` runs as ordinary trusted code, synchronously,
+ * in the host application's own module. Its module goes through
  * exactly the same activation path as a community plugin.
  */
 export function startClientPlugin(id: string): boolean {
@@ -390,7 +390,7 @@ export function stopPlugin(id: string): void {
  * switch should show; a plugin that fails to load stays disabled.
  *
  * Client-registered plugins persist to their override store instead of a
- * plugin record — they have no record to write to, and can never be
+ * plugin record. They have no record to write to, and can never be
  * removed or updated.
  */
 export function setPluginEnabled(id: string, enabled: boolean): boolean {
@@ -621,8 +621,8 @@ async function updateInstalledPlugins(): Promise<void> {
  * stored plugin marked as enabled is started. Client-registered plugins are
  * not started here: the embedding application registers them through
  * `registerClientPlugin()`, which starts them at registration time, and
- * they are never fetched or updated. Disposal stops every plugin — community
- * and client-registered alike — runs its cleanups, and removes any plugin
+ * they are never fetched or updated. Disposal stops every plugin, community
+ * and client-registered alike, runs its cleanups, and removes any plugin
  * modal without changing the saved enabled flags, so plugins start again the
  * next time Yapmod loads.
  */

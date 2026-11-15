@@ -2,7 +2,7 @@
  * The wire format between the builder's dev server and the client.
  *
  * Both sides speak `window.postMessage`, which no Content-Security-Policy
- * directive covers — that is the whole reason the dev server pushes code
+ * directive covers. That is the whole reason the dev server pushes code
  * instead of letting the page fetch it. `connect-src` would block a page
  * side request to `http://127.0.0.1:5173`, but a message between two
  * windows passes through untouched.

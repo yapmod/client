@@ -62,7 +62,7 @@ export interface ClientPlugin {
   /** Whether the plugin starts when the user has made no explicit choice. Defaults to `true`. */
   defaultEnabled?: boolean;
   /**
-   * Creates the plugin module. Runs synchronously in the page realm — the
+   * Creates the plugin module. Runs synchronously in the page realm, the
    * host application's own code, so no `eval` or inline script is involved.
    */
   setup(api: YapmodPluginApi): ClientPluginModule;

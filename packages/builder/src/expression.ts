@@ -7,7 +7,7 @@
  *
  * The wrapper takes no parameter: `yapmod` inside it resolves to the API
  * object the loader's own function provides. Wrapping after the bundler has
- * finished also matters — minifiers prune an uncalled top-level function
+ * finished also matters. Minifiers prune an uncalled top-level function
  * expression, which is why the wrapper is invoked and returns instead of
  * being handed to the loader as a function.
  */

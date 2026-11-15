@@ -9,7 +9,7 @@ import * as solidWeb from 'solid-js/web';
  * Plugins and embedders must never bundle their own copy: two copies break
  * reactivity between them, because signals from one instance are invisible
  * to the other. Everything that renders or reacts goes through these three
- * module objects — `YapmodClient.api` exposes them to embedders, and the
+ * module objects. `YapmodClient.api` exposes them to embedders, and the
  * plugin API puts the same references on `yapmod.solid` and friends.
  */
 export const sharedSolid: SharedSolid = { solid, solidStore, solidWeb };

@@ -73,7 +73,7 @@ const paths = {
   ],
 } as const;
 
-/** Names of the built-in icons — re-exported from the component. */
+/** Names of the built-in icons, re-exported from the component. */
 export { type IconName } from './components/Icon';
 
 /** SVG path data for the built-in icons, keyed by name. */
