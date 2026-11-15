@@ -1,5 +1,5 @@
 import { version } from '../../../package.json';
-import { Button } from '@yapmod/ui';
+import { Button, Switch } from '@yapmod/ui';
 import { Show } from 'solid-js';
 import { devStatus } from '../dev/status';
 import { stopDevPlugins } from '../dev/apply';
@@ -67,12 +67,10 @@ export const yapmodGroup: SettingsGroup = {
                 ones you installed. Hiding them keeps the running ones active.
               </div>
             </div>
-            <input
-              class="switch"
-              type="checkbox"
+            <Switch
               checked={showClientPlugins()}
               aria-label="Show client plugins"
-              onChange={(event) => setShowClientPlugins(event.currentTarget.checked)}
+              onChange={setShowClientPlugins}
             />
           </div>
 
@@ -89,13 +87,10 @@ export const yapmodGroup: SettingsGroup = {
                 when you are done.
               </div>
             </div>
-            <input
-              class="switch"
-              type="checkbox"
+            <Switch
               checked={developerFeatures()}
               aria-label="Developer features"
-              onChange={(event) => {
-                const enabled = event.currentTarget.checked;
+              onChange={(enabled) => {
                 setDeveloperFeatures(enabled);
                 // Dev plugins were started by a dev server; they stop with it.
                 if (!enabled) stopDevPlugins();

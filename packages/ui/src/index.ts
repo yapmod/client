@@ -6,5 +6,6 @@ export { Button, type ButtonProps } from './components/Button';
 export { Hint, type HintProps } from './components/Hint';
 export { Panel, type PanelProps } from './components/Panel';
 export { Input, type InputProps } from './components/Input';
+export { Textarea, type TextareaProps } from './components/Textarea';
 export { Switch, type SwitchProps } from './components/Switch';
 export { Select, type SelectProps, type SelectOption } from './components/Select';

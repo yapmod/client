@@ -255,6 +255,15 @@
   height: 44px;
 }
 
+/* Mirrors Yapin's `textarea.input`. */
+.yp-textarea {
+  height: auto;
+  min-height: 64px;
+  padding: 8px 12px;
+  font: inherit;
+  resize: vertical;
+}
+
 /* -------------------------------------------------------------- select -- */
 
 /* Mirrors Yapin's `.dd-trigger`, `.dd-menu` and `.dd-opt`. */
