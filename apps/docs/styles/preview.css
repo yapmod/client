@@ -1,0 +1,369 @@
+/*
+ * Scoped copy of the Yapmod UI stylesheet for the docs preview component.
+ *
+ * All selectors are prefixed with `.yp-preview` so they don't leak into the
+ * rest of the docs page. The CSS custom property fallbacks are duplicated
+ * here so the preview works independently of the host page's theme.
+ */
+
+.yp-preview {
+  --yp-bg-main: #222329;
+  --yp-bg-side: #1b1c21;
+  --yp-bg-elev: #2b2c33;
+  --yp-bg-hover: #2f3038;
+  --yp-bg-active: #383944;
+  --yp-bg-input: #2d2e36;
+  --yp-bg-rail: #141519;
+  --yp-bg-float: #1b1c21;
+  --yp-text: #ececf1;
+  --yp-text-muted: #a6a7b4;
+  --yp-text-faint: #9a9ca9;
+  --yp-border: #ffffff12;
+  --yp-accent: #ff6b4a;
+  --yp-accent-hover: #ff5a35;
+  --yp-accent-soft: #ff6b4a29;
+  --yp-on-accent: #ffffff;
+  --yp-accent-fill: #d4401e;
+  --yp-accent-fill-hover: #bf3618;
+  --yp-danger: #f2555a;
+  --yp-success: #3fcf82;
+  --yp-warning: #f5b544;
+  --yp-radius: 10px;
+  --yp-row-radius: 8px;
+  --yp-shadow: 0 10px 40px #00000073;
+  --yp-t-micro: 0.12s;
+  --yp-ease-std: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --yp-press-ms: 60ms;
+  --yp-hover-dim: 0.92;
+  --yp-press-dim: 0.84;
+  --yp-font:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  font-family: var(--yp-font);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--yp-text);
+  background: var(--yp-bg-main);
+  border: 1px solid var(--yp-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+.yp-preview,
+.yp-preview *,
+.yp-preview .yp-btn,
+.yp-preview .yp-btn *,
+.yp-preview .yp-hint,
+.yp-preview .yp-input,
+.yp-preview .yp-switch,
+.yp-preview .yp-dd-menu,
+.yp-preview .yp-dd-menu * {
+  box-sizing: border-box;
+}
+
+/* Card */
+.yp-preview .yp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--yp-border);
+  border-radius: 12px;
+  background: var(--yp-bg-side);
+}
+
+/* Hint */
+.yp-preview .yp-hint {
+  color: var(--yp-text-muted);
+  font-size: 13px;
+}
+
+/* Switch */
+.yp-preview .yp-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--yp-bg-active);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: background var(--yp-t-micro);
+}
+
+.yp-preview .yp-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--yp-t-micro);
+}
+
+.yp-preview .yp-switch:checked {
+  background: var(--yp-success);
+}
+
+.yp-preview .yp-switch:checked::after {
+  transform: translate(18px);
+}
+
+.yp-preview .yp-switch:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+
+.yp-preview .yp-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Input */
+.yp-preview .yp-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--yp-border);
+  border-radius: 8px;
+  background: var(--yp-bg-rail);
+  color: var(--yp-text);
+  font: inherit;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.yp-preview .yp-input::placeholder {
+  color: var(--yp-text-faint);
+  opacity: 1;
+}
+
+.yp-preview .yp-input:focus {
+  border-color: var(--yp-accent);
+}
+
+.yp-preview .yp-input:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 1px;
+}
+
+.yp-preview .yp-input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Textarea */
+.yp-preview .yp-textarea {
+  height: auto;
+  min-height: 64px;
+  padding: 8px 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+/* Select trigger */
+.yp-preview .yp-dd-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  color: var(--yp-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.yp-preview .yp-dd-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--yp-text-muted) 45%, var(--yp-border));
+}
+
+.yp-preview .yp-dd-trigger.yp-dd-trigger--open {
+  border-color: var(--yp-accent);
+}
+
+.yp-preview .yp-dd-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.yp-preview .yp-dd-trigger.yp-dd-trigger--open .yp-dd-chev {
+  color: var(--yp-text);
+  transform: rotate(180deg);
+}
+
+.yp-preview .yp-dd-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yp-preview .yp-dd-value--empty {
+  color: var(--yp-text-muted);
+}
+
+.yp-preview .yp-dd-chev {
+  flex-shrink: 0;
+  transition: transform var(--yp-t-micro);
+}
+
+/* Select menu */
+.yp-preview .yp-dd-menu {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--yp-border);
+  border-radius: 10px;
+  background: var(--yp-bg-float);
+  box-shadow: var(--yp-shadow);
+  overflow: hidden;
+  animation: yp-dd-in var(--yp-t-micro) var(--yp-ease-std);
+}
+
+@keyframes yp-dd-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.yp-preview .yp-dd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.yp-preview .yp-dd-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--yp-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.yp-preview .yp-dd-opt .yp-dd-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yp-preview .yp-dd-opt--hi {
+  background: color-mix(in srgb, var(--yp-accent) 16%, transparent);
+  color: var(--yp-text);
+}
+
+.yp-preview .yp-dd-opt--on {
+  background: color-mix(in srgb, var(--yp-accent) 12%, transparent);
+  color: var(--yp-text);
+  font-weight: 600;
+}
+
+.yp-preview .yp-dd-opt--on.yp-dd-opt--hi {
+  background: color-mix(in srgb, var(--yp-accent) 24%, transparent);
+}
+
+.yp-preview .yp-dd-opt--off {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.yp-preview .yp-dd-check {
+  flex-shrink: 0;
+  color: var(--yp-accent);
+}
+
+/* Button */
+.yp-preview .yp-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--yp-row-radius);
+  background: var(--yp-accent-fill);
+  color: var(--yp-on-accent);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--yp-press-ms) linear,
+    color var(--yp-press-ms) linear,
+    filter var(--yp-press-ms) linear,
+    opacity 120ms ease;
+}
+
+.yp-preview .yp-btn:hover:not(:disabled) {
+  filter: brightness(var(--yp-hover-dim));
+}
+
+.yp-preview .yp-btn:active:not(:disabled) {
+  filter: brightness(var(--yp-press-dim));
+}
+
+.yp-preview .yp-btn:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+
+.yp-preview .yp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.yp-preview .yp-btn--secondary {
+  background: var(--yp-bg-active);
+  color: var(--yp-text);
+}
+
+.yp-preview .yp-btn--ghost {
+  background: transparent;
+  color: var(--yp-text-muted);
+}
+
+.yp-preview .yp-btn--ghost:hover:not(:disabled) {
+  background: var(--yp-bg-hover);
+  color: var(--yp-text);
+  filter: none;
+}
+
+.yp-preview .yp-btn--ghost:active:not(:disabled) {
+  background: var(--yp-bg-active);
+  filter: none;
+}
+
+.yp-preview .yp-btn--danger {
+  background: var(--yp-danger);
+  color: var(--yp-on-accent);
+}
+
+.yp-preview .yp-btn--small {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+}

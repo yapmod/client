@@ -5,7 +5,7 @@
  * root agree on. Implementation details stay in the package that owns them.
  */
 
-import type { SharedSolid } from './plugin';
+import type { PluginUi, SharedSolid } from './plugin';
 
 /** Lifecycle states of the client runtime. */
 export type ClientState = 'ready' | 'disposed';
@@ -46,6 +46,12 @@ export interface ClientHandle {
    * to plugins as `yapmod.solid`, `yapmod.solidWeb` and `yapmod.solidStore`.
    */
   readonly api: SharedSolid;
+  /**
+   * UI helpers and Solid components (Button, Switch, Input, etc.) that
+   * plugins and embedders can use to build interfaces matching Yapin's
+   * native look.
+   */
+  readonly ui: PluginUi;
   /** Disposes the runtime. Safe to call repeatedly. */
   dispose(): void;
 }

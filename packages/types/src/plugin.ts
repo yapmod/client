@@ -1,5 +1,15 @@
 import type { Component, JSX } from 'solid-js';
-import type { ButtonProps, HintProps, IconName, IconProps, PanelProps } from '@yapmod/ui';
+import type {
+  ButtonProps,
+  HintProps,
+  IconName,
+  IconProps,
+  InputProps,
+  PanelProps,
+  SelectProps,
+  SwitchProps,
+  TextareaProps,
+} from '@yapmod/ui';
 
 /*
  * Plugin-facing contracts: the single source of truth for the plugin API.
@@ -57,6 +67,14 @@ export interface PluginUi {
   Panel: Component<PanelProps>;
   /** An inline SVG icon from Yapmod's built-in set. */
   Icon: Component<IconProps>;
+  /** A toggle switch matching Yapin's `.switch` style. */
+  Switch: Component<SwitchProps>;
+  /** A single-line text field matching Yapin's `.input` style. */
+  Input: Component<InputProps>;
+  /** A multi-line text field matching Yapin's `textarea.input` style. */
+  Textarea: Component<TextareaProps>;
+  /** A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style. */
+  Select: Component<SelectProps>;
 }
 
 /** A settings section a plugin registers inside the Yapmod settings group. */

@@ -1,4 +1,4 @@
-import { Button, Icon } from '@yapmod/ui';
+import { Button, Icon, Input, Switch } from '@yapmod/ui';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
@@ -133,14 +133,11 @@ function PluginCard(props: { plugin: StoredPlugin }) {
             <Icon name="trash" size={16} />
           </button>
 
-          <input
-            class="switch"
-            type="checkbox"
+          <Switch
             checked={plugin().on}
             aria-label={`Enable ${plugin().manifest.name}`}
-            onChange={(event) => {
-              const input = event.currentTarget;
-              input.checked = setPluginEnabled(plugin().id, input.checked);
+            onChange={(enabled) => {
+              setPluginEnabled(plugin().id, enabled);
             }}
           />
         </div>
@@ -212,14 +209,11 @@ function ClientPluginCard(props: { definition: ClientPlugin }) {
             </button>
           </Show>
 
-          <input
-            class="switch"
-            type="checkbox"
+          <Switch
             checked={enabled()}
             aria-label={`Enable ${definition().manifest.name}`}
-            onChange={(event) => {
-              const input = event.currentTarget;
-              input.checked = setPluginEnabled(definition().id, input.checked);
+            onChange={(next) => {
+              setPluginEnabled(definition().id, next);
             }}
           />
         </div>
@@ -287,13 +281,12 @@ export function PluginsPage() {
       </div>
 
       <div class="row-gap" style={{ 'margin-bottom': '14px' }}>
-        <input
-          class="input"
+        <Input
           type="search"
           placeholder="Search plugins..."
           aria-label="Search plugins"
           value={search()}
-          onInput={(event) => setSearch(event.currentTarget.value)}
+          onChange={setSearch}
           style={{ flex: '1 1 220px', width: 'auto' }}
         />
         <Button onClick={() => openPluginEditor()}>

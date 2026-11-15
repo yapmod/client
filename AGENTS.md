@@ -13,9 +13,10 @@ pnpm install
 pnpm dev          # vite build --watch -> apps/client/dist/yapmod-client.js
 pnpm build        # production bundle
 pnpm typecheck    # tsc --noEmit across all packages
-pnpm lint         # oxlint
+pnpm lint         # oxlint + the UI component check
 pnpm format       # oxfmt (format:check to verify)
-pnpm docs         # Astro docs dev server on :4321
+pnpm demo         # component demo page on :5199
+pnpm docs         # Next.js docs dev server on :3000
 ```
 
 There are no tests. There is no client dev server: build, then paste the bundle into the
@@ -29,7 +30,8 @@ apps/client/        # composition root; the only layer that knows Yapin's DOM
   src/index.ts      # bootstraps on import, installs features, exposes the global handle
   src/lib/          # modal, toast, url helpers
   src/features/     # settings, themes, plugins, dev (hot reload)
-apps/docs/          # Astro + Fumadocs site (React islands; separate from the client)
+  demo/             # Vite demo page for the @yapmod/ui components
+apps/docs/          # Next.js + Fumadocs site (React; separate from the client)
 packages/core/      # createClient(): lifecycle + disposal only
 packages/types/     # type-only public contracts
 packages/ui/        # Solid components, icons, CSS (inlined into the bundle)
@@ -56,6 +58,10 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
 - **SolidJS only in `apps/client` and `packages/ui`.** Never import React/Fumadocs there;
   never import Solid into `apps/docs`. Keep `resolve.dedupe: ['solid-js']` in the client
   Vite config.
+- **Form controls come from `@yapmod/ui`.** The client must not hand-write `<input>`,
+  `<select>` or `<textarea>` elements: use `Switch`, `Input`, `Textarea` and `Select` from
+  `@yapmod/ui`, which already reproduce Yapin's own controls. This is enforced by convention
+  (file inputs excepted).
 - Use Solid idioms: `createSignal`/`createMemo`, `For`/`Show`, `class` (not `className`),
   `classList`, kebab-case style keys. Render outside a component tree with `render()` from
   `solid-js/web` (see `lib/modal.tsx`).
@@ -64,10 +70,10 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   (`yapmod.themes.v1`, `yapmod.plugins.v1`, `yapmod.plugins.data.v1`). Validate unknown JSON
   with guards and drop malformed records instead of throwing.
 - Styling: UI renders in the light DOM and reuses Yapin's classes (`.settings-main`,
-  `.ss2-card`, `.hint`, `.toggle-row`, `.input`, `.switch`, `.overlay`, `.modal`). Only Yapmod
-  components keep `yp-` classes, styled by `packages/ui/src/styles/base.css`. Prefer host CSS
-  variables (`--bg-side`, `--text`, `--accent`) with `--yp-*` fallbacks. CSS is bundled via
-  `?inline`; never emit a separate stylesheet.
+  `.ss2-card`, `.hint`, `.toggle-row`, `.overlay`, `.modal`). Form controls come from
+  `@yapmod/ui`, which carries Yapin's `.input`/`.switch`/`.dd-*` look in its own `yp-`
+  classes. Prefer host CSS variables (`--bg-side`, `--text`, `--accent`) with `--yp-*`
+  fallbacks. CSS is bundled via `?inline`; never emit a separate stylesheet.
 - Errors: catch locally, log with a `[yapmod]` prefix, and surface user-facing failures with
   `showToast(..., 'error')`. Cleanups must never abort each other. Fire-and-forget async uses
   `void promise`.
@@ -106,14 +112,30 @@ build step. Import them by name (`@yapmod/core`, `@yapmod/ui`); use relative pat
   per-plugin storage.
 - The version shown in the UI comes from `apps/client/package.json`; bump it there.
 
-## Git Commits
+## Workflow
+
+Work lands through an issue and a pull request; `main` is only changed by merging one.
+
+1. **Open the issue first.** Describe the change with the `idea-to-issue` skill: a
+   Conventional Commits title (`feat(ui): …`), the repository's labels, the open milestone
+   and an assignee. Implement nothing before the issue exists.
+2. **Branch from `origin/main`.** Fetch, then create a branch named after the change
+   (`feat/ui-form-components-19`, `fix/plugin-import-42`).
+3. **Commit in small, logical steps.** Every message follows
+   [Conventional Commits](https://www.conventionalcommits.org/) (`feat: add plugin export`,
+   `fix: handle missing theme`, `chore: update deps`) and references the issue
+   (`Closes #19`).
+4. **Check before pushing.** `pnpm typecheck`, `pnpm lint` and `pnpm format:check` must pass.
+5. **Open the pull request** with the `issue-to-pr` skill: the title mirrors the first
+   commit, the body lists the changes and the verification, and it ends with `Closes #<issue>`
+   so merging closes the issue.
+
+Rules that apply to every commit:
 
 - **Never use co-author trailers.** Do not append `Co-authored-by` or any similar trailer to
   commit messages.
-- When committing changes, always use [Conventional Commits](https://www.conventionalcommits.org/)
-  format (e.g. `feat: add plugin export`, `fix: handle missing theme`, `chore: update deps`).
-- Commit and push directly to the branch. Do not create pull requests, branches for review,
-  or any other PR-related workflow.
+- Do not force-push `main`, and do not push straight to `main`.
+- Keep pull requests focused: unrelated work goes into its own issue and branch.
 
 ## Reference
 

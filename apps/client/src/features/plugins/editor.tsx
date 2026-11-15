@@ -1,4 +1,4 @@
-import { Button, Icon } from '@yapmod/ui';
+import { Button, Icon, Input, Switch, Textarea } from '@yapmod/ui';
 import { Show, createSignal, type Accessor, type Setter } from 'solid-js';
 import { openModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
@@ -162,13 +162,7 @@ function PluginEditorFields(props: { state: EditorState; onClose: () => void }) 
           <div class="toggle-label">Local plugin</div>
           <div class="hint">Write or upload the JavaScript instead of fetching it from a URL.</div>
         </div>
-        <input
-          class="switch"
-          type="checkbox"
-          checked={state.local()}
-          aria-label="Local plugin"
-          onChange={(event) => state.setLocal(event.currentTarget.checked)}
-        />
+        <Switch checked={state.local()} aria-label="Local plugin" onChange={state.setLocal} />
       </div>
 
       <Show
@@ -177,14 +171,13 @@ function PluginEditorFields(props: { state: EditorState; onClose: () => void }) 
           <>
             <div class="field">
               <label for="yp-plugin-url">Plugin URL</label>
-              <input
+              <Input
                 id="yp-plugin-url"
-                class="input"
                 type="text"
                 inputmode="url"
                 placeholder="https://example.com/my-plugin/"
                 value={state.url()}
-                onInput={(event) => state.setUrl(event.currentTarget.value)}
+                onChange={state.setUrl}
               />
             </div>
 
@@ -199,12 +192,10 @@ function PluginEditorFields(props: { state: EditorState; onClose: () => void }) 
                 <div class="toggle-label">Automatically update</div>
                 <div class="hint">Fetch a fresh copy when Yapin loads.</div>
               </div>
-              <input
-                class="switch"
-                type="checkbox"
+              <Switch
                 checked={state.autoUpdate()}
                 aria-label="Automatically update plugin"
-                onChange={(event) => state.setAutoUpdate(event.currentTarget.checked)}
+                onChange={state.setAutoUpdate}
               />
             </div>
           </>
@@ -212,43 +203,31 @@ function PluginEditorFields(props: { state: EditorState; onClose: () => void }) 
       >
         <div class="field">
           <label for="yp-plugin-name">Name</label>
-          <input
-            id="yp-plugin-name"
-            class="input"
-            value={state.name()}
-            onInput={(event) => state.setName(event.currentTarget.value)}
-          />
+          <Input id="yp-plugin-name" value={state.name()} onChange={state.setName} />
         </div>
 
         <div class="field">
           <label for="yp-plugin-author">Author</label>
-          <input
-            id="yp-plugin-author"
-            class="input"
-            value={state.author()}
-            onInput={(event) => state.setAuthor(event.currentTarget.value)}
-          />
+          <Input id="yp-plugin-author" value={state.author()} onChange={state.setAuthor} />
         </div>
 
         <div class="field">
           <label for="yp-plugin-description">Description</label>
-          <input
+          <Input
             id="yp-plugin-description"
-            class="input"
             value={state.description()}
-            onInput={(event) => state.setDescription(event.currentTarget.value)}
+            onChange={state.setDescription}
           />
         </div>
 
         <div class="field">
           <label for="yp-plugin-code">Code</label>
-          <textarea
+          <Textarea
             id="yp-plugin-code"
-            class="input"
             rows={12}
             spellcheck={false}
             value={state.code()}
-            onInput={(event) => state.setCode(event.currentTarget.value)}
+            onChange={state.setCode}
           />
         </div>
 

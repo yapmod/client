@@ -1,10 +1,17 @@
-import { Button, Icon } from '@yapmod/ui';
+import { Button, Icon, Input, Select, Switch, Textarea } from '@yapmod/ui';
 import { Show, createSignal, type Accessor, type Setter } from 'solid-js';
 import { openModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
 import { createLocalTheme, safeHttpUrl } from './metadata';
 import { onlineThemeLine, type OnlineThemeMode } from './online';
 import { addLocalThemes, addOnlineTheme, themeState } from './store';
+
+/** The themes an online theme can be applied to. */
+const THEME_MODES = [
+  { value: 'always', label: 'Always' },
+  { value: 'light', label: 'Light theme' },
+  { value: 'dark', label: 'Dark theme' },
+];
 
 interface ThemeEditorState {
   online: Accessor<boolean>;
@@ -177,13 +184,7 @@ function ThemeEditorFields(props: { state: ThemeEditorState; onClose: () => void
           <div class="toggle-label">Online theme</div>
           <div class="hint">Fetch a CSS file from a direct link instead of uploading it.</div>
         </div>
-        <input
-          class="switch"
-          type="checkbox"
-          checked={state.online()}
-          aria-label="Online theme"
-          onChange={(event) => state.setOnline(event.currentTarget.checked)}
-        />
+        <Switch checked={state.online()} aria-label="Online theme" onChange={state.setOnline} />
       </div>
 
       <Show
@@ -192,47 +193,43 @@ function ThemeEditorFields(props: { state: ThemeEditorState; onClose: () => void
           <>
             <div class="field">
               <label for="yp-theme-name">Name</label>
-              <input
+              <Input
                 id="yp-theme-name"
-                class="input"
                 placeholder="Read from the CSS header when left blank"
                 value={state.name()}
-                onInput={(event) => state.setName(event.currentTarget.value)}
+                onChange={state.setName}
               />
             </div>
 
             <div class="field">
               <label for="yp-theme-author">Author</label>
-              <input
+              <Input
                 id="yp-theme-author"
-                class="input"
                 placeholder="Read from the CSS header when left blank"
                 value={state.author()}
-                onInput={(event) => state.setAuthor(event.currentTarget.value)}
+                onChange={state.setAuthor}
               />
             </div>
 
             <div class="field">
               <label for="yp-theme-description">Description</label>
-              <input
+              <Input
                 id="yp-theme-description"
-                class="input"
                 placeholder="Read from the CSS header when left blank"
                 value={state.description()}
-                onInput={(event) => state.setDescription(event.currentTarget.value)}
+                onChange={state.setDescription}
               />
             </div>
 
             <div class="field">
               <label for="yp-theme-css">CSS</label>
-              <textarea
+              <Textarea
                 id="yp-theme-css"
-                class="input"
                 rows={10}
                 spellcheck={false}
                 placeholder="Paste a .theme.css file here..."
                 value={state.css()}
-                onInput={(event) => state.setCss(event.currentTarget.value)}
+                onChange={state.setCss}
                 onBlur={state.syncMetadata}
                 style={{
                   'font-family': 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -264,29 +261,24 @@ function ThemeEditorFields(props: { state: ThemeEditorState; onClose: () => void
       >
         <div class="field">
           <label for="yp-theme-url">CSS URL</label>
-          <input
+          <Input
             id="yp-theme-url"
-            class="input"
             type="text"
             inputmode="url"
             placeholder="https://example.com/my-theme.theme.css"
             value={state.url()}
-            onInput={(event) => state.setUrl(event.currentTarget.value)}
+            onChange={state.setUrl}
           />
         </div>
 
         <div class="field">
           <label for="yp-theme-mode">Apply to</label>
-          <select
+          <Select
             id="yp-theme-mode"
-            class="input"
+            options={THEME_MODES}
             value={state.mode()}
-            onChange={(event) => state.setMode(event.currentTarget.value as OnlineThemeMode)}
-          >
-            <option value="always">Always</option>
-            <option value="light">Light theme</option>
-            <option value="dark">Dark theme</option>
-          </select>
+            onChange={(mode) => state.setMode(mode as OnlineThemeMode)}
+          />
         </div>
 
         <p class="hint" style={{ margin: '-6px 0 14px' }}>

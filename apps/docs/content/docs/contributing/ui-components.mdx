@@ -1,0 +1,193 @@
+---
+title: UI Components
+description: Reference for the @yapmod/ui SolidJS components used in the Yapmod client.
+---
+
+The `@yapmod/ui` package provides SolidJS components that reproduce Yapin's native look. All client feature panels (settings, themes, plugins) use these components — never raw HTML form controls.
+
+In the client codebase, import components directly from the package:
+
+```ts
+import { Button, Switch, Input, Textarea, Select } from '@yapmod/ui';
+```
+
+These components are also exposed through `YapmodClient.ui` so plugins can use them. For plugin authors, see the [UI Components](/docs/development/ui-components) guide in the Plugin Development section.
+
+## Form controls
+
+Form controls follow a consistent **controlled / uncontrolled** pattern:
+
+- Pass `value` (or `checked` for Switch) to make the component **controlled** — its state is driven entirely by the prop.
+- Pass `defaultValue` (or `defaultChecked`) for an **uncontrolled** component that manages its own internal state.
+- `onChange` always receives the new value directly (not a DOM event).
+
+### Switch
+
+A toggle switch matching Yapin's `.switch` style. Under the hood it renders a real `<input type="checkbox">` with `role="switch"`, so keyboard interaction (Space to toggle) and focus rings work natively.
+
+```tsx
+import { Switch } from '@yapmod/ui';
+
+// Controlled
+<Switch checked={enabled} onChange={setEnabled} />
+
+// Uncontrolled
+<Switch defaultChecked={false} onChange={(v) => console.log(v)} />
+```
+
+**Props:**
+
+| Prop             | Type                         | Description                       |
+| ---------------- | ---------------------------- | --------------------------------- |
+| `checked`        | `boolean`                    | Current state (controlled mode)   |
+| `defaultChecked` | `boolean`                    | Initial state (uncontrolled mode) |
+| `onChange`       | `(checked: boolean) => void` | Called when toggled               |
+| `aria-label`     | `string`                     | Accessible label                  |
+
+### Input
+
+A single-line text field matching Yapin's `.input` style.
+
+```tsx
+import { Input } from '@yapmod/ui';
+
+// Controlled
+<Input value={name} onChange={setName} placeholder="Enter a name" />
+
+// Uncontrolled
+<Input defaultValue="" onChange={(v) => console.log(v)} />
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                                |
+| -------------- | ------------------------- | ------------------------------------------ |
+| `value`        | `string`                  | Current text (controlled mode)             |
+| `defaultValue` | `string`                  | Initial text (uncontrolled mode)           |
+| `onChange`     | `(value: string) => void` | Called on every keystroke                  |
+| `type`         | `string`                  | Input type (`text`, `search`, `url`, etc.) |
+| `placeholder`  | `string`                  | Placeholder text                           |
+| `id`           | `string`                  | Element ID for label association           |
+
+All standard `<input>` attributes (disabled, maxlength, inputmode, etc.) are passed through.
+
+### Textarea
+
+A multi-line text field matching Yapin's `textarea.input` style. Behaves like `Input` but with vertical resize support.
+
+```tsx
+import { Textarea } from '@yapmod/ui';
+
+<Textarea value={code} onChange={setCode} rows={12} spellcheck={false} />;
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                      |
+| -------------- | ------------------------- | -------------------------------- |
+| `value`        | `string`                  | Current text (controlled mode)   |
+| `defaultValue` | `string`                  | Initial text (uncontrolled mode) |
+| `onChange`     | `(value: string) => void` | Called on every keystroke        |
+| `rows`         | `number`                  | Number of visible rows           |
+
+All standard `<textarea>` attributes are passed through.
+
+### Select
+
+A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style. The trigger is a button with `role="combobox"` and the option list is a portalled `listbox`. Keyboard navigation (arrow keys, Enter, Escape) matches Yapin's native dropdown behavior.
+
+```tsx
+import { Select } from '@yapmod/ui';
+
+const options = [
+  { value: 'always', label: 'Always' },
+  { value: 'light', label: 'Light theme' },
+  { value: 'dark', label: 'Dark theme' },
+];
+
+<Select options={options} value={mode} onChange={setMode} />;
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                                                  |
+| -------------- | ------------------------- | ------------------------------------------------------------ |
+| `options`      | `SelectOption[]`          | Options array with `value`, `label`, and optional `disabled` |
+| `value`        | `string`                  | Selected value (controlled mode)                             |
+| `defaultValue` | `string`                  | Initially selected value (uncontrolled mode)                 |
+| `onChange`     | `(value: string) => void` | Called when selection changes                                |
+| `placeholder`  | `string`                  | Text shown when no value is selected                         |
+| `disabled`     | `boolean`                 | Disables the entire control                                  |
+| `id`           | `string`                  | ID of the trigger button                                     |
+| `aria-label`   | `string`                  | Accessible name                                              |
+
+## Layout components
+
+### Button
+
+A button matching Yapin's `.btn` style.
+
+```tsx
+import { Button } from '@yapmod/ui';
+
+<Button variant="primary">Save</Button>
+<Button variant="secondary">Cancel</Button>
+<Button variant="danger" size="small">Delete</Button>
+```
+
+**Props:**
+
+| Prop      | Type     | Description                                                    |
+| --------- | -------- | -------------------------------------------------------------- |
+| `variant` | `string` | `default`, `primary`, `accent`, `secondary`, `ghost`, `danger` |
+| `size`    | `string` | `medium` (default) or `small`                                  |
+
+### Panel
+
+A card surface matching Yapin's `.ss2-card`.
+
+```tsx
+import { Panel } from '@yapmod/ui';
+
+<Panel>Card content here</Panel>;
+```
+
+### Hint
+
+Secondary helper text matching Yapin's `.hint`.
+
+```tsx
+import { Hint } from '@yapmod/ui';
+
+<Hint>This setting applies to all themes.</Hint>;
+```
+
+### Icon
+
+Renders an SVG icon from the bundled icon set.
+
+```tsx
+import { Icon } from '@yapmod/ui';
+
+<Icon name="trash" size={16} />;
+```
+
+**Props:**
+
+| Prop   | Type       | Description                           |
+| ------ | ---------- | ------------------------------------- |
+| `name` | `IconName` | Name of the icon from the bundled set |
+| `size` | `number`   | Icon size in pixels                   |
+
+## Style injection
+
+The UI package bundles all component CSS. Inject it into the page with:
+
+```tsx
+import { injectStyles } from '@yapmod/ui';
+
+// Injects the bundled stylesheet once
+injectStyles();
+```
+
+Components carry `yp-` prefixed classes only. Colors, hover states, and focus rings come from the bundled CSS, which prefers host theme CSS variables (`--bg-side`, `--text`, `--accent`) with `--yp-*` fallbacks.

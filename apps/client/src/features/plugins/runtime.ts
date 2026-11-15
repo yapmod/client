@@ -1,5 +1,16 @@
 import type { Client } from '@yapmod/types';
-import { Button, Hint, Icon, Panel, injectStyle, removeStyle } from '@yapmod/ui';
+import {
+  Button,
+  Hint,
+  Icon,
+  Input,
+  Panel,
+  Select,
+  Switch,
+  Textarea,
+  injectStyle,
+  removeStyle,
+} from '@yapmod/ui';
 import { createSignal } from 'solid-js';
 import { openContentModal, openModal } from '../../lib/modal';
 import { sharedSolid } from '../../lib/solid';
@@ -147,6 +158,10 @@ function createPluginApi(
       Hint,
       Panel,
       Icon,
+      Switch,
+      Input,
+      Textarea,
+      Select,
     },
     settings: {
       registerSection(section) {
