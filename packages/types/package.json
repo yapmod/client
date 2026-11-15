@@ -34,7 +34,8 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:contracts": "tsc --noEmit -p tsconfig.test.json"
   },
   "devDependencies": {
     "@yapmod/ui": "workspace:*",
