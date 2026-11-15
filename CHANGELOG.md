@@ -10,6 +10,10 @@
 
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
 
+### Changed
+
+- **ci:** use npm Trusted Publisher (OIDC) instead of NPM_TOKEN for all npm publish workflows
+
 ### Fixed
 
 - **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
