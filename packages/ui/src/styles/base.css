@@ -44,7 +44,11 @@
 .yp-card *,
 .yp-btn,
 .yp-btn *,
-.yp-hint {
+.yp-hint,
+.yp-input,
+.yp-switch,
+.yp-dd-menu,
+.yp-dd-menu * {
   box-sizing: border-box;
 }
 
@@ -60,6 +64,8 @@
   --yp-bg-hover: var(--bg-hover, #2f3038);
   --yp-bg-active: var(--bg-active, #383944);
   --yp-bg-input: var(--bg-input, #2d2e36);
+  --yp-bg-rail: var(--bg-rail, #141519);
+  --yp-bg-float: var(--bg-float, #1b1c21);
   --yp-text: var(--text, #ececf1);
   --yp-text-muted: var(--text-muted, #a6a7b4);
   --yp-text-faint: var(--text-faint, #9a9ca9);
@@ -75,6 +81,9 @@
   --yp-warning: var(--warning, #f5b544);
   --yp-radius: var(--radius, 10px);
   --yp-row-radius: var(--row-radius, 8px);
+  --yp-shadow: var(--shadow, 0 10px 40px #00000073);
+  --yp-t-micro: var(--t-micro, 0.12s);
+  --yp-ease-std: var(--ease-std, cubic-bezier(0.2, 0.8, 0.2, 1));
   --yp-press-ms: var(--press-ms, 60ms);
   --yp-hover-dim: var(--hover-dim, 0.92);
   --yp-press-dim: var(--press-dim, 0.84);
@@ -102,6 +111,8 @@
     --yp-bg-hover: var(--bg-hover, #e6e7ea);
     --yp-bg-active: var(--bg-active, #e0e1e5);
     --yp-bg-input: var(--bg-input, #ffffff);
+    --yp-bg-rail: var(--bg-rail, #e3e5e8);
+    --yp-bg-float: var(--bg-float, #ffffff);
     --yp-text: var(--text, #1d1f23);
     --yp-text-muted: var(--text-muted, #5b5d66);
     --yp-text-faint: var(--text-faint, #7a7c88);
@@ -117,6 +128,9 @@
     --yp-warning: var(--warning, #f5b544);
     --yp-radius: var(--radius, 10px);
     --yp-row-radius: var(--row-radius, 8px);
+    --yp-shadow: var(--shadow, 0 10px 34px #00000029);
+    --yp-t-micro: var(--t-micro, 0.12s);
+    --yp-ease-std: var(--ease-std, cubic-bezier(0.2, 0.8, 0.2, 1));
   }
 }
 
@@ -142,7 +156,231 @@
   font-size: 13px;
 }
 
-/* ------------------------------------------------------------- button -- */
+/* -------------------------------------------------------------- switch -- */
+
+/* Mirrors Yapin's `.switch`. The knob is drawn with a pseudo element so the
+   control stays a plain checkbox and keeps its native keyboard behaviour. */
+.yp-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--yp-bg-active);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: background var(--yp-t-micro, 0.15s);
+}
+
+.yp-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--yp-t-micro, 0.15s);
+}
+
+.yp-switch:checked {
+  background: var(--yp-success);
+}
+
+.yp-switch:checked::after {
+  transform: translate(18px);
+}
+
+.yp-switch:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+
+.yp-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --------------------------------------------------------------- input -- */
+
+/* Mirrors Yapin's `.input`. */
+.yp-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--yp-border);
+  border-radius: 8px;
+  background: var(--yp-bg-input);
+  color: var(--yp-text);
+  font: inherit;
+  outline: none;
+  /* A dropdown trigger is a `<button>`, and browsers paint those with their
+     own native border unless the appearance is turned off. */
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Yapin paints its inputs with the rail colour while the dark theme is on. */
+:where(:root:not([data-theme='light'])) .yp-input {
+  background: var(--yp-bg-rail);
+}
+
+.yp-input::placeholder {
+  color: var(--yp-text-faint);
+  opacity: 1;
+}
+
+.yp-input:focus {
+  border-color: var(--yp-accent);
+}
+
+.yp-input:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 1px;
+}
+
+.yp-input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Yapin gives the fields of its new settings panels a bit more height. */
+.ss2 .yp-input:not(textarea),
+.settings .yp-input {
+  height: 44px;
+}
+
+/* -------------------------------------------------------------- select -- */
+
+/* Mirrors Yapin's `.dd-trigger`, `.dd-menu` and `.dd-opt`. */
+.yp-dd-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  color: var(--yp-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.yp-dd-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--yp-text-muted) 45%, var(--yp-border));
+}
+
+.yp-dd-trigger.yp-dd-trigger--open {
+  border-color: var(--yp-accent);
+}
+
+.yp-dd-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.yp-dd-trigger.yp-dd-trigger--open .yp-dd-chev {
+  color: var(--yp-text);
+  transform: rotate(180deg);
+}
+
+.yp-dd-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yp-dd-value--empty {
+  color: var(--yp-text-muted);
+}
+
+.yp-dd-chev {
+  flex-shrink: 0;
+  transition: transform var(--yp-t-micro, 0.12s);
+}
+
+.yp-dd-menu {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--yp-border);
+  border-radius: 10px;
+  background: var(--yp-bg-float);
+  box-shadow: var(--yp-shadow);
+  overflow: hidden;
+  animation: yp-dd-in var(--yp-t-micro, 0.12s) var(--yp-ease-std, ease-out);
+}
+
+@keyframes yp-dd-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.yp-dd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.yp-dd-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--yp-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.yp-dd-opt .yp-dd-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yp-dd-opt--hi {
+  background: color-mix(in srgb, var(--yp-accent) 16%, transparent);
+  color: var(--yp-text);
+}
+
+.yp-dd-opt--on {
+  background: color-mix(in srgb, var(--yp-accent) 12%, transparent);
+  color: var(--yp-text);
+  font-weight: 600;
+}
+
+.yp-dd-opt--on.yp-dd-opt--hi {
+  background: color-mix(in srgb, var(--yp-accent) 24%, transparent);
+}
+
+.yp-dd-opt--off {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.yp-dd-check {
+  flex-shrink: 0;
+  color: var(--yp-accent);
+}
+
+/* --------------------------------------------------------------- button -- */
 
 /* Mirrors Yapin's `.btn`. */
 .yp-btn {
