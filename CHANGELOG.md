@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* **ci:** remove NODE_AUTH_TOKEN interference for npm OIDC Trusted Publisher ([#43](https://github.com/yapmod/client/issues/43)) ([a75ad82](https://github.com/yapmod/client/commit/a75ad821d23b92534291985bbe4bcb370554081a))
+- **ci:** remove NODE_AUTH_TOKEN interference for npm OIDC Trusted Publisher ([#43](https://github.com/yapmod/client/issues/43)) ([a75ad82](https://github.com/yapmod/client/commit/a75ad821d23b92534291985bbe4bcb370554081a))
 
 ## [1.0.2](https://github.com/yapmod/client/compare/v1.0.1...v1.0.2) (2026-11-15)
 
@@ -15,6 +15,8 @@
 ### Added
 
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
+- **docs:** expand type safety documentation with all 27 exportable types from @yapmod/types, including usage examples, builder import rewriting explanation, and typed storage patterns (#45)
+- **docs:** add type safety callouts to fundamentals, how-plugins-work, plugin-api, ui-components, starter-repo, and building documentation pages (#45)
 
 ### Changed
 

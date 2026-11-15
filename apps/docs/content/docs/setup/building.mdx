@@ -16,9 +16,16 @@ yapmod build --entry src/index.ts --outfile dist/plugin.js
 This command uses the Yapmod CLI to:
 
 1. Read your TypeScript source files.
-2. Compile any JSX syntax and SolidJS components.
-3. Bundle everything into a single JavaScript file.
-4. Write the loadable expression to the output file.
+2. Perform type checking and catch type errors before bundling.
+3. Compile any JSX syntax and SolidJS components.
+4. Bundle everything into a single JavaScript file.
+5. Write the loadable expression to the output file.
+
+<Callout type="info">
+  The builder runs TypeScript type checking during compilation. If your plugin has type errors — for
+  example, using a UI component with invalid props — the build will fail with a clear error message.
+  See the [Type Safety](/docs/development/type-safety) page for details on available types.
+</Callout>
 
 ## Options
 
