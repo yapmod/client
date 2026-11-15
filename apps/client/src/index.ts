@@ -1,9 +1,22 @@
 import { createClient } from '@yapmod/core';
-import type { ClientHandle } from '@yapmod/types';
-import { injectStyles, removeStyles } from '@yapmod/ui';
+import type { ClientHandle, PluginUi } from '@yapmod/types';
+import {
+  Button,
+  Hint,
+  Icon,
+  Input,
+  Panel,
+  Select,
+  Switch,
+  Textarea,
+  injectStyles,
+  removeStyles,
+} from '@yapmod/ui';
 import { version } from '../package.json';
 import { closeAllModals } from './lib/modal';
 import { sharedSolid } from './lib/solid';
+import { openModal } from './lib/modal';
+import { showToast } from './lib/toast';
 import { disposeToasts } from './lib/toast';
 import { installPlugins, registerClientPlugin } from './features/plugins/runtime';
 import type { ClientPlugin } from './features/plugins/types';
@@ -60,9 +73,26 @@ function bootstrap(): YapmodClientHandle {
   client.onDispose(closeAllModals);
   client.onDispose(disposeToasts);
 
+  const ui: PluginUi = {
+    showToast,
+    openModal,
+    injectCss() {
+      return () => {};
+    },
+    Button,
+    Hint,
+    Panel,
+    Icon,
+    Switch,
+    Input,
+    Textarea,
+    Select,
+  };
+
   const handle: YapmodClientHandle = Object.freeze({
     version,
     api: sharedSolid,
+    ui,
     get state() {
       return client.state;
     },

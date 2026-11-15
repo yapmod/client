@@ -1,0 +1,30 @@
+---
+title: Contributing to Yapmod
+description: Guidelines for contributing to the Yapmod client codebase.
+---
+
+This section is for developers who want to contribute to the Yapmod client itself — not plugin authors. If you're building a plugin, start with the [Plugin Development](/docs/development) guide instead.
+
+## Codebase structure
+
+Yapmod is a monorepo with three workspace packages and two apps:
+
+- **`packages/core`** — the `createClient()` API: lifecycle and disposal only.
+- **`packages/types`** — type-only public contracts.
+- **`packages/ui`** — SolidJS components and CSS bundled into the client.
+- **`apps/client`** — the composition root that bootstraps the IIFE bundle.
+- **`apps/docs`** — this Next.js + Fumadocs documentation site.
+
+Workspace packages export raw `.ts` files (no build step). Import them by name (`@yapmod/core`, `@yapmod/ui`) in the client.
+
+## Key conventions
+
+- **SolidJS only** in `apps/client` and `packages/ui`. Never import React or Fumadocs there.
+- **Form controls come from `@yapmod/ui`.** Never hand-write `<input>`, `<select>`, or `<textarea>` in the client — use the provided components instead.
+- **State** is module-level signals with getter functions and actions exported from the same module. Persist to versioned `localStorage` keys.
+- **Styling** reuses Yapin's classes (`.settings-main`, `.ss2-card`, `.hint`) with `--yp-*` fallback CSS variables.
+- **Errors** are caught locally, logged with a `[yapmod]` prefix, and surfaced with `showToast(..., 'error')`.
+
+## Next steps
+
+Read the [UI Components](/docs/contributing/ui-components) reference to learn about the form controls and layout components available in `@yapmod/ui`.

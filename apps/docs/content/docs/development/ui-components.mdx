@@ -1,0 +1,272 @@
+---
+title: UI Components
+description: Use Yapmod's built-in SolidJS components to build plugin UI that matches Yapin's look.
+---
+
+Yapmod provides a set of SolidJS components (`@yapmod/ui`) that reproduce Yapin's native look — buttons, switches, inputs, dropdowns, and more. Use them inside your plugin to build interfaces that feel at home on the page.
+
+## Accessing components
+
+There are two ways to access UI components, depending on how you build your plugin.
+
+### With the builder (recommended)
+
+When you use `@yapmod/builder` (the `yapmod build` / `yapmod dev` CLI), you can import components using natural ES module syntax:
+
+```tsx
+import { Switch, Input, Select } from '@yapmod/ui';
+
+export default function (yapmod) {
+  // Components work normally — the builder rewrites the imports at build time.
+}
+```
+
+The builder automatically rewrites `import ... from '@yapmod/ui'` to reference the shared `yapmod.ui` object at runtime. This means you get clean import syntax in your source code, but the final bundle uses the host's shared components — no duplicate SolidJS, no extra CSS.
+
+The same applies to `solid-js`, `solid-js/web`, and `solid-js/store`:
+
+```tsx
+import { createSignal } from 'solid-js';
+import { render } from 'solid-js/web';
+import { Button, Input } from '@yapmod/ui';
+```
+
+All of these imports are rewritten by the builder to use the shared instances (`yapmod.solid`, `yapmod.solidWeb`, `yapmod.ui`) instead of bundling their own copies.
+
+### Without the builder (manual)
+
+If you write your plugin as a raw JavaScript file without the builder, access components through the `yapmod.ui` object:
+
+```js
+export default function (yapmod) {
+  const { Switch, Input, Select } = yapmod.ui;
+
+  // Use them in JSX via yapmod.solid
+  const { createSignal } = yapmod.solid;
+}
+```
+
+<Callout type="info">
+  The builder approach is strongly recommended. It gives you TypeScript support, JSX compilation,
+  and clean import syntax — all handled automatically.
+</Callout>
+
+## Form controls
+
+Form controls follow a consistent **controlled / uncontrolled** pattern:
+
+- Pass `value` (or `checked` for Switch) to make the component **controlled** — its state is driven entirely by the prop.
+- Pass `defaultValue` (or `defaultChecked`) for an **uncontrolled** component that manages its own internal state.
+- `onChange` always receives the new value directly, not a DOM event.
+
+### Switch
+
+A toggle switch matching Yapin's `.switch` style.
+
+<SwitchPreview />
+
+```tsx
+import { Switch } from '@yapmod/ui';
+
+// Controlled
+<Switch checked={enabled} onChange={setEnabled} />
+
+// Uncontrolled
+<Switch defaultChecked={false} onChange={(v) => console.log(v)} />
+```
+
+**Props:**
+
+| Prop             | Type                         | Description                       |
+| ---------------- | ---------------------------- | --------------------------------- |
+| `checked`        | `boolean`                    | Current state (controlled mode)   |
+| `defaultChecked` | `boolean`                    | Initial state (uncontrolled mode) |
+| `onChange`       | `(checked: boolean) => void` | Called when toggled               |
+| `aria-label`     | `string`                     | Accessible label                  |
+
+### Input
+
+A single-line text field matching Yapin's `.input` style.
+
+<InputPreview />
+
+```tsx
+import { Input } from '@yapmod/ui';
+
+<Input value={name} onChange={setName} placeholder="Enter a name" />;
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                                |
+| -------------- | ------------------------- | ------------------------------------------ |
+| `value`        | `string`                  | Current text (controlled mode)             |
+| `defaultValue` | `string`                  | Initial text (uncontrolled mode)           |
+| `onChange`     | `(value: string) => void` | Called on every keystroke                  |
+| `type`         | `string`                  | Input type (`text`, `search`, `url`, etc.) |
+| `placeholder`  | `string`                  | Placeholder text                           |
+
+All standard `<input>` attributes (disabled, maxlength, inputmode, etc.) are passed through.
+
+### Textarea
+
+A multi-line text field matching Yapin's `textarea.input` style.
+
+<TextareaPreview />
+
+```tsx
+import { Textarea } from '@yapmod/ui';
+
+<Textarea value={code} onChange={setCode} rows={12} spellcheck={false} />;
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                      |
+| -------------- | ------------------------- | -------------------------------- |
+| `value`        | `string`                  | Current text (controlled mode)   |
+| `defaultValue` | `string`                  | Initial text (uncontrolled mode) |
+| `onChange`     | `(value: string) => void` | Called on every keystroke        |
+| `rows`         | `number`                  | Number of visible rows           |
+
+### Select
+
+A dropdown matching Yapin's `.dd-trigger` and `.dd-menu` style.
+
+<SelectPreview />
+
+```tsx
+import { Select } from '@yapmod/ui';
+
+const options = [
+  { value: 'always', label: 'Always' },
+  { value: 'dark', label: 'Dark mode' },
+];
+
+<Select options={options} value={mode} onChange={setMode} />;
+```
+
+**Props:**
+
+| Prop           | Type                      | Description                                        |
+| -------------- | ------------------------- | -------------------------------------------------- |
+| `options`      | `SelectOption[]`          | Options with `value`, `label`, optional `disabled` |
+| `value`        | `string`                  | Selected value (controlled mode)                   |
+| `defaultValue` | `string`                  | Initially selected (uncontrolled mode)             |
+| `onChange`     | `(value: string) => void` | Called when selection changes                      |
+| `placeholder`  | `string`                  | Text shown when no value is selected               |
+
+## Layout components
+
+### Button
+
+A button matching Yapin's `.btn` style.
+
+<ButtonPreview />
+
+```tsx
+import { Button } from '@yapmod/ui';
+
+<Button variant="primary">Save</Button>
+<Button variant="secondary">Cancel</Button>
+```
+
+**Props:**
+
+| Prop      | Type     | Description                                                    |
+| --------- | -------- | -------------------------------------------------------------- |
+| `variant` | `string` | `default`, `primary`, `accent`, `secondary`, `ghost`, `danger` |
+| `size`    | `string` | `medium` (default) or `small`                                  |
+
+### Panel
+
+A card surface matching Yapin's `.ss2-card`.
+
+<PanelPreview />
+
+```tsx
+import { Panel } from '@yapmod/ui';
+
+<Panel>Card content here</Panel>;
+```
+
+### Hint
+
+Secondary helper text matching Yapin's `.hint`.
+
+<HintPreview />
+
+```tsx
+import { Hint } from '@yapmod/ui';
+
+<Hint>This setting applies to all themes.</Hint>;
+```
+
+### Icon
+
+Renders an SVG icon from the bundled icon set. Available icons: `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil`, `close`.
+
+<IconPreview />
+
+```tsx
+import { Icon } from '@yapmod/ui';
+
+<Icon name="trash" size={16} />;
+```
+
+**Props:**
+
+| Prop    | Type     | Description                                       |
+| ------- | -------- | ------------------------------------------------- |
+| `name`  | `string` | Icon name (`settings`, `puzzle`, `trash`, etc.)   |
+| `size`  | `number` | Width and height in pixels (default: 16)          |
+| `label` | `string` | Accessible label (without it, icon is decorative) |
+
+## Example: a settings panel
+
+Here's how it all looks together in a plugin that uses the builder:
+
+```tsx
+import { createSignal } from 'solid-js';
+import { Switch, Input, Button, Panel, Hint } from '@yapmod/ui';
+
+export default function (yapmod) {
+  return {
+    manifest: {
+      name: 'My Plugin',
+      author: 'Me',
+      description: 'Demonstrates UI components',
+      version: '1.0.0',
+    },
+    start(api) {
+      api.settings.registerSection({
+        id: 'my-plugin',
+        label: 'My Plugin',
+        icon: 'settings',
+        render: () => {
+          const [enabled, setEnabled] = createSignal(true);
+          const [name, setName] = createSignal('');
+
+          return (
+            <Panel>
+              <div class="toggle-row">
+                <span>Enabled</span>
+                <Switch checked={enabled()} onChange={setEnabled} />
+              </div>
+
+              <Input value={name()} onChange={setName} placeholder="Your name" />
+              <Hint>Enter your display name</Hint>
+
+              <div style={{ marginTop: '1rem' }}>
+                <Button variant="primary">Save</Button>
+              </div>
+            </Panel>
+          );
+        },
+      });
+    },
+  };
+}
+```
+
+The builder compiles this into a single `.js` file where all the `import` statements are rewritten to use the shared `yapmod` API — no bundling SolidJS or `@yapmod/ui` yourself.
