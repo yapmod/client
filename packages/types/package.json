@@ -30,6 +30,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
+    "@yapmod/ui": "workspace:*",
     "solid-js": "^1.9.18",
     "typescript": "^7.0.2"
   },

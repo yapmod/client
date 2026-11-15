@@ -1,7 +1,13 @@
 import { createSignal, splitProps } from 'solid-js';
 import type { JSX } from 'solid-js';
-import type { InputProps } from '@yapmod/types';
 import { cx } from '../cx';
+
+/** Props for the {@link Input} component. */
+export type InputProps = Omit<JSX.IntrinsicElements['input'], 'value' | 'onChange'> & {
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+};
 
 /**
  * A single-line text field styled by Yapmod's stylesheet to match Yapin's
