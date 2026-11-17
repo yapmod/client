@@ -3,11 +3,6 @@ title: Starter Repository
 description: Clone the pre-configured starter repo to begin building your plugin.
 ---
 
-<Callout type="warn">
-  The starter repository has not been published yet. This page describes the planned setup process.
-  Check back once the repo is available.
-</Callout>
-
 ## What the starter repo gives you
 
 The starter repository is a project that comes pre configured with everything you need to build a Yapmod plugin. Instead of setting up build tools, configuring TypeScript, and wiring up SolidJS from scratch, you get all of that ready to go. Here is what is included:
@@ -16,7 +11,7 @@ The starter repository is a project that comes pre configured with everything yo
 - A clean project structure with TypeScript and SolidJS support from the start
 - `@yapmod/types` already configured in `tsconfig.json`, so you get full autocompletion for the entire plugin API
 - Build scripts set up for pnpm so you can compile with a single command
-- Example plugin code that shows you the basic structure
+- Example plugin code that shows you the basic structure with lifecycle hooks
 
 Since `@yapmod/types` is configured from the beginning, your editor will suggest every property, method, and UI component prop as you type. If you want to understand all the available types in detail, check out the [Type Safety](/docs/development/type-safety) page.
 
@@ -32,7 +27,7 @@ The starter repo handles all of that for you. With it, you can:
 
 ## How to set it up
 
-Once the starter repo is available, setting it up is straightforward:
+Setting up the starter repo is straightforward:
 
 ```bash
 # Clone the starter repository
@@ -45,15 +40,79 @@ pnpm install
 
 That is it. Your project is ready.
 
-## What to do after cloning
+## Project structure
 
-Once your project is set up, here is your workflow:
+The starter repo has a simple structure:
 
-1. Open the `src` directory and start modifying the example plugin code
-2. Run `yapmod build --entry src/index.ts --outfile dist/plugin.js` to compile your plugin into a file Yapmod can load
-3. Upload the built file from the `dist` folder to Yapmod through the settings panel
+```
+├── src/
+│   └── index.tsx     # Your plugin entry point
+├── dist/              # Built output (generated)
+├── package.json
+├── tsconfig.json
+└── README.md
+```
 
-If you want to develop with hot reload so your changes appear instantly, run `yapmod dev --entry src/index.ts` instead of the build command. We will cover hot reloading in more detail on the next page.
+The entry file uses `.tsx` extension so the builder enables JSX parsing through Babel.
+
+## Writing your plugin
+
+The entry point (`src/index.tsx`) exports a **default function** that returns an object with lifecycle hooks. The `yapmod` global API is available inside your plugin:
+
+```tsx
+import { createSignal } from 'solid-js';
+
+export default function () {
+  return {
+    onLoad() {
+      yapmod.log('Plugin started!');
+
+      yapmod.settings.registerSection({
+        id: 'general',
+        label: 'General',
+        icon: 'settings',
+        render: () => {
+          const [greeting, setGreeting] = createSignal('Hello, world!');
+
+          return (
+            <yapmod.ui.SettingsPage title="My Plugin" description="Example plugin settings">
+              <yapmod.ui.Section label="Appearance">
+                <yapmod.ui.SettingRow label="Greeting" hint="The text shown when the plugin starts">
+                  <yapmod.ui.Input value={greeting()} onChange={(v) => setGreeting(v)} />
+                </yapmod.ui.SettingRow>
+              </yapmod.ui.Section>
+            </yapmod.ui.SettingsPage>
+          );
+        },
+      });
+    },
+
+    onUnload() {
+      yapmod.log('Plugin stopped!');
+    },
+  };
+}
+```
+
+The `onLoad` hook runs when the plugin starts, and `onUnload` runs when it is stopped. Use these to set up and clean up your plugin resources.
+
+## Building and developing
+
+To compile your plugin into a file Yapmod can load:
+
+```bash
+pnpm build
+```
+
+This produces a single `dist/index.js` file that you can upload to Yapmod through the settings panel.
+
+For development with hot reload, use:
+
+```bash
+pnpm dev
+```
+
+This watches for file changes and rebuilds automatically. We will cover hot reloading in more detail on the next page.
 
 ## What comes next
 
