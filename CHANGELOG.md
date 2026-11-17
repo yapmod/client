@@ -20,6 +20,7 @@
 - **types:** add automated type contract tests to verify type consistency across packages (#47)
 - **docs:** expand type safety documentation with all 27 exportable types from @yapmod/types, including usage examples, builder import rewriting explanation, and typed storage patterns (#45)
 - **docs:** add type safety callouts to fundamentals, how-plugins-work, plugin-api, ui-components, starter-repo, and building documentation pages (#45)
+- **ui:** publish @yapmod/ui as a types-only npm package for plugin author IDE support (#54)
 
 ### Changed
 
