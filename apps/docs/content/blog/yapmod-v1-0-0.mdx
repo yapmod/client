@@ -1,0 +1,178 @@
+---
+title: Yapmod v1.0.0 Is Here
+description: The first stable Yapmod release. Every feature, every decision behind them, and an honest look at what the rewrite produced in under two weeks.
+date: 2026-11-19
+tags: [Release, Announcement]
+authors: [ilya]
+---
+
+Today I tagged [v1.0.0](https://github.com/yapmod/client/releases/tag/v1.0.0). That is the first stable release of the new Yapmod, and it closes the rewrite that started on the 11th of November.
+
+It is not a rewrite of one file or one module. The entire project was rebuilt from nothing: the client, the plugin runtime, the UI package, the type contracts, the build tool, the documentation, the release pipeline, and the browser extension. When I look at the diff between `v0.0.0` and `v1.0.0`, there is no shared line of code with the old project.
+
+I want to be honest about what "1.0.0" means here. It does not mean Yapmod does everything I want it to do. It means the foundation is complete. The part that everything else will be built on is done, tested by real use, and stable enough to ship.
+
+## The foundation is finished
+
+The foundation is the client mod itself: the thing that loads into Yapin, adds a settings section, manages themes, and runs plugins. That is what this release is.
+
+The desktop application is not part of it. It will be rebuilt separately, on top of this client, using the same API and the same plugin system. That was the whole point of starting over: separate the shell from the mod layer so a change in one cannot break the other.
+
+So when I say the foundation is 100% done, I mean it. Everything below works today.
+
+## What ships in v1.0.0
+
+### Themes
+
+Themes are CSS, with a small metadata header at the top of the file (`@name`, `@author`, `@description`, `@version`, `@website`, and an optional `@invite` for a Discord invite). You can load a theme from a file, edit its CSS in the built-in editor, enable or disable it, and delete it. The theme's identity is its filename, so uploading a new version of the same name replaces the theme and keeps its enabled state.
+
+Online themes work differently. You add a URL, choose whether it applies always, only on the light theme, or only on the dark theme, and Yapmod fetches the CSS and inlines it. It cannot link an external stylesheet because Yapin's Content Security Policy blocks it, so the stylesheet is fetched and injected into a `<style>` element instead. Failed fetches retry after a minute.
+
+Everything is applied live. No reload, no separate stylesheet, no shadow DOM.
+
+### Plugins
+
+Plugins are the part I spent the most time on, because the plugin system is why this project exists.
+
+You can add a plugin in two ways:
+
+- **Locally**, by pasting the code or selecting a `.js` file.
+- **Remotely**, by pointing Yapmod at a folder containing `plugin.json` and `plugin.js`. Remote plugins can auto-update, and updating one swaps the code without losing its storage.
+
+From the Plugins tab you can edit the code of a local plugin, toggle it on or off, delete it, or open its settings. A plugin that throws while starting is caught and reported without taking anything else down, and the rest of the client keeps running. Deleting a plugin intentionally keeps its storage, so reinstalling it brings your data back.
+
+### Client-registered plugins
+
+This is the architectural idea from the first post, and it is now real. A host application can register plugins from its own code. They use the exact same API, the same storage, and the same lifecycle as user-installed plugins; the only difference is that the host owns them. They cannot be fetched, edited, updated, or deleted by the user, and their ids are namespaced so they can never collide with community plugins.
+
+There is a developer setting to show or hide them, so they can stay out of the way for regular users.
+
+### Settings inside Yapin
+
+Yapmod does not open its own window. It adds a section to Yapin's settings, with its own navigation and three panels: Settings, Plugins, and Themes.
+
+This is harder than it sounds. Yapin is a React app that replaces DOM nodes while you use it, so Yapmod keeps its section attached with scoped `MutationObserver`s and structural markers instead of holding JSX references that go stale. It also reuses Yapin's own layout classes, so the section looks native instead of like a bolted-on overlay.
+
+### The UI kit
+
+`@yapmod/ui` contains the components that make plugin interfaces look like Yapin: `Button`, `Input`, `Textarea`, `Switch`, `Select`, `Panel`, `Hint`, `Icon`, `Divider`, `Section`, `SettingRow`, `SettingText`, and `SettingsPage`.
+
+They follow a consistent controlled/uncontrolled pattern: pass `value` (or `checked`) and `onChange`, or pass `defaultValue` (or `defaultChecked`) and let the component manage itself. `onChange` receives the value, not a DOM event object. The icons are bundled, and the styles are compiled into the client bundle, so there is never a second stylesheet to load.
+
+### The plugin API
+
+Every plugin receives a `YapmodPluginApi` object. It has:
+
+- `apiVersion`, `id`, and `manifest` for identity and compatibility checks.
+- `storage`, a reactive object persisted to `localStorage`. Top-level writes save automatically; nested mutations are flushed with `flushStorage()`.
+- `log()`, which prefixes everything with the plugin id.
+- `observe(selector, onFound)`, a DOM observer that cleans itself up.
+- `onDispose(dispose)`, which registers cleanup that runs when the plugin stops.
+- `settings.registerSection()`, which adds a section to the Yapmod settings group, with a label, an optional icon, and Solid content. It unregisters when the plugin stops.
+- `showSettings()`, to jump to a plugin's settings panel.
+- `ui.showToast()`, `ui.openModal()`, and `ui.injectCss()`, all returning or registering their own cleanup.
+- `ui.*`, the full component set above.
+- `solid`, `solidWeb`, and `solidStore`, the shared SolidJS instances.
+
+The full reference is in the [plugin API docs](/docs/development/plugin-api).
+
+### The builder and hot reload
+
+`@yapmod/builder` is the CLI that turns a plugin project into a file Yapmod can run. `yapmod build` compiles TypeScript and Solid JSX, rewrites imports of `solid-js`, `solid-js/web`, `solid-js/store`, and `@yapmod/ui` onto the shared runtime objects, and wraps the result in the expression form the loader expects. That rewriting is why a plugin bundle never contains a second copy of SolidJS.
+
+`yapmod dev` watches your files and pushes builds into the Yapin window it opened. It cannot do this over the network, because Yapin's CSP does not allow the page to fetch from a local server, so the dev server serves a small control page and sends the new code through `postMessage` instead. Saving a file stops the plugin and starts it again with the new code, keeping its storage.
+
+This is not full HMR, and it will never be, because the host page owns the DOM. But the save-to-see loop is fast enough that it feels like it.
+
+### Types
+
+`@yapmod/types` is on npm at `1.1.0`, and it is the only package a plugin author installs. It contains the plugin API, the client handle, the manifest contract, the settings types, and every UI prop type.
+
+It has three entry points:
+
+- `@yapmod/types` for direct imports.
+- `@yapmod/types/plugin-env` for the `yapmod` global and the ambient `@yapmod/ui` module, added through the `types` array in `tsconfig.json`.
+- `@yapmod/types/client-env` for `globalThis.YapmodClient`, used by embedders and extensions.
+
+This release also removed a mistake from the previous one. UI types used to live in `@yapmod/ui`, get mirrored in `@yapmod/types`, and be kept in sync by equality assertions in a contract test. Two published packages for one type surface is not worth it. The contracts now live in `@yapmod/types`, the Solid implementation imports them, and `@yapmod/ui` is private again. Plugin authors install one package.
+
+See [Type Safety](/docs/development/type-safety) for the setup.
+
+### Documentation
+
+The docs site now covers installation, the starter repo, building, hot reloading, the plugin API, the UI components, type safety, distribution, and reverse engineering, plus the contributor guides. It is not finished, but there is no page that says "coming soon" for a feature that ships in this release.
+
+### The web extension
+
+The extension that injects Yapmod into Yapin is already available, and its repository is public: [yapmod/web](https://github.com/yapmod/web). It supports Chrome (Manifest V3) and Firefox from one TypeScript codebase, fetches the Yapmod bundle from GitHub releases, and injects it so you do not have to paste anything into the console. It falls back to the prerelease channel when there is no stable release yet.
+
+It uses Yapmod under the hood like any other host would. Its own interface is a client-registered plugin, which is a nice proof that the architecture works for something real.
+
+Right now you install it by loading the unpacked build from the repository. It is not on the Chrome Web Store or AMO yet.
+
+## The decisions behind it
+
+A few choices shaped everything else, so they are worth explaining.
+
+**One self-contained bundle.** Yapmod is a single IIFE with no external assets. That is a constraint from the environment, but it also keeps the thing easy to audit: one file, one injection, one disposal path.
+
+**No `eval`.** Yapin's CSP forbids it. Plugins are evaluated through a temporary inline `<script>` tag, which is why plugin source has to be an expression that returns the plugin object rather than a statement block.
+
+**Reuse the host.** Light DOM, Yapin's CSS classes, its settings layout, its variables. It is less isolated than a shadow root, but it is the only way the result looks native rather than like a widget.
+
+**Solid, shared once.** Solid is small and does not depend on React internals, which matters because we run inside a React app we do not control. The host owns the only copy, and the builder rewrites imports so plugin bundles use it.
+
+**Storage as a proxy.** Every plugin gets a proxy over a Signal. Reads track reactivity per property, top-level writes persist immediately, and nested mutation is an explicit flush. It is a small API that behaves predictably, and it survives reloads because it is just `localStorage` with versioned keys and validation.
+
+**Manual releases.** No semantic-release, no bots guessing versions. A workflow runs `changelogen`, writes the changelog, creates the tag, and publishes the GitHub release. npm packages use Trusted Publishing over OIDC, so there is no long-lived npm token in the repository. This release is the first one that goes through the fixed pipeline end to end.
+
+**One type package.** Covered above. It removed a whole class of drift, and it made the starter and the docs simpler.
+
+Whether all of these are right, I cannot promise. Some are forced by the environment, some are taste, and a few are bets. What I can say is that none of them were accidental, and if one turns out to be wrong, it is reversible.
+
+## About those 69 commits
+
+The repository has 69 commits and 39 merged pull requests for this release. That sounds like a lot for under two weeks. It is not.
+
+Most of those commits are small and specific: one component, one fix, one documentation correction, one changelog entry. Some are automated release commits, some are version bumps from the publish workflows, and some are the kind of one-line fixes you only notice when you read the built output. The history is granular on purpose, because a commit that does one thing is a commit you can revert.
+
+Commit count measures how often I saved my work, not how much work there was or how good it is. The number that matters more is that the whole workspace is a little over 7,600 lines of TypeScript and TSX, and most of that is the client and the UI kit. It is a small project by design.
+
+## The development environment
+
+Everything is a pnpm workspace. `apps/client` is the composition root and the only place that knows Yapin's DOM. `packages/core` owns the lifecycle and disposal. `packages/ui` owns the Solid components. `packages/types` owns the public contracts. `packages/builder` owns the CLI. `apps/docs` is a Next.js site with Fumadocs. `packages` export raw TypeScript, so there is no build step between them.
+
+The toolchain is TypeScript in strict mode with `noUncheckedIndexedAccess` and `verbatimModuleSyntax`, SolidJS 1.9, Vite 8, oxlint and oxfmt, husky hooks, and GitHub Actions for releases. The docs are Next 16, React 19, and Fumadocs, deliberately kept separate from the Solid code because mixing the two frameworks in one app is how you get a build that takes minutes.
+
+There are no unit tests yet. That is the biggest gap in this release. What exists instead is a strict typecheck across every package, lint, format checks, a build that fails on missing exports, and a set of type contract tests that assert the runtime-facing interfaces keep their shape. For a project this size, on this timeline, that caught the failures that mattered. It is not a substitute for tests, and I know it.
+
+There is also no client dev server, because a client mod has to run on the real page. The loop is: build, inject the bundle, check `YapmodClient.state`, repeat. `pnpm demo` gives the UI components their own page, and the dev bridge covers plugin hot reload. It is rough in the way that client modding is always rough, but it is fast.
+
+I care a lot about making this efficient and type safe, and I would rather spend an hour on a type than debug a runtime bug at midnight. That is the trade I made everywhere: fewer moving parts, more static guarantees, no cleverness that only I understand.
+
+## Where the end-user experience comes from
+
+The inspiration is not other Yapin mods. It is client mods for other platforms, and [Shelter](https://shelter.uwu.network) in particular.
+
+Shelter is a Discord client mod, and what I like about it is not any single feature. It is the shape of the experience: the mod lives inside the app you already use, its settings feel like the app's settings, plugins are toggles in a panel rather than a second application, and you can install something and see it work without reading a manual.
+
+That is the bar I am aiming at. Yapmod should feel like Yapin, not like a tool sitting on top of it. The settings section is native, the components are native, the themes are just CSS, and installing a plugin should be a paste and a toggle.
+
+## What is not here yet
+
+- **The desktop application.** Next, and built on top of this client.
+- **A plugin marketplace.** Deliberate. Plugins are code, and I would rather not build a store before the security story is written.
+- **Store listings for the web extension.** The repository is public and the build works; distribution comes later.
+- **Tests.** The honest gap. They are the first thing on the list after this release.
+- **A finished documentation set.** The core is there; some pages will keep changing as the API settles.
+
+## Thank you
+
+It has been less than two weeks, and the foundation is done. I worked hard on it, I cut features I did not believe in, and I rewrote parts I got wrong. I hope you like what came out of it anyway.
+
+If something feels off, or a type is wrong, or a decision looks backwards to you, tell me. The [issues](https://github.com/yapmod/client/issues) are open, and feedback at this stage is worth more than another feature.
+
+- [Download v1.0.0](https://github.com/yapmod/client/releases/tag/v1.0.0)
+- [Plugin starter](https://github.com/yapmod/plugin-starter)
+- [Web extension](https://github.com/yapmod/web)
+- [Read the docs](/docs)
