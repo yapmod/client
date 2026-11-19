@@ -46,38 +46,33 @@ jobs:
       - name: Build client
         run: pnpm build
 
-      - name: Set exact version if provided
-        if: ${{ github.event.inputs.version != 'major' && github.event.inputs.version != 'minor' && github.event.inputs.version != 'patch' }}
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
-            VERSION="$VERSION-${{ github.event.inputs.prerelease_type }}"
-          fi
-          node -e "const pkg = require('./apps/client/package.json'); pkg.version = '$VERSION'; require('fs').writeFileSync('./apps/client/package.json', JSON.stringify(pkg, null, 2) + '\n')"
-
       - name: Generate changelog & bump version
         run: |
-          VERSION_TYPE="${{ github.event.inputs.version }}"
-          if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
-            if [ "$VERSION_TYPE" = "major" ] || [ "$VERSION_TYPE" = "minor" ] || [ "$VERSION_TYPE" = "patch" ]; then
-              case "$VERSION_TYPE" in
-                major) FLAG="--premajor ${{ github.event.inputs.prerelease_type }}" ;;
-                minor) FLAG="--preminor ${{ github.event.inputs.prerelease_type }}" ;;
-                patch) FLAG="--prepatch ${{ github.event.inputs.prerelease_type }}" ;;
-              esac
-              pnpm changelogen --release --no-github $FLAG
-            else
-              # Exact version already set, just generate changelog
-              pnpm changelogen --no-github || true
-            fi
-          else
-            if [ "$VERSION_TYPE" = "major" ] || [ "$VERSION_TYPE" = "minor" ] || [ "$VERSION_TYPE" = "patch" ]; then
-              pnpm changelogen --release --no-github $VERSION_TYPE
-            else
-              # Exact version already set, just generate changelog
-              pnpm changelogen --no-github || true
-            fi
-          fi
+          VERSION_INPUT="${{ github.event.inputs.version }}"
+          PRERELEASE="${{ github.event.inputs.prerelease }}"
+          PRERELEASE_TYPE="${{ github.event.inputs.prerelease_type }}"
+          FLAGS=()
+
+          case "$VERSION_INPUT" in
+            major|minor|patch)
+              if [ "$PRERELEASE" = "true" ]; then
+                FLAGS=("--pre$VERSION_INPUT" "$PRERELEASE_TYPE")
+              else
+                FLAGS=("--$VERSION_INPUT")
+              fi
+              ;;
+            *)
+              if [ "$PRERELEASE" = "true" ]; then
+                FLAGS=(-r "$VERSION_INPUT-$PRERELEASE_TYPE")
+              else
+                FLAGS=(-r "$VERSION_INPUT")
+              fi
+              ;;
+          esac
+
+          # changelogen bumps package.json, writes CHANGELOG.md, commits and
+          # tags the release. --no-github leaves the GitHub release below.
+          pnpm changelogen --release "${FLAGS[@]}" --no-github
         working-directory: apps/client
         env:
           HUSKY: 0
@@ -92,21 +87,19 @@ jobs:
           All notable changes to this project will be documented in this file.
           CHANGELOG
 
-      - name: Commit changelog and tag
-        run: |
-          VERSION=$(node -p "require('./apps/client/package.json').version")
-          git add apps/client/package.json apps/client/CHANGELOG.md
-          git commit -m "release: v$VERSION" || true
-          git tag -f v$VERSION
-        working-directory: .
-        env:
-          HUSKY: 0
-
       - name: Read new version
         id: version
         run: |
           VERSION=$(node -p "require('./apps/client/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Extract release notes
+        run: |
+          # Only the section for the version that was just tagged, not the
+          # whole changelog history.
+          awk '/^## / { if (seen) exit; seen = 1 } seen' apps/client/CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          test -s "$RUNNER_TEMP/release-notes.md"
+          cat "$RUNNER_TEMP/release-notes.md"
 
       - name: Push commit & tag
         run: |
@@ -117,7 +110,7 @@ jobs:
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          body_path: apps/client/CHANGELOG.md
+          body_path: ${{ runner.temp }}/release-notes.md
           files: apps/client/dist/yapmod-client.js
           prerelease: ${{ github.event.inputs.prerelease }}
         env:
