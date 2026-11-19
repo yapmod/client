@@ -338,9 +338,6 @@ importers:
 
   packages/types:
     devDependencies:
-      '@yapmod/ui':
-        specifier: workspace:*
-        version: link:../ui
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18
@@ -354,6 +351,9 @@ importers:
         specifier: ^1.9.18
         version: 1.9.18
     devDependencies:
+      '@yapmod/types':
+        specifier: workspace:*
+        version: link:../types
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

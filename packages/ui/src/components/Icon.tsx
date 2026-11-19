@@ -1,26 +1,7 @@
 import { For } from 'solid-js';
 import type { JSX } from 'solid-js';
+import type { IconProps } from '@yapmod/types';
 import { iconPaths } from '../icons';
-
-/** Names of the built-in icons. */
-export type IconName =
-  | 'settings'
-  | 'puzzle'
-  | 'trash'
-  | 'palette'
-  | 'upload'
-  | 'refresh'
-  | 'plus'
-  | 'pencil'
-  | 'close';
-
-/** Props for the {@link Icon} component. */
-export type IconProps = {
-  name: IconName;
-  size?: number;
-  label?: string;
-  class?: string;
-};
 
 /**
  * An inline SVG icon.

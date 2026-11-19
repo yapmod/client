@@ -24,4 +24,5 @@ export type {
   SectionProps,
   SettingRowProps,
   SettingTextProps,
+  DividerProps,
 } from './plugin';

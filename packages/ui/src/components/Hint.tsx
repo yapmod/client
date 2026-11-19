@@ -1,7 +1,4 @@
-import type { JSX } from 'solid-js';
-
-/** Props for the {@link Hint} component. */
-export type HintProps = JSX.IntrinsicElements['span'];
+import type { HintProps } from '@yapmod/types';
 
 /** Secondary helper text that matches Yapin's `.hint`. */
 export function Hint(props: HintProps) {

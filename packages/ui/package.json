@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
+    "@yapmod/types": "workspace:*",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {

@@ -1,16 +1,35 @@
 export { uiCss, injectStyle, injectStyles, removeStyle, removeStyles } from './styles';
 export { mountIsolated } from './mount';
 export { createIcon, iconPaths, type CreateIconOptions } from './icons';
-export { Icon, type IconName, type IconProps } from './components/Icon';
-export { Button, type ButtonProps } from './components/Button';
-export { Hint, type HintProps } from './components/Hint';
-export { Panel, type PanelProps } from './components/Panel';
-export { Input, type InputProps } from './components/Input';
-export { Textarea, type TextareaProps } from './components/Textarea';
-export { Switch, type SwitchProps } from './components/Switch';
-export { Select, type SelectOption, type SelectProps } from './components/Select';
-export { SettingsPage, type SettingsPageProps } from './components/SettingsPage';
-export { Section, type SectionSpacing, type SectionProps } from './components/Section';
-export { SettingRow, type SettingRowProps } from './components/SettingRow';
-export { SettingText, type SettingTextProps } from './components/SettingText';
-export { Divider, type DividerProps } from './components/Divider';
+export { Icon } from './components/Icon';
+export { Button } from './components/Button';
+export { Hint } from './components/Hint';
+export { Panel } from './components/Panel';
+export { Input } from './components/Input';
+export { Textarea } from './components/Textarea';
+export { Switch } from './components/Switch';
+export { Select } from './components/Select';
+export { SettingsPage } from './components/SettingsPage';
+export { Section } from './components/Section';
+export { SettingRow } from './components/SettingRow';
+export { SettingText } from './components/SettingText';
+export { Divider } from './components/Divider';
+
+export type {
+  IconName,
+  IconProps,
+  ButtonProps,
+  HintProps,
+  PanelProps,
+  SwitchProps,
+  InputProps,
+  TextareaProps,
+  SelectOption,
+  SelectProps,
+  SettingsPageProps,
+  SectionSpacing,
+  SectionProps,
+  SettingRowProps,
+  SettingTextProps,
+  DividerProps,
+} from '@yapmod/types';

@@ -1,14 +1,4 @@
-import type { JSX } from 'solid-js';
-
-/** Spacing variant for {@link Section}. */
-export type SectionSpacing = 'normal' | 'large';
-
-/** Props for the {@link Section} component. */
-export interface SectionProps {
-  label: string;
-  children: JSX.Element;
-  spacing?: SectionSpacing;
-}
+import type { SectionProps } from '@yapmod/types';
 
 /**
  * Grouped block with a section heading.

@@ -1,8 +1,10 @@
 import type { Component, JSX } from 'solid-js';
 
 /*
- * UI prop types are defined in @yapmod/ui components and re-exported here
- * so this package remains the single public surface for plugin authors.
+ * UI prop types live in `./ui` and are re-exported here so this package
+ * remains the single public surface for plugin authors. The Solid
+ * implementation in `packages/ui` imports the same definitions, so the
+ * contracts and the components cannot drift apart.
  */
 
 import type {
@@ -22,7 +24,7 @@ import type {
   SettingRowProps,
   SettingTextProps,
   DividerProps,
-} from '@yapmod/ui';
+} from './ui';
 
 export type {
   IconName,

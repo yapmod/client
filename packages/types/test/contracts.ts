@@ -1,27 +1,17 @@
 /**
  * Type contract tests.
  *
- * This file verifies that types across packages remain consistent.
+ * This file verifies that the public contracts keep their shape.
  * It uses TypeScript's type system to assert that:
- * - UI prop types from @yapmod/types match those from @yapmod/ui
- * - PluginUi interface is structurally compatible with the runtime ui object
+ * - PluginUi exposes the members the runtime ui object provides
  * - ClientHandle matches the expected shape
+ * - The plugin, manifest and settings contracts keep their required members
  *
  * Run with: `tsc --noEmit test/contracts.ts`
  */
 
 // Types from @yapmod/types (the public surface)
 import type {
-  ButtonProps as TypesButtonProps,
-  IconProps as TypesIconProps,
-  SwitchProps as TypesSwitchProps,
-  InputProps as TypesInputProps,
-  TextareaProps as TypesTextareaProps,
-  SelectProps as TypesSelectProps,
-  SettingsPageProps as TypesSettingsPageProps,
-  SectionProps as TypesSectionProps,
-  SettingRowProps as TypesSettingRowProps,
-  SettingTextProps as TypesSettingTextProps,
   PluginUi,
   YapmodPluginApi,
   ClientHandle,
@@ -29,51 +19,6 @@ import type {
   PluginSettingsSection,
   SharedSolid,
 } from '@yapmod/types';
-
-// Types from @yapmod/ui (the source of truth)
-import type {
-  ButtonProps as UiButtonProps,
-  IconProps as UiIconProps,
-  SwitchProps as UiSwitchProps,
-  InputProps as UiInputProps,
-  TextareaProps as UiTextareaProps,
-  SelectProps as UiSelectProps,
-  SettingsPageProps as UiSettingsPageProps,
-  SectionProps as UiSectionProps,
-  SettingRowProps as UiSettingRowProps,
-  SettingTextProps as UiSettingTextProps,
-} from '@yapmod/ui';
-
-/* ------------------------------------------------------------------ */
-/* UI prop types: @yapmod/types must match @yapmod/ui exactly          */
-/* ------------------------------------------------------------------ */
-
-type AssertEqual<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
-
-type _BtnMatch = AssertEqual<TypesButtonProps, UiButtonProps>;
-type _IconMatch = AssertEqual<TypesIconProps, UiIconProps>;
-type _SwitchMatch = AssertEqual<TypesSwitchProps, UiSwitchProps>;
-type _InputMatch = AssertEqual<TypesInputProps, UiInputProps>;
-type _TextareaMatch = AssertEqual<TypesTextareaProps, UiTextareaProps>;
-type _SelectMatch = AssertEqual<TypesSelectProps, UiSelectProps>;
-type _SettingsPageMatch = AssertEqual<TypesSettingsPageProps, UiSettingsPageProps>;
-type _SectionMatch = AssertEqual<TypesSectionProps, UiSectionProps>;
-type _SettingRowMatch = AssertEqual<TypesSettingRowProps, UiSettingRowProps>;
-type _SettingTextMatch = AssertEqual<TypesSettingTextProps, UiSettingTextProps>;
-
-// Force evaluation: these will error if any assertion is false
-const _assertions: [
-  _BtnMatch,
-  _IconMatch,
-  _SwitchMatch,
-  _InputMatch,
-  _TextareaMatch,
-  _SelectMatch,
-  _SettingsPageMatch,
-  _SectionMatch,
-  _SettingRowMatch,
-  _SettingTextMatch,
-] = [true, true, true, true, true, true, true, true, true, true];
 
 /* ------------------------------------------------------------------ */
 /* PluginUi: verify structural compatibility                           */

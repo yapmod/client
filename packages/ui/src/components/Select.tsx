@@ -1,33 +1,10 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, splitProps } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { JSX } from 'solid-js';
+import type { SelectProps } from '@yapmod/types';
 import { cx } from '../cx';
 
 let uid = 0;
-
-/** A single dropdown option with a value, label, and optional disabled state. */
-export interface SelectOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
-
-/** Props for the {@link Select} component. */
-export type SelectProps = {
-  options: readonly SelectOption[];
-  value?: string;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  id?: string;
-  name?: string;
-  required?: boolean;
-  class?: string;
-  classList?: Record<string, boolean | undefined>;
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
-};
 
 /** The chevron Yapin puts at the right of a dropdown trigger. */
 const CHEVRON =
