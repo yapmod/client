@@ -65,6 +65,7 @@ jobs:
           git commit -m "chore(builder): bump version for npm publish [skip ci]"
           git push origin HEAD:main
         env:
+          HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to npm
@@ -120,6 +121,7 @@ jobs:
           git commit -m "chore(types): bump version for npm publish [skip ci]"
           git push origin HEAD:main
         env:
+          HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to npm
