@@ -33,12 +33,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "tsc --project tsconfig.build.json && node scripts/copy-declarations.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:contracts": "tsc --noEmit -p tsconfig.test.json"
   },
   "devDependencies": {
-    "@yapmod/ui": "workspace:*",
     "solid-js": "^1.9.18",
     "typescript": "^7.0.2"
   },

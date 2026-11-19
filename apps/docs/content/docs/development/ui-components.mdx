@@ -5,6 +5,8 @@ description: Use Yapmod's built-in SolidJS components to build plugin UI that ma
 
 Yapmod provides a set of SolidJS components through `@yapmod/ui` that reproduce Yapin's native look and feel. You get buttons, switches, inputs, dropdowns, layout components, and more. Use them inside your plugin to build interfaces that look like they belong on the page.
 
+You do not install `@yapmod/ui`. The client bundle provides the components at runtime, and `@yapmod/types` ships their typings, so the import type-checks while the builder rewrites it to `yapmod.ui`.
+
 ## Accessing components
 
 There are two ways to access UI components, depending on how you build your plugin.

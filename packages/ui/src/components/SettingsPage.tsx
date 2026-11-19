@@ -1,11 +1,4 @@
-import type { JSX } from 'solid-js';
-
-/** Props for the {@link SettingsPage} component. */
-export interface SettingsPageProps {
-  title: string;
-  description?: string;
-  children: JSX.Element;
-}
+import type { SettingsPageProps } from '@yapmod/types';
 
 /**
  * Top-level wrapper for a settings page.
