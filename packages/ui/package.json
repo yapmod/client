@@ -1,24 +1,12 @@
 {
   "name": "@yapmod/ui",
-  "version": "1.1.0",
-  "files": [
-    "dist"
-  ],
+  "version": "1.0.1",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
-  "publishConfig": {
-    "access": "public"
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
