@@ -224,7 +224,7 @@ export function BlogBody(props: ComponentProps<'div'>) {
     <div
       {...props}
       className={cn(
-        'prose min-w-0 prose-headings:font-heading prose-headings:font-semibold prose-a:text-fd-primary prose-a:no-underline hover:prose-a:underline prose-code:rounded prose-code:bg-fd-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:rounded-xl prose-img:rounded-xl',
+        'prose min-w-0 prose-headings:font-heading prose-headings:font-semibold prose-a:text-fd-primary prose-a:no-underline prose-code:rounded prose-code:bg-fd-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:rounded-xl prose-img:rounded-xl',
         props.className,
       )}
     />
