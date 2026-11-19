@@ -19,9 +19,9 @@ Think of `@yapmod/types` as having three doors, each leading to something differ
 
 Each entry point serves a specific purpose, so you only get what you actually need.
 
-### UI prop types are derived from components
+### UI prop types live in the types package
 
-UI component prop types like `ButtonProps` and `SwitchProps` are defined inside the `@yapmod/ui` components themselves, then re-exported from `@yapmod/types`. The types come directly from the component implementations, so they stay in sync automatically. When a component changes, the props change, and the types reflect that immediately.
+UI component prop types like `ButtonProps` and `SwitchProps` are defined in `@yapmod/types` and imported by the Solid implementation in the workspace. Plugin authors install only `@yapmod/types`; `@yapmod/ui` is provided by the builder and the host at runtime, not as a separate npm dependency.
 
 ### Ambient declarations are explicitly opted in
 
@@ -34,6 +34,8 @@ Add `@yapmod/types` as a development dependency in your plugin project:
 ```bash
 npm install -D @yapmod/types
 ```
+
+You do not install `@yapmod/ui`: it ships inside the client bundle and is exposed to plugins as `yapmod.ui`. The `@yapmod/types/plugin-env` entry declares the module so `import { Switch } from '@yapmod/ui'` still type-checks.
 
 If you are using the starter repo, this is already done for you.
 
@@ -259,6 +261,8 @@ Both approaches give you identical autocompletion and type checking. Choose the 
 
 This is one of the clever parts of the Yapmod build system. When you use `@yapmod/builder`, certain imports are rewritten at build time. Specifically, imports from `solid-js`, `@yapmod/ui`, `solid-js/web`, and `solid-js/store` are replaced with references to the shared runtime instances.
 
+`@yapmod/types` declares the `@yapmod/ui` module for your editor; the builder then rewrites those imports to `yapmod.ui`. That is why you never install the UI implementation.
+
 **What you write in your source code:**
 
 ```tsx
@@ -351,7 +355,7 @@ This helper reads a value from storage, and if it does not exist yet, it sets th
 
 ## Automated type contract tests
 
-To make sure the types stay consistent across packages, `@yapmod/types` includes automated type contract tests. These tests use TypeScript itself to verify that UI prop types exported from `@yapmod/types` match the ones from `@yapmod/ui` exactly. They also check that core interfaces like `PluginUi`, `YapmodPluginApi`, and `ClientHandle` have the expected structure.
+`@yapmod/types` includes automated type contract tests. They use TypeScript itself to verify that core interfaces like `PluginUi`, `YapmodPluginApi`, and `ClientHandle` keep the structure the runtime implements.
 
 If a type drifts or goes out of sync, these tests will catch it. You can run them yourself with:
 
