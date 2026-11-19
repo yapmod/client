@@ -1,0 +1,94 @@
+name: Publish @yapmod/types to npm
+
+# The filename of this workflow is part of the npm Trusted Publisher
+# configuration for @yapmod/types. Renaming or moving it breaks OIDC
+# authentication and npm answers the publish with a 404. Keep the name even if
+# the workflow is restructured.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.1.0)'
+        required: true
+        default: 'patch'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write # Required for npm Trusted Publisher (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Git user config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build @yapmod/types
+        run: pnpm --filter @yapmod/types build
+
+      - name: Typecheck
+        run: pnpm --filter @yapmod/types typecheck
+
+      - name: Bump version & changelog
+        working-directory: packages/types
+        env:
+          HUSKY: 0
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          TARGET_VERSION="${{ github.event.inputs.version }}"
+
+          # Re-runs of a publish that already bumped but failed at the registry
+          # must not bump the version a second time.
+          if [ "$CURRENT_VERSION" = "$TARGET_VERSION" ]; then
+            echo "Version is already $CURRENT_VERSION, skipping bump."
+            exit 0
+          fi
+
+          case "$TARGET_VERSION" in
+            major|minor|patch)
+              pnpm changelogen --bump "$TARGET_VERSION"
+              ;;
+            *)
+              npm version "$TARGET_VERSION" --no-git-tag-version
+              ;;
+          esac
+
+          echo "Publishing $(node -p "require('./package.json').version")"
+
+      - name: Commit & push changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git add .
+          git commit -m "chore(types): bump version for npm publish [skip ci]"
+          git push origin HEAD:main
+        env:
+          HUSKY: 0
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        working-directory: packages/types
+        run: |
+          unset NODE_AUTH_TOKEN
+          npm publish --provenance --access public
