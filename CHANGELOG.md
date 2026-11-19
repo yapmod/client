@@ -21,6 +21,7 @@
 - **docs:** expand type safety documentation with all 27 exportable types from @yapmod/types, including usage examples, builder import rewriting explanation, and typed storage patterns (#45)
 - **docs:** add type safety callouts to fundamentals, how-plugins-work, plugin-api, ui-components, starter-repo, and building documentation pages (#45)
 - **ui:** publish @yapmod/ui as a types-only npm package for plugin author IDE support (#54)
+- **types:** declare the @yapmod/ui module in the plugin-env entry so plugin imports type-check with only @yapmod/types installed. (#57)
 
 ### Changed
 
@@ -28,10 +29,13 @@
 - **client:** use satisfies operator for runtime ui object construction (#47)
 - **ci:** use npm Trusted Publisher (OIDC) instead of NPM_TOKEN for all npm publish workflows
 - **ci:** migrate entire release pipeline from semantic-release to changelogen, replacing all workflows with manually triggered workflows for client and npm packages (#49)
+- **types:** define UI prop contracts in @yapmod/types and import them from the workspace implementation, removing the cross-package mirror. (#57)
+- **ci:** stop publishing @yapmod/ui now that the package is workspace-private. (#57)
 
 ### Fixed
 
 - **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
+- **client:** restore @yapmod/ui source resolution and the client build after the published dist stub shadowed it. (#57)
 
 ## [1.0.1](https://github.com/yapmod/client/compare/v1.0.0...v1.0.1) (2026-11-15)
 
