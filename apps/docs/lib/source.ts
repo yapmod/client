@@ -38,7 +38,7 @@ export const blogSource = loader({
 });
 
 export const blogAuthors: Record<string, BlogAuthor> = {
-  ilya: {
+  hdzilyes: {
     name: 'Ilyes Hernandez',
     title: 'Core Maintainer',
     url: 'https://github.com/ilyeshdz',

@@ -3,22 +3,32 @@ title: Yapmod v1.0.0
 description: Why I rebuilt everything from scratch, what plugins actually look like, and why a Discord mod inspired this.
 date: 2026-11-19
 tags: [Release, Announcement]
-authors: [ilya]
+authors: [hdzilyes]
 ---
 
-I tagged [v1.0.0](https://github.com/yapmod/client/releases/tag/v1.0.0) today. Everything was rewritten from scratch over the last two weeks — not one file was carried over.
+Yapmod has been in development for months. We are turning to the v1.0.0. This release isn't just a goal that we achieved, it's a massive amount of work that we have finished and I am proud to say that this version is and will remain one of the most important release ever for Yapmod. I did a lot of improvements and I had to make a lot of decisions around the architecture and the way Yapmod works and it was very useful cuz I learn many things related to client modification software.
 
-What does "1.0.0" mean? Not that it's finished. It means the foundation is solid enough to build on. The client, the plugin system, the UI kit, the build tool, the types — they work together, and they work well.
+For people wondering, I have been an active contributor to Dorion & Shelter, two of the most important project around client modification software in Discord. This was very useful during the development of this new architecture, because i was able to take insipiration from those two projects and finally build something that I will be truly proud of.
 
 ## What is Yapmod, really?
 
-Yapmod is a mod that loads into Yapin and gives you themes, plugins, and a settings panel that looks like it belongs there. No separate window, no popup — just a new section in Yapin's settings.
+Yapmod is a client modification software that existed since the release of Yapin (formely Yapper) and provide custom plugins and themes. In the very first version of Yapmod, the goal was to build a desktop application that happen to have a client modification software within it. The project grow very rapidly and around 20 people were using it regularly, but the architecture undeneath the project was quite bad. First, because of the desktop application, because everything was built around the idea that we have some sort of host known as a desktop client and we didn't implement any "bridge" at the very start and it was quite bad because it was possible to make it as stable as possible and most importanly, it was not working any other environement then Yapmod Desktop. However, after couple weeks, we've implemented a bridge that allows us to build a web extension.
 
-The desktop app isn't part of this release. It's coming next, and it will use the same client and the same plugin system. That separation was the whole point of the rewrite: the shell and the mod layer should never break each other.
+That bridge was the turning point. Once we separated the client logic from the host environment, everything became possible. The same code could run in a browser extension, a desktop app, or eventually anywhere else. That's when I knew the rewrite was going in the right direction.
 
-## Plugins — the heart of it
+## Shelter and why it matters
 
-Plugins are why this project exists. Let me show you what one looks like instead of describing the API:
+If you've never heard of [Shelter](https://shelter.uwu.network), it's a Discord client mod that changed how I think about client modification software. The tagline says it all: _"an attempt to prepare for the worst."_
+
+Here's what happened. In 2022, Discord changed their build system and broke every client mod overnight. Overnight, I'm not exaggerating. One day your mod works, the next day it's completely broken because some internal function name changed. Shelter was the response to that problem. Instead of relying on Discord's internal code — which changes constantly — it works with React fibers and DOM observation. It doesn't care what Discord's internals look like. The result? It hasn't broken from a Discord update once in over two years.
+
+That's the philosophy I want for Yapmod. Don't depend on things you can't control. Reuse the host's CSS, use its settings layout, observe the DOM instead of holding references to nodes that will be replaced. Be the mod that keeps working when the app updates. It's not just about being clever — it's about respecting the host application and working with it, not against it.
+
+Shelter also uses Solid for its own UI components — same choice I made. It's small, it doesn't depend on React internals, and running it inside a React app you don't control is actually fine. When you see two projects in the same space making the same choice, it's usually a sign you're on the right path.
+
+## What plugins actually look like
+
+Plugins are why this project exists. Instead of describing the API, let me show you what one looks like:
 
 ```tsx
 import { Input, Section, SettingRow, SettingsPage } from '@yapmod/ui';
@@ -51,13 +61,15 @@ export default function () {
 }
 ```
 
-That's it. A function that returns an object with an `onLoad` hook. You get `yapmod.storage` for persistent data, `yapmod.settings` for a settings panel, `yapmod.log()` for debugging, and a whole UI kit that makes your interface look like Yapin.
+That's a complete plugin. A function that returns an object with an `onLoad` hook. You get `yapmod.storage` for persistent data, `yapmod.settings` for a settings panel, `yapmod.log()` for debugging, and a whole UI kit that makes your interface look like it belongs in Yapin. No separate window, no popup — just a new section in the settings.
 
-You can install plugins by pasting code, loading a `.js` file, or pointing Yapmod at a remote URL. If a plugin crashes, it doesn't take the rest of the client down. If you delete it, your data stays — reinstalling brings everything back.
+The storage API is simple: it's just `localStorage` with a reactive proxy. Top-level writes save automatically. If you need nested changes, you call `flushStorage()`. It's predictable, it survives reloads, and if you delete a plugin then reinstall it, your data is still there.
+
+You can install plugins by pasting code, loading a `.js` file, or pointing Yapmod at a remote URL. If a plugin crashes, it doesn't take the rest of the client down. Each plugin runs in isolation, and the error handling makes sure one bad plugin doesn't ruin the experience for everyone else.
 
 ### Client-registered plugins
 
-The extension and the desktop app can register their own plugins using the exact same API. They're namespaced so they can't collide with community plugins, and regular users don't see them unless they want to. It's a small idea that turned out to be really useful.
+One idea that turned out to be really useful is client-registered plugins. The extension and the desktop app can register their own plugins using the exact same API. They're namespaced with `client:` prefix so they can't collide with community plugins, and regular users don't see them unless they want to.
 
 The web extension's own settings UI is a client-registered plugin:
 
@@ -95,48 +107,47 @@ export function createWebExtPlugin(): ClientPlugin {
 }
 ```
 
-Same API, same components, same storage. The architecture is doing what it was supposed to.
+Same API, same components, same storage. The extension settings look exactly like any other plugin settings because they _are_ plugin settings. The architecture is doing what it was supposed to.
 
 ## The web extension
 
-[Available on GitHub](https://github.com/yapmod/web), the extension injects Yapmod into Yapin automatically so you don't have to paste anything into the console. It works on Chrome and Firefox from the same codebase.
+The [web extension](https://github.com/yapmod/web) injects Yapmod into Yapin automatically so you don't have to paste anything into the console. It works on Chrome and Firefox from the same codebase.
 
-Under the hood it's simple: fetch the Yapmod bundle from GitHub releases, inject it via a Blob URL (Yapin's CSP blocks inline scripts), and you're done. A small detail — Blob URLs instead of inline scripts — but it's the kind of thing that takes an hour to figure out the first time.
+Under the hood, it's simpler than you might think: fetch the Yapmod bundle from GitHub releases, inject it into the page, and you're done. But there's one small detail that took me an hour to figure out the first time: Content Security Policy.
 
-It's not on the Chrome Web Store yet. You install it by loading the unpacked build from the repo. Store listings will come later.
+Yapin's CSP blocks inline `<script>` tags, so you can't just inject code directly. The solution is Blob URLs — you create a blob from the source code, generate a URL for it, and load it as a regular script:
 
-## Shelter and why it matters
+```js
+const blob = new Blob([sourceCode], { type: 'application/javascript' });
+const url = URL.createObjectURL(blob);
+const script = document.createElement('script');
+script.src = url;
+document.head.appendChild(script);
+```
 
-If you've never heard of [Shelter](https://shelter.uwu.network), it's a Discord client mod with a tagline that says a lot: _"an attempt to prepare for the worst."_
+It's a small detail, but it's the kind of thing that makes or breaks the injection. Once that works, everything else is straightforward.
 
-Discord changed their build tool in 2022 and broke every client mod overnight. Shelter was the response. Instead of relying on Discord's internal code — which changes constantly — it works with React fibers and DOM observation. It doesn't care what Discord's internals look like. Result: it hasn't broken from a Discord update once in over two years.
+It's not on the Chrome Web Store yet. You install it by loading the unpacked build from the repo. Store listings will come later when I have time to deal with the review process.
 
-That's the philosophy I want for Yapmod. Don't depend on things you can't control. Reuse the host's CSS, use its settings layout, observe the DOM instead of holding references to nodes that will be replaced. Be the mod that keeps working when the app updates.
+## Design choices that matter
 
-Shelter also uses Solid for its own UI components — same choice I made. It's small, it doesn't depend on React internals, and running it inside a React app you don't control is actually fine.
+A few decisions that shaped this release:
 
-## A few design choices
+**One bundle, no eval.** Yapmod is a single file. Yapin's CSP forbids `eval`, so plugins are evaluated through a temporary `<script>` tag. It's a constraint that also keeps things simple — no module bundler for plugins, no complex dependency resolution.
 
-**One bundle, no eval.** Yapmod is a single file. Yapin's CSP forbids `eval`, so plugins are expressions evaluated through a temporary `<script>` tag. It's a constraint that also keeps things simple.
+**Light DOM, not Shadow DOM.** Using Yapin's own CSS classes means the settings panel looks native. A shadow root would look like a foreign widget pasted into the page. It's less isolated, but it looks right, and that matters more than perfect isolation.
 
-**Light DOM, not Shadow DOM.** Using Yapin's own CSS classes means the settings panel looks native. It's less isolated, but a shadow root would look like a foreign widget pasted into the page.
+**One type package.** Plugin authors install `@yapmod/types` and that's it. Everything else is internal. The API surface is small on purpose — less to learn, less to break.
 
-**Storage is just localStorage.** Every plugin gets a reactive proxy. Top-level writes save automatically. Nested changes need an explicit `flushStorage()`. Simple, predictable, survives reloads.
+## What's next
 
-**One type package.** Plugin authors install `@yapmod/types` and that's it. Everything else is internal.
+The desktop app is next. It will use the same client and the same plugin system — that separation was the whole point of the rewrite. The shell and the mod layer should never break each other.
 
-## What's missing
-
-- **The desktop app** — next on the list
-- **Tests** — the biggest gap, I know
-- **Store listings for the extension** — the build works, distribution comes later
-- **A plugin marketplace** — deliberate. Plugins are code, and I want to think through the security story first
+After that, tests. It's the biggest gap right now, and I know it. A plugin marketplace is also on the radar, but deliberate — plugins are code, and I want to think through the security story before I let people distribute them easily.
 
 ## Thanks
 
-Two weeks, 69 commits, about 7,600 lines of code. Small by design.
-
-If something feels wrong, a type is off, or a decision doesn't make sense to you — [tell me](https://github.com/yapmod/client/issues). Feedback right now is worth more than any feature.
+This release is the result of months of work, lessons learned from Dorion and Shelter, and a lot of trial and error. If something feels wrong, a type is off, or a decision doesn't make sense to you — [tell me](https://github.com/yapmod/client/issues). Feedback right now is worth more than any feature.
 
 - [Download v1.0.0](https://github.com/yapmod/client/releases/tag/v1.0.0)
 - [Plugin starter](https://github.com/yapmod/plugin-starter)
