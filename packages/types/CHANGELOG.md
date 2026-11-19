@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## v1.1.0
 
 [compare changes](https://github.com/yapmod/client/compare/v1.0.0-nightly...v1.1.0)
@@ -28,4 +27,3 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Hdzilyes ([@ilyeshdz](http://github.com/ilyeshdz))
-
