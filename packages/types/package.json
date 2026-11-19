@@ -33,7 +33,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "tsc --project tsconfig.build.json && node scripts/copy-declarations.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:contracts": "tsc --noEmit -p tsconfig.test.json"
   },
