@@ -50,8 +50,12 @@ function PluginCard(props: { plugin: StoredPlugin }) {
 
     if (!confirmed) return;
 
-    removePlugin(current.id);
-    showToast(`${current.manifest.name} deleted.`);
+    try {
+      removePlugin(current.id);
+      showToast(`${current.manifest.name} deleted.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not delete plugin.', 'error');
+    }
   }
 
   return (

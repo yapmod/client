@@ -34,6 +34,7 @@
 
 ### Fixed
 
+- Keep plugin editor drafts and the current running plugin when browser storage rejects a save (#64).
 - **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
 - **client:** restore @yapmod/ui source resolution and the client build after the published dist stub shadowed it. (#57)
 - **dev:** keep the last working plugin after a failed hot reload and retry rejected builds (#65).

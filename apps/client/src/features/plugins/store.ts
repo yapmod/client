@@ -1,4 +1,5 @@
 import { createSignal } from 'solid-js';
+import { showToast } from '../../lib/toast';
 import { isRecord, normalizeManifest, normalizeRemoteSource, readString } from './manifest';
 import type { ClientPlugin, PluginState, StoredPlugin } from './types';
 
@@ -75,6 +76,10 @@ function persist(state: PluginState): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
     console.error('[yapmod] could not save plugins', error);
+    throw new Error(
+      'Could not save plugins to browser storage. Check available space and try again.',
+      { cause: error },
+    );
   }
 }
 
@@ -100,11 +105,15 @@ export function addPluginRecord(plugin: StoredPlugin): void {
   commit({ plugins: [...state().plugins, plugin] });
 }
 
+function withPluginRecord(id: string, plugin: StoredPlugin): PluginState {
+  return {
+    plugins: state().plugins.map((candidate) => (candidate.id === id ? plugin : candidate)),
+  };
+}
+
 /** Replaces a record in place, preserving its position in the list. */
 export function replacePluginRecord(id: string, plugin: StoredPlugin): void {
-  commit({
-    plugins: state().plugins.map((candidate) => (candidate.id === id ? plugin : candidate)),
-  });
+  commit(withPluginRecord(id, plugin));
 }
 
 /** Deletes a record. Plugin storage is intentionally kept for a reinstall. */
@@ -117,7 +126,18 @@ export function setPluginEnabledRecord(id: string, enabled: boolean): void {
   const plugin = getPluginRecord(id);
   if (!plugin || plugin.on === enabled) return;
 
-  replacePluginRecord(id, { ...plugin, on: enabled });
+  const next = withPluginRecord(id, { ...plugin, on: enabled });
+  try {
+    persist(next);
+  } catch {
+    // The runtime has already started or stopped the plugin. Keep the switch
+    // in sync with this session even if the browser cannot save the preference.
+    showToast(
+      'Plugin state changed for this session only. Browser storage could not be updated.',
+      'error',
+    );
+  }
+  setState(next);
 }
 
 /**
