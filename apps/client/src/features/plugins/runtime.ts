@@ -25,6 +25,7 @@ import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
 import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
+import { PluginScope } from './scope';
 import { createPluginStorage } from './storage';
 import {
   addClientPlugin,
@@ -46,7 +47,7 @@ interface LoadedPlugin {
   api: YapmodPluginApi;
   onUnload?: PluginFunction;
   settings?: unknown;
-  disposers: (() => void)[];
+  disposers: PluginScope;
   settingsModalClose?: () => void;
 }
 
@@ -68,7 +69,6 @@ export interface EditPluginInput {
 }
 
 const loaded = new Map<string, LoadedPlugin>();
-const stagedUi = new WeakMap<YapmodPluginApi, Set<() => void>>();
 const [settingsIds, setSettingsIds] = createSignal<string[]>([]);
 let runtimeDisposed = false;
 // A reload temporarily owns two instances of the same plugin.
@@ -97,21 +97,6 @@ function callHook(hook: PluginFunction | undefined, thisArg: unknown, label: str
   }
 }
 
-function runDisposers(registered: (() => void)[]): void {
-  const disposers = registered.splice(0);
-
-  for (let index = disposers.length - 1; index >= 0; index -= 1) {
-    const dispose = disposers[index];
-    if (!dispose) continue;
-
-    try {
-      dispose();
-    } catch (error) {
-      console.error('[yapmod] plugin cleanup failed', error);
-    }
-  }
-}
-
 /**
  * Builds the API object every plugin receives. Community and client-registered
  * plugins share it verbatim, so storage, cleanup registration and settings
@@ -122,37 +107,10 @@ function createPluginApi(
   manifest: PluginManifest,
 ): {
   api: YapmodPluginApi;
-  disposers: (() => void)[];
+  disposers: PluginScope;
 } {
   const { storage, persist } = createPluginStorage(id);
-  const disposers: (() => void)[] = [];
-
-  /**
-   * Registers a disposer with the plugin and hands it back unchanged, so
-   * every disposer-returning API call cleans up by default while still
-   * letting the caller close or remove the thing early.
-   */
-  function track<T extends () => void>(dispose: T): T {
-    disposers.push(dispose);
-    return dispose;
-  }
-
-  // Opening a modal or registering a section can replace the live instance's
-  // UI. Only publish those requests once a reload has accepted its module.
-  function installUi(install: () => () => void): () => void {
-    const queue = stagedUi.get(api);
-    if (!queue) return track(install());
-
-    let remove: (() => void) | undefined;
-    const mount = () => {
-      remove = install();
-    };
-    queue.add(mount);
-    return track(() => {
-      queue.delete(mount);
-      remove?.();
-    });
-  }
+  const disposers = new PluginScope(loaded.has(id));
 
   const api: YapmodPluginApi = {
     apiVersion: 1,
@@ -166,17 +124,19 @@ function createPluginApi(
       console.log(`[yapmod:${id}]`, ...args);
     },
     observe(selector, onFound) {
-      return track(observeElements(selector, onFound));
+      return disposers.install(() => observeElements(selector, onFound));
     },
     ui: {
       showToast: showToast,
       openModal(options) {
-        return installUi(() => openModal(options));
+        return disposers.installUi(() => openModal(options));
       },
       injectCss(css) {
-        const styleId = `yapmod-plugin-${id}-${styleCounter++}`;
-        injectStyle(styleId, css);
-        return track(() => removeStyle(styleId));
+        return disposers.install(() => {
+          const styleId = `yapmod-plugin-${id}-${styleCounter++}`;
+          injectStyle(styleId, css);
+          return () => removeStyle(styleId);
+        });
       },
       Button,
       Hint,
@@ -203,7 +163,7 @@ function createPluginApi(
 
         // Namespaced per plugin, so two plugins can use the same section id
         // and a plugin can never shadow Yapmod's own entries.
-        return installUi(() =>
+        return disposers.installUi(() =>
           registerSettingsSection({
             id: `plugin:${id}:${section.id}`,
             label: section.label,
@@ -214,7 +174,7 @@ function createPluginApi(
       },
     },
     onDispose(dispose) {
-      if (typeof dispose === 'function') disposers.push(dispose);
+      if (typeof dispose === 'function') disposers.onDispose(dispose);
     },
     showSettings() {
       showPluginSettings(id);
@@ -224,7 +184,6 @@ function createPluginApi(
     solidStore: sharedSolid.solidStore,
   };
 
-  if (loaded.has(id)) stagedUi.set(api, new Set());
   return { api, disposers };
 }
 
@@ -237,7 +196,7 @@ function activatePlugin(
   id: string,
   module: Record<string, unknown>,
   api: YapmodPluginApi,
-  disposers: (() => void)[],
+  disposers: PluginScope,
 ): boolean {
   let record: LoadedPlugin;
   try {
@@ -249,16 +208,9 @@ function activatePlugin(
       disposers,
     };
 
-    const queue = stagedUi.get(api);
-    if (queue) {
-      stagedUi.delete(api);
-      for (const mount of queue) {
-        queue.delete(mount);
-        mount();
-      }
-    }
+    disposers.publishUi();
   } catch (error) {
-    runDisposers(disposers);
+    disposers.dispose();
     console.error(`[yapmod] could not prepare plugin ${id}`, error);
     return false;
   }
@@ -299,7 +251,7 @@ export function startPlugin(id: string): boolean {
     if (!isRecord(result)) throw new Error('Plugin code must return an object.');
     module = result;
   } catch (error) {
-    runDisposers(disposers);
+    disposers.dispose();
     console.error(`[yapmod] could not load plugin ${id}`, error);
     return false;
   }
@@ -338,7 +290,7 @@ export function reloadPlugin(id: string, source: string): ReloadResult {
     if (!isRecord(result)) throw new Error('Plugin code must return an object.');
     module = result;
   } catch (error) {
-    runDisposers(disposers);
+    disposers.dispose();
     console.error(`[yapmod] could not reload plugin ${id}`, error);
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
@@ -374,7 +326,7 @@ export function startClientPlugin(id: string): boolean {
     if (!isRecord(result)) throw new Error('Client plugin setup must return an object.');
     module = result;
   } catch (error) {
-    runDisposers(disposers);
+    disposers.dispose();
     console.error(`[yapmod] could not load client plugin ${id}`, error);
     return false;
   }
@@ -418,7 +370,7 @@ export function stopPlugin(id: string): void {
     console.error(`[yapmod] plugin ${id} onUnload failed`, error);
   }
 
-  runDisposers(plugin.disposers);
+  plugin.disposers.dispose();
 
   loaded.delete(id);
   syncSettingsIds();

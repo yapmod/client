@@ -36,6 +36,10 @@
           throw new Error('Intentional cleanup failure');
         });
         api.onDispose(() => cleaned.push('last'));
+        queueMicrotask(() => {
+          api.ui.injectCss('.cleanup-late {}');
+          api.onDispose(() => cleaned.push('late'));
+        });
         throw new Error('Intentional setup failure');
       },
     });
@@ -43,6 +47,10 @@
     check(cleaned.join(',') === 'last,first', 'Expected isolated cleanups in reverse order');
 
     const styles = () => [...document.querySelectorAll('style')].map((style) => style.textContent);
+    await Promise.resolve();
+    check(cleaned.join(',') === 'last,first,late', 'Late disposal callback was lost');
+    check(!styles().includes('.cleanup-late {}'), 'Closed scope accepted a late stylesheet');
+
     const localCss = '.cleanup-local {}';
     localId = addLocalPlugin({
       name: 'Setup cleanup',
