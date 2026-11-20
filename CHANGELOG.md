@@ -37,6 +37,7 @@
 - **storage:** make proxy properties reactive in SolidJS without requiring `createMemo()` (#37)
 - **client:** restore @yapmod/ui source resolution and the client build after the published dist stub shadowed it. (#57)
 - **ci:** publish @yapmod/types from the `publish-types-npm.yml` workflow its npm Trusted Publisher is configured for, so releases authenticate through OIDC again instead of failing with E404. (#57)
+- **plugins:** clean up failed setups and preserve the active plugin UI when a replacement module is rejected (#66).
 - **ci:** generate the client changelog and a scoped release body for exact-version releases, and let changelogen create the release commit and tag
 
 ## [1.0.1](https://github.com/yapmod/client/compare/v1.0.0...v1.0.1) (2026-11-15)
