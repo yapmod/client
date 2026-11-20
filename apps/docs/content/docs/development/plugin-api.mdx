@@ -240,6 +240,34 @@ const dispose = api.settings.registerSection({
   Components](/docs/development/ui-components) guide for the full component reference.
 </Callout>
 
+## Composer status
+
+### `api.composer.registerStatus(format)`
+
+Add a read-only text indicator to each message composer. The client calls your formatter when the indicator mounts and when the measured length or limit changes. Multiple plugins share a row in registration order. Each composer has its own state, including after Yapin replaces its input.
+
+```ts
+export default function () {
+  return {
+    onLoad() {
+      yapmod.composer.registerStatus(({ length, maxLength }) => {
+        if (maxLength === null) return String(length);
+        return {
+          text: `${length} / ${maxLength}`,
+          tone: length >= maxLength ? 'warning' : undefined,
+        };
+      });
+    },
+  };
+}
+```
+
+- `length` counts UTF-16 code units, matching textarea `maxlength`. For example, `😀` counts as two.
+- `maxLength` is the native limit or `null` when the composer has none. Zero is a valid limit.
+- Return a string or an object with `text` and an optional `'warning'` tone. Content is rendered as plain text. Keep the formatter synchronous and free of side effects.
+- The returned function removes this registration early. Yapmod also removes its indicators on plugin unload, failed startup or replacement. A newly mounted composer picks up all active registrations.
+- Older clients can also report `apiVersion: 1`. Check for `yapmod.composer?.registerStatus` if your plugin supports those clients.
+
 ## What comes next
 
 Now that you know the full API, learn about the different [plugin types](/docs/development/plugin-types) and how user installed plugins differ from client registered plugins.
