@@ -6,24 +6,24 @@ tags: [Release]
 authors: [hdzilyes]
 ---
 
-On November 19 we published the first stable release of the rewritten Yapmod client. The download is a single file, `yapmod-client.js`. Load it into a Yapin tab, open settings and you will find three new entries under **Yapmod**. Here is what you can do with them. [Version 1.0.0 on GitHub](https://github.com/yapmod/client/releases/tag/v1.0.0).
+On November 19, we shipped Yapmod 1.0. If you read [the first post](/blog/welcome-to-yapmod), you’ll remember why I wanted to pull the client out of the old desktop app. With this release, you can take the part I missed most, load it into the Yapin tab you already have open, and make a change you can actually see. [Download version 1.0.0 on GitHub](https://github.com/yapmod/client/releases/tag/v1.0.0).
 
-## A theme you can switch off
+## Start with something small
 
-**Themes** accepts a CSS file, pasted CSS or a direct link to a stylesheet. Import a file and switch it on to see it applied to the page. If you edit the file and upload it under the same name, Yapmod replaces the old copy and remembers whether you had it enabled. That makes small adjustments easy to compare while the same settings panel is open.
+Say you like the colors in Yapin but wish the settings cards had a little more breathing room. A stylesheet is enough for that. Open **Settings → Yapmod → Themes**, add your CSS file and switch it on. You can also paste a few rules directly if you’re still figuring out what looks right.
 
-The Rose Grid example on this site is a small way to try it. Its stylesheet puts a pink pixel pattern on settings cards. Once you upload it, the theme’s own card doubles as a swatch. Flip the switch and watch the pattern disappear. [Try Rose Grid in Yapin](/docs/get-started#try-rose-grid).
+The small detail I like here is what happens on the second try. If the padding looks a bit generous, edit the file and upload it again under the same name. Yapmod replaces the installed copy and remembers that you had it switched on. You can leave the panel open, look at the cards again and decide whether to keep the change. [Add your first theme](/docs/get-started#add-a-theme).
 
-## A plugin that remembers
+## Give a plugin a place in settings
 
-**Plugins** lets you load a local plugin or enter a URL supplied by its author. An installed plugin can add its own page to the settings sidebar. For example, it can offer a “Compact layout” switch and store your choice. In the v1 API, assigning `yapmod.storage.compact = true` saves that value and updates the Solid components that read it. Disabling the plugin removes its registered settings page while preserving its preferences.
+A theme is enough for the spacing change. Suppose you also want a “Compact layout” switch so someone else can choose how much space they like. That’s a good first plugin. The client gives you a switch that looks at home in Yapin, a section in the sidebar to put it in, and storage to remember the answer.
 
-Authors can build that page using the switches, inputs and selects that ship with the client. The builder resolves the UI imports to the components already running in the tab. The published types give your editor the names and props while you write. [Explore the settings controls](/docs/development/ui-components).
+In the v1 API, the switch can save its value with `yapmod.storage.compact = true`. A Solid component reading that preference picks up the change. If someone turns the whole plugin off, its registered section disappears from settings. When they enable it again, their choice is still there. Those are details every plugin author would otherwise have to work out for themselves. [Browse the settings controls](/docs/development/ui-components).
 
-## A shorter loop for plugin authors
+## What it feels like to work on one
 
-**Settings** is where you enable hot reload. Start the builder’s dev session, use its local control page to open Yapin, then save a change to your plugin. The builder sends the new build to the open tab and the client restarts the plugin there. You can edit a label or adjust a layout without uploading a file for each change. [Set up hot reload](/docs/setup/hot-reloading).
+The difference is easiest to notice when you’re fiddling with a label. Turn on hot reload in Yapmod’s settings, start the builder and open Yapin from its local control page. Leave those two tabs open. Each time you save, the builder sends the updated plugin to the same Yapin tab. You can read the label in context, shorten it by a word and look again. [Set up hot reload](/docs/setup/hot-reloading).
 
-Work has continued since the release. Two fixes on the main branch make a failed edit easier to recover from. The dev client keeps the last working plugin when a reload fails, and the plugin editor reports a failed save. Those fixes landed after the 1.0.0 download. [Hot-reload fix](https://github.com/yapmod/client/pull/70) · [Editor fix](https://github.com/yapmod/client/pull/69).
+Since tagging 1.0.0, we’ve also worked on what happens when an edit goes wrong. On the main branch, a failed reload leaves the last working plugin in place, and a failed save in the plugin editor now tells you what happened. Both fixes landed after the release download. [Hot-reload fix](https://github.com/yapmod/client/pull/70) · [Editor fix](https://github.com/yapmod/client/pull/69).
 
-If this is your first time loading the mod, the [getting-started guide](/docs/get-started) takes you from the release file to your first theme.
+If you make something with this release, I’d love to see what you changed. Come share it in [the official Yapmod server on Yapin](https://yapin.gg/invite/YappMod).

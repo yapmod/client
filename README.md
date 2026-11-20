@@ -13,7 +13,7 @@
 1. Download `yapmod-client.js` from the **Assets** section of the [latest release](https://github.com/yapmod/client/releases/latest).
 2. Open [Yapin](https://yapin.gg) in Chrome or Edge. In that tab’s Developer Tools, go to **Sources → Snippets → New snippet**.
 3. Copy the contents of the downloaded file into the snippet, name it `yapmod-client.js`, and save. Press **⌘ Enter** on macOS or **Ctrl Enter** on Windows and Linux to run it.
-4. Open Yapin’s **Settings → Yapmod**. To try your first theme, follow the [Rose Grid walkthrough](apps/docs/content/docs/get-started.mdx#try-rose-grid).
+4. Open Yapin’s **Settings → Yapmod**. To add your first theme, follow the [theme setup instructions](apps/docs/content/docs/get-started.mdx#add-a-theme).
 
 Run the saved snippet again after refreshing Yapin. Your themes, plugins, and preferences stay in this browser. To update the client, replace the snippet contents with the latest release, refresh Yapin, and run the snippet.
 
