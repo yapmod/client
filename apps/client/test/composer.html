@@ -1,0 +1,73 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Composer status regression</title>
+<form class="composer">
+  <div class="composer-box"><textarea maxlength="4">A</textarea></div>
+</form>
+<output>Running</output>
+<script type="module">
+  import client from '../src/index';
+  import { applyDevUpdate } from '../src/features/dev/apply';
+  import { removePlugin } from '../src/features/plugins/runtime';
+
+  const output = document.querySelector('output');
+  const first = document.querySelector('textarea');
+  const contents = () =>
+    [...document.querySelectorAll('.yp-composer-status')].map((el) => el.textContent);
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 60));
+  function check(expected) {
+    const actual = contents();
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+      throw Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    }
+  }
+  const id = 'dev:status-fixture';
+  try {
+    const payload = { id, name: 'First', author: 'Test', description: 'Fixture' };
+    const send = (code) => applyDevUpdate({ ...payload, code });
+    const working =
+      '(api) => ({ onLoad() { api.composer.registerStatus(s => s.length + "/" + s.maxLength); } })';
+    if (!(await send(working)).ok) throw Error('Plugin did not start');
+    let remove;
+    client.registerClientPlugin({
+      id: 'client:status-fixture',
+      manifest: { name: 'Second' },
+      setup(api) {
+        remove = api.composer.registerStatus(() => '!');
+        return {};
+      },
+    });
+    check(['1/4!']);
+    first.value = '😀';
+    first.dispatchEvent(new Event('input', { bubbles: true }));
+    check(['2/4!']);
+    first.form.reset();
+    await settle();
+    check(['1/4!']);
+    const second = document.createElement('textarea');
+    second.className = 'msg-input';
+    document.body.append(second);
+    await settle();
+    check(['1/4!', '0/null!']);
+    second.maxLength = 0;
+    first.replaceWith(first.cloneNode(true));
+    await settle();
+    check(['1/4!', '0/0!']);
+    const failed = await send(
+      '(api) => { api.composer.registerStatus(() => "broken"); throw Error("test"); }',
+    );
+    if (failed.ok) throw Error('Broken replacement started');
+    check(['1/4!', '0/0!']);
+    remove();
+    remove();
+    check(['1/4', '0/0']);
+    removePlugin(id);
+    check([]);
+    output.textContent = 'Passed';
+  } catch (error) {
+    output.textContent = 'Failed: ' + error.message;
+    throw error;
+  } finally {
+    client.dispose();
+  }
+</script>
