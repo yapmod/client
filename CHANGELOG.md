@@ -14,6 +14,8 @@
 
 ### Added
 
+- **web:** add a themed homepage preview, a first-run guide and the Yapmod 1.0 release story (#72).
+
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
 - **types:** add plugin-env entry point for isolated yapmod ambient declaration (#47)
 - **types:** add client-env entry point for consumable YapmodClient global declaration (#47)
@@ -54,3 +56,5 @@
 - **ci:** use conventional-changelog-conventionalcommits v8 ([#34](https://github.com/yapmod/client/issues/34)) ([577ce18](https://github.com/yapmod/client/commit/577ce18e102cb2c82c1f916db620e3eb2d3ed036))
 
 # Changelog
+
+[Unreleased]: https://github.com/yapmod/client/compare/v1.0.0...HEAD

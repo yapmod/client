@@ -1,144 +1,132 @@
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import {
-  ArrowRight,
-  GitBranch,
-  Heart,
-  Lightbulb,
-  MessageCircle,
-  Palette,
-  Puzzle,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Code2, Palette, Puzzle, SlidersHorizontal } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { PixelHero, ThemePreview } from '@/components/hero';
+import { getPosts } from '@/lib/blog';
+import { blogAuthors, blogSource } from '@/lib/source';
+import './home.css';
+
+export const metadata: Metadata = {
+  title: 'Yapmod • Yapin, made yours.',
+  description:
+    'Customize the Yapin interface with CSS themes and plugins that run in your browser.',
+};
+
+const features = [
+  {
+    title: 'Themes',
+    text: 'Import a CSS file and switch it on in Yapin settings. Try it with the Rose Grid theme from the preview.',
+    action: 'Try Rose Grid',
+    href: '/docs/get-started#try-rose-grid',
+    icon: Palette,
+  },
+  {
+    title: 'Plugins',
+    text: 'Load a plugin from its author, then turn it on or off from your Plugins panel.',
+    action: 'How plugins are shared',
+    href: '/docs/development/distribution',
+    icon: Puzzle,
+  },
+  {
+    title: 'Settings',
+    text: 'Give your plugin a place in the Yapin sidebar with the same switches and controls as the host.',
+    action: 'Explore the controls',
+    href: '/docs/development/ui-components',
+    icon: SlidersHorizontal,
+  },
+];
 
 export default function HomePage() {
+  const [latest] = getPosts(blogSource.getPages(), blogAuthors);
+
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center px-4 py-24 md:py-32">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-6 font-heading">
-            Yapin, made yours.
-          </h1>
-          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Yapmod is a free, open-source client mod for Yapin. Customize your experience with
-            themes, plugins, and settings, all running directly in your browser.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="/docs"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Plugin Developer Docs
-              <ArrowRight className="size-4" />
-            </a>
-            <a
-              href="/blog"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-base font-medium transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Read the Blog
-              <ArrowRight className="size-4" />
-            </a>
-            <a
-              href="#why"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-base font-medium transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Learn more
-              <ArrowRight className="size-4" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Yapmod Section */}
-      <section id="why" className="flex flex-col items-center px-4 py-16 scroll-mt-16">
-        <div className="max-w-6xl mx-auto w-full">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">Why Yapmod?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Yapmod enhances Yapin with powerful customization tools, giving you full control over
-              your experience.
+    <>
+      <PixelHero>
+        <div className="home-wrap relative grid items-center gap-10 py-16 sm:py-20 md:grid-cols-[1.2fr_1fr] lg:gap-24 lg:py-28">
+          <div>
+            <h1 className="font-heading text-[clamp(3.5rem,8vw,7.25rem)] leading-[0.95] tracking-tight">
+              Yapin,
+              <br />
+              made yours.
+            </h1>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+              Yapmod is a free, open-source client mod for Yapin. Use themes and plugins to change
+              the interface right in your browser.
             </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/docs/get-started" className="home-action home-primary">
+                Get started <ArrowRight size={16} />
+              </Link>
+              <Link href="/docs" className="home-action home-secondary">
+                <Code2 size={16} /> Build a plugin
+              </Link>
+            </div>
           </div>
+          <ThemePreview />
+        </div>
+      </PixelHero>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <Card
-              title="Themes"
-              description="Transform the look and feel of Yapin with community-created themes. Upload your own or browse the gallery."
-              icon={<Palette className="h-5 w-5" />}
-            />
-            <Card
-              title="Plugins"
-              description="Extend functionality with plugins. Write your own or install from the community library."
-              icon={<Puzzle className="h-5 w-5" />}
-            />
-            <Card
-              title="Settings"
-              description="Fine-tune every aspect of your experience with a dedicated settings panel built right into Yapin."
-              icon={<Zap className="h-5 w-5" />}
-            />
-            <Card
-              title="Lightweight"
-              description="Runs as a single injected script with minimal overhead. No heavy background processes or native dependencies."
-              icon={<Zap className="h-5 w-5" />}
-            />
-            <Card
-              title="Stability Focus"
-              description="The project prioritizes stability above all, so your customizations work reliably across updates."
-              icon={<Sparkles className="h-5 w-5" />}
-            />
-            <Card
-              title="Open Source"
-              description="Fully open source and community-driven. Contribute features, report bugs, and shape the project."
-              icon={<Sparkles className="h-5 w-5" />}
-            />
-          </div>
+      <section id="why" className="home-wrap scroll-mt-16 py-14 md:py-20">
+        <h2 className="font-heading text-4xl tracking-tight">Inside Yapin</h2>
+        <div className="mt-7 grid gap-x-9 gap-y-8 sm:grid-cols-3">
+          {features.map(({ title, icon: Icon, text, action, href }) => (
+            <div key={title} className="flex flex-col items-start border-t pt-5">
+              <Icon className="mb-4 size-5" aria-hidden="true" />
+              <h3 className="font-heading text-2xl">{title}</h3>
+              <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
+              <Link href={href} className="home-link mt-auto">
+                {action} <ArrowRight size={14} />
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Community Section */}
-      <section id="community" className="flex flex-col items-center px-4 py-16 scroll-mt-16">
-        <div className="max-w-4xl mx-auto w-full">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight mb-4 font-heading">Community</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join the conversation, share your creations, and get help from fellow Yapmod users.
-            </p>
+      {latest && (
+        <section className="border-y bg-muted/40">
+          <div className="home-wrap grid gap-6 py-12 md:grid-cols-[1fr_2fr] md:py-16">
+            <div>
+              <h2 className="font-heading text-3xl">From the blog</h2>
+              <Link className="home-link mt-3" href="/blog">
+                All posts <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div>
+              <h3 className="font-heading text-3xl tracking-tight md:text-4xl">
+                <Link className="hover:underline" href={latest.url}>
+                  {latest.title}
+                </Link>
+              </h3>
+              <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
+                {latest.description}
+              </p>
+              <Link className="home-link mt-4" href={latest.url}>
+                Read the story <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
+        </section>
+      )}
 
-          <Cards className="sm:grid-cols-3">
-            <Card
-              href="https://discord.gg/yapin"
-              external
-              title="Yapin"
-              description="Chat with the community and get real-time help."
-              icon={<MessageCircle className="h-5 w-5" />}
-            />
-            <Card
-              href="https://github.com/yapmod/client"
-              external
-              title="GitHub"
-              description="Report issues, request features, and contribute code."
-              icon={<GitBranch className="h-5 w-5" />}
-            />
-            <Card
-              href="https://github.com/yapmod/client/issues"
-              external
-              title="Find an idea"
-              description="Browse open issues and good first picks to start contributing."
-              icon={<Lightbulb className="h-5 w-5" />}
-            />
-          </Cards>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="flex flex-col items-center border-t border-border px-4 py-8 mt-8">
-        <p className="text-sm text-muted-foreground">
-          Yapmod is not affiliated with Yapin. Made with{' '}
-          <Heart className="inline size-3 text-red-500" /> by the community.
+      <footer
+        id="community"
+        className="home-wrap flex flex-wrap items-center justify-between gap-5 py-8 text-sm"
+      >
+        <p className="text-muted-foreground">
+          An independent mod for Yapin, built by the community.
         </p>
+        <nav className="flex flex-wrap gap-4" aria-label="Community">
+          <a className="home-link" href="https://discord.gg/yapin">
+            Yapin Discord <ArrowUpRight size={14} />
+          </a>
+          <a className="home-link" href="https://github.com/yapmod/client">
+            GitHub <ArrowUpRight size={14} />
+          </a>
+          <a className="home-link" href="https://github.com/yapmod/client/issues">
+            Issues <ArrowUpRight size={14} />
+          </a>
+        </nav>
       </footer>
-    </div>
+    </>
   );
 }
