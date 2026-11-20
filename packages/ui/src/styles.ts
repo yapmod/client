@@ -5,6 +5,15 @@ import baseCss from './styles/base.css?inline';
 /** The bundled component stylesheet, as shipped in the JavaScript bundle. */
 export const uiCss = baseCss;
 
+/** Appends a new stylesheet and returns the element to its owner for removal. */
+export function appendStyle(css: string, id?: string): HTMLStyleElement {
+  const style = document.createElement('style');
+  if (id !== undefined) style.id = id;
+  style.textContent = css;
+  document.head.append(style);
+  return style;
+}
+
 /**
  * Adds a `<style>` element with the given id, unless one is already there.
  *
@@ -15,10 +24,7 @@ export const uiCss = baseCss;
  */
 export function injectStyle(id: string, css: string): void {
   if (document.getElementById(id)) return;
-  const style = document.createElement('style');
-  style.id = id;
-  style.textContent = css;
-  document.head.append(style);
+  appendStyle(css, id);
 }
 
 /** Removes a stylesheet added by `injectStyle`. Safe to call repeatedly. */

@@ -1,4 +1,4 @@
-export { uiCss, injectStyle, injectStyles, removeStyle, removeStyles } from './styles';
+export { uiCss, appendStyle, injectStyle, injectStyles, removeStyle, removeStyles } from './styles';
 export { mountIsolated } from './mount';
 export { createIcon, iconPaths, type CreateIconOptions } from './icons';
 export { Icon } from './components/Icon';

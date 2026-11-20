@@ -14,6 +14,7 @@ import {
   Section,
   Switch,
   Textarea,
+  appendStyle,
   injectStyles,
   removeStyles,
 } from '@yapmod/ui';
@@ -78,11 +79,22 @@ function bootstrap(): YapmodClientHandle {
   client.onDispose(closeAllModals);
   client.onDispose(disposeToasts);
 
+  const publicStyles = new Set<HTMLStyleElement>();
+  client.onDispose(() => {
+    for (const style of publicStyles) style.remove();
+    publicStyles.clear();
+  });
+
   const ui = {
     showToast,
     openModal,
-    injectCss() {
-      return () => {};
+    injectCss(css) {
+      if (client.state === 'disposed') return () => {};
+      const style = appendStyle(css);
+      publicStyles.add(style);
+      return () => {
+        if (publicStyles.delete(style)) style.remove();
+      };
     },
     Button,
     Hint,
