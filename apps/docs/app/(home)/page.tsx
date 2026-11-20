@@ -65,12 +65,12 @@ export default function HomePage() {
         </div>
       </PixelHero>
 
-      <section id="why" className="home-wrap text-center scroll-mt-16 py-14 md:py-20">
+      <section id="why" className="home-wrap scroll-mt-16 py-14 md:py-20">
         <h2 className="font-heading text-4xl tracking-tight">Inside Yapin</h2>
         <div className="mt-7 grid gap-x-9 gap-y-8 sm:grid-cols-3">
           {features.map(({ title, icon: Icon, text, action, href }) => (
-            <div key={title} className="flex flex-col items-center border-t pt-5">
-              <Icon className="mb-4 size-5" aria-hidden="true" />
+            <div key={title} className="flex flex-col items-start border-t pt-5">
+              <Icon className="feature-icon mb-4 size-5" aria-hidden="true" />
               <h3 className="font-heading text-2xl">{title}</h3>
               <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
               <Link href={href} className="home-link mt-auto">
@@ -83,7 +83,7 @@ export default function HomePage() {
 
       {latest && (
         <section className="border-y bg-muted/40">
-          <div className="home-wrap grid justify-items-center gap-6 py-12 text-center md:py-16">
+          <div className="home-wrap grid md:grid-cols-[1fr_2fr] gap-8 py-12 md:py-16">
             <div>
               <h2 className="font-heading text-3xl">From the blog</h2>
               <Link className="home-link mt-3" href="/blog">
@@ -96,7 +96,7 @@ export default function HomePage() {
                   {latest.title}
                 </Link>
               </h3>
-              <p className="mx-auto mt-3 max-w-xl leading-relaxed text-muted-foreground">
+              <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
                 {latest.description}
               </p>
               <Link className="home-link mt-4" href={latest.url}>
@@ -109,13 +109,13 @@ export default function HomePage() {
 
       <footer
         id="community"
-        className="home-wrap flex flex-col items-center text-center gap-5 py-8 text-sm"
+        className="home-wrap flex flex-col items-start sm:flex-row sm:justify-between gap-5 py-8 text-sm"
       >
         <p className="text-muted-foreground">
           An independent mod for Yapin, built by the community.
         </p>
-        <nav className="flex justify-center flex-wrap gap-4" aria-label="Community">
-          <a className="home-link" href="https://yapin.gg/invite/YappMod">
+        <nav className="flex flex-wrap gap-4" aria-label="Community">
+          <a className="home-link" href="https://yapin.gg/invite/yapmod">
             Official Yapmod server on Yapin <ArrowUpRight size={14} />
           </a>
           <a className="home-link" href="https://github.com/yapmod/client">

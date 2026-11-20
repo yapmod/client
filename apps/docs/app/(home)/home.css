@@ -12,9 +12,9 @@
   align-items: center;
   min-height: calc(94svh - 3.5rem);
   background:
-    radial-gradient(ellipse at 5% 95%, #ba82fa40, transparent 52%),
-    radial-gradient(ellipse at 98% 78%, #ef9b6945, transparent 46%),
-    radial-gradient(ellipse at 55% 110%, #e64c9145, transparent 66%), var(--background);
+    radial-gradient(ellipse at 5% 95%, #b8739b30, transparent 52%),
+    radial-gradient(ellipse at 98% 78%, #dd5a8c26, transparent 46%),
+    radial-gradient(ellipse at 55% 110%, #dd5a8c3b, transparent 66%), var(--background);
   border-bottom: 1px solid var(--border);
 }
 
@@ -60,27 +60,52 @@
 
 .home-action {
   min-height: 2.75rem;
-  padding: 0.5rem 1.15rem;
-  border-radius: 100px;
-  font-size: 0.9rem;
+  justify-content: center;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .home-primary {
-  color: #251019;
-  background: var(--primary);
-}
-
-.home-primary:hover {
-  background: color-mix(in srgb, var(--primary) 90%, white);
+  color: var(--primary-foreground);
+  background: linear-gradient(color-mix(in srgb, var(--primary) 84%, white), var(--primary));
+  box-shadow:
+    inset 0 1px 0 #ffffff50,
+    0 3px 8px #56182f24;
 }
 
 .home-secondary {
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--card);
+  border-color: color-mix(in srgb, var(--foreground) 24%, var(--card));
+}
+
+.home-primary:hover {
+  border-color: color-mix(in srgb, var(--primary) 75%, var(--foreground));
 }
 
 .home-secondary:hover {
-  background: var(--muted);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-action {
+    transition:
+      transform 140ms ease,
+      border-color 140ms ease;
+  }
+  .home-action:hover {
+    transform: translateY(-2px);
+  }
+  .home-action:active {
+    transform: translateY(1px);
+  }
+}
+
+.feature-icon {
+  color: var(--primary);
 }
 
 .home-link {

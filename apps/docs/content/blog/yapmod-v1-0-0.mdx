@@ -8,6 +8,8 @@ authors: [hdzilyes]
 
 On November 19, we shipped Yapmod 1.0. If you read [the first post](/blog/welcome-to-yapmod), you’ll remember why I wanted to pull the client out of the old desktop app. With this release, you can take the part I missed most, load it into the Yapin tab you already have open, and make a change you can actually see. [Download version 1.0.0 on GitHub](https://github.com/yapmod/client/releases/tag/v1.0.0).
 
+The first place I’d send you after loading the file is the settings sidebar. You’ll see a Yapmod group there, which is also a handy way to tell that the client is running. If you’re trying the release with a browser snippet, refresh the tab once and that group disappears. Run the snippet again and it comes back, along with the themes and plugins you added. You can close the tab for the evening and pick up the same experiment tomorrow.
+
 ## Start with something small
 
 Say you like the colors in Yapin but wish the settings cards had a little more breathing room. A stylesheet is enough for that. Open **Settings → Yapmod → Themes**, add your CSS file and switch it on. You can also paste a few rules directly if you’re still figuring out what looks right.
@@ -20,10 +22,18 @@ A theme is enough for the spacing change. Suppose you also want a “Compact lay
 
 In the v1 API, the switch can save its value with `yapmod.storage.compact = true`. A Solid component reading that preference picks up the change. If someone turns the whole plugin off, its registered section disappears from settings. When they enable it again, their choice is still there. Those are details every plugin author would otherwise have to work out for themselves. [Browse the settings controls](/docs/development/ui-components).
 
+There’s a fiddly bit here that’s easy to miss as a user. Yapin can replace the settings panel as you navigate. A switch drawn directly into that panel can work perfectly the first time you open it and vanish the next time around. By registering a section with the client, you give Yapmod enough information to attach it again. As an author, you can spend that time deciding what “compact” should actually look like.
+
 ## What it feels like to work on one
 
 The difference is easiest to notice when you’re fiddling with a label. Turn on hot reload in Yapmod’s settings, start the builder and open Yapin from its local control page. Leave those two tabs open. Each time you save, the builder sends the updated plugin to the same Yapin tab. You can read the label in context, shorten it by a word and look again. [Set up hot reload](/docs/setup/hot-reloading).
 
 Since tagging 1.0.0, we’ve also worked on what happens when an edit goes wrong. On the main branch, a failed reload leaves the last working plugin in place, and a failed save in the plugin editor now tells you what happened. Both fixes landed after the release download. [Hot-reload fix](https://github.com/yapmod/client/pull/70) · [Editor fix](https://github.com/yapmod/client/pull/69).
 
-If you make something with this release, I’d love to see what you changed. Come share it in [the official Yapmod server on Yapin](https://yapin.gg/invite/YappMod).
+## Let someone else try it
+
+Once that compact switch feels right in your own account, give the built JavaScript file to a friend. They can open **Yapmod → Plugins**, load the file and try it in their own tab. Your personal layout choice stays in your browser, so they get to see what the plugin feels like on its first run. That’s a good moment to find out whether the switch belongs somewhere more obvious, or whether “compact” needs a few words of explanation.
+
+When you share a plugin more widely, include the source and tell people where to find its controls after installation. Even a sentence like “Open Settings, turn on Compact layout, then go back to your conversation” gives someone a way to tell whether it worked. And if all you changed was a bit of CSS, send the stylesheet itself. Someone who likes the spacing but wants a different color can open it and pick up where you left off. [How to share a plugin](/docs/development/distribution).
+
+If you make something with this release, I’d love to see what you changed. Come share it in [the official Yapmod server on Yapin](https://yapin.gg/invite/yapmod).

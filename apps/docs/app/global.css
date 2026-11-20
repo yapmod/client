@@ -58,19 +58,29 @@ html > body[data-scroll-locked] {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+:root,
+.dark {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--card);
+  --color-fd-popover: var(--popover);
+  --color-fd-muted: var(--muted);
+  --color-fd-muted-foreground: var(--muted-foreground);
+}
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: #fffcfd;
+  --foreground: #291f26;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: #dd5a8c;
-  --primary-foreground: oklch(1 0 0);
+  --primary-foreground: #290f1b;
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: #6b5b64;
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -94,19 +104,19 @@ html > body[data-scroll-locked] {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --background: #19151a;
+  --foreground: #faf3f6;
+  --card: #241e25;
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: var(--card);
   --popover-foreground: oklch(0.985 0 0);
   --primary: #dd5a8c;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.274 0.006 286.033);
+  --primary-foreground: #290f1b;
+  --secondary: var(--muted);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: #302830;
+  --muted-foreground: #c4b5bf;
+  --accent: var(--muted);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
@@ -125,6 +135,11 @@ html > body[data-scroll-locked] {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+html ::selection,
+html::selection {
+  background-color: rgb(221 90 140 / 32%);
 }
 
 @layer base {
