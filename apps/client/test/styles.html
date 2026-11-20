@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Public stylesheet lifecycle</title>
+    <style>
+      :root {
+        --host-style: present;
+      }
+    </style>
+  </head>
+  <body>
+    <output id="result">Running</output>
+    <!-- Run pnpm build, then open this page in a browser. -->
+    <script src="../dist/yapmod-client.js"></script>
+    <script>
+      const result = document.getElementById('result');
+      function checkStyle(name, expected) {
+        const actual = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (actual !== expected)
+          throw new Error(`${name}: expected "${expected}", got "${actual}"`);
+      }
+
+      try {
+        const client = globalThis.YapmodClient;
+        const removeFirst = client.ui.injectCss(':root { --first-style: one; }');
+        const removeSecond = client.ui.injectCss(':root { --second-style: two; }');
+        checkStyle('--first-style', 'one');
+        checkStyle('--second-style', 'two');
+
+        removeFirst();
+        removeFirst();
+        checkStyle('--first-style', '');
+        checkStyle('--second-style', 'two');
+
+        client.dispose();
+        checkStyle('--second-style', '');
+        removeSecond();
+        client.ui.injectCss(':root { --late-style: late; }');
+        checkStyle('--late-style', '');
+        checkStyle('--host-style', 'present');
+        result.textContent = 'Passed';
+      } catch (error) {
+        result.textContent = String(error);
+        throw error;
+      }
+    </script>
+  </body>
+</html>
