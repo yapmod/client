@@ -1,0 +1,94 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Plugin editor storage regression</title>
+<!-- Run pnpm build, then open this page in a browser. -->
+<div class="settings">
+  <nav class="settings-nav"></nav>
+  <section class="settings-main"></section>
+</div>
+<output id="result">Running</output>
+<script>
+  const records = new Map();
+  const pluginsKey = 'yapmod.plugins.v1';
+  let rejectSave = true;
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: {
+      getItem: (key) => records.get(key) ?? null,
+      setItem(key, value) {
+        if (rejectSave && key === pluginsKey) throw new DOMException('Full', 'QuotaExceededError');
+        records.set(key, value);
+      },
+    },
+  });
+</script>
+<script src="../dist/yapmod-client.js"></script>
+<script type="module">
+  const select = (selector) => document.querySelector(selector);
+
+  function expect(condition, message) {
+    if (!condition) throw new Error(message);
+  }
+
+  function fill(id, value) {
+    const input = document.getElementById(id);
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function submit() {
+    select('form').requestSubmit();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  function expectDraft(code) {
+    expect(select('#yp-plugin-code')?.value === code, 'The open editor must keep the draft');
+    expect(select('form').textContent.includes('browser storage'), 'Missing save error in editor');
+  }
+
+  try {
+    select('[data-yp-section="plugins"]').click();
+    [...document.querySelectorAll('button')]
+      .find((button) => button.textContent.trim() === 'Add Plugin')
+      .click();
+    select('[aria-label="Local plugin"]').click();
+
+    const original =
+      '({ onLoad() { document.body.dataset.version = "one"; }, onUnload() { delete document.body.dataset.version; } })';
+    const replacement = original.replace('"one"', '"two"');
+    fill('yp-plugin-name', 'Quota');
+    fill('yp-plugin-author', 'Test');
+    fill('yp-plugin-code', original);
+    await submit();
+    expectDraft(original);
+    expect(!records.has(pluginsKey), 'Failed additions must leave storage empty');
+    expect(!select('[aria-label="Edit Quota"]'), 'Failed additions must leave the list empty');
+
+    rejectSave = false;
+    await submit();
+    expect(!select('[role="dialog"]'), 'Successful retry must close the editor');
+    const installed = () => JSON.parse(records.get(pluginsKey)).plugins;
+    expect(installed().length === 1 && installed()[0].js === original, 'Expected one saved copy');
+    select('[aria-label="Enable Quota"]').click();
+    expect(document.body.dataset.version === 'one', 'Original plugin must be running');
+
+    select('[aria-label="Edit Quota"]').click();
+    fill('yp-plugin-code', replacement);
+    rejectSave = true;
+    await submit();
+    expectDraft(replacement);
+    expect(document.body.dataset.version === 'one', 'Failed edit stopped the running plugin');
+    expect(installed()[0].js === original, 'Failed edit replaced the saved source');
+
+    rejectSave = false;
+    await submit();
+    expect(!select('[role="dialog"]'), 'Successful edit must close the editor');
+    expect(document.body.dataset.version === 'two', 'Expected replacement to start');
+    expect(installed()[0].js === replacement, 'Replacement must survive a refresh');
+    select('#result').textContent = 'Passed';
+  } catch (error) {
+    select('#result').textContent = 'Failed: ' + error.message;
+    throw error;
+  } finally {
+    globalThis.YapmodClient?.dispose();
+  }
+</script>
