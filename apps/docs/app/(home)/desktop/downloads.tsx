@@ -78,13 +78,13 @@ export function Downloads({ release }: { release: DesktopRelease }) {
               ))}
             </div>
           ) : (
-            <a className="home-link" href={release.notes}>
+            <a className="home-link" href={release.source}>
               Check GitHub for {platform} installers <ArrowUpRight size={15} />
             </a>
           ))}
       </div>
       <noscript>
-        <a className="home-link" href={release.notes}>
+        <a className="home-link" href={release.source}>
           Choose an installer on GitHub
         </a>
       </noscript>

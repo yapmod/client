@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  Code2,
   Download,
   Palette,
   Puzzle,
@@ -65,11 +64,16 @@ export default function HomePage() {
               <Link href="/desktop" className="home-action home-primary">
                 <Download size={16} /> Download Desktop
               </Link>
-              <Link href="/docs/get-started" className="home-action home-secondary">
-                Use in browser <ArrowRight size={16} />
+              <Link href="/extension" className="home-action home-secondary">
+                <Puzzle size={16} aria-hidden="true" /> Download Extension
               </Link>
-              <Link href="/docs" className="home-action home-secondary">
-                <Code2 size={16} /> Build a plugin
+            </div>
+            <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2">
+              <Link href="/releases" className="home-link">
+                Release notes <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+              <Link href="/docs" className="home-link">
+                Build a plugin <ArrowRight size={14} aria-hidden="true" />
               </Link>
             </div>
           </div>

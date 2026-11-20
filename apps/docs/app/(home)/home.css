@@ -77,8 +77,11 @@
 }
 
 .home-secondary {
-  background: var(--card);
-  border-color: color-mix(in srgb, var(--foreground) 24%, var(--card));
+  color: #34152e;
+  background: linear-gradient(160deg, #f3b9d4, #cba5e6);
+  box-shadow:
+    inset 0 1px 0 #ffffff75,
+    0 3px 8px #61365724;
 }
 
 .home-primary:hover {
@@ -86,8 +89,7 @@
 }
 
 .home-secondary:hover {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+  border-color: #925a9c;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -142,4 +144,40 @@
       color-mix(in srgb, var(--primary) 9%, var(--card)),
       color-mix(in srgb, var(--primary) 30%, var(--card))
     );
+}
+
+.download-card {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--primary) 6%, var(--card)),
+    var(--card) 65%
+  );
+}
+
+.install-steps code {
+  overflow-wrap: anywhere;
+  font-size: 0.95em;
+}
+
+.release-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 0.15rem;
+}
+
+.release-row time {
+  margin-left: auto;
+}
+
+.release-row:hover span {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.release-article {
+  max-width: 46rem;
 }

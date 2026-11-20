@@ -1,7 +1,9 @@
-import { ArrowUpRight, Download } from 'lucide-react';
+import { ArrowRight, Download } from 'lucide-react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { desktopReleases, getDesktopRelease } from '@/lib/desktop';
+import Link from 'next/link';
+import { getDesktopRelease } from '@/lib/desktop';
+import { notesPath, releasesUrl } from '@/lib/releases';
 import { Downloads } from './downloads';
 import '../home.css';
 
@@ -30,32 +32,42 @@ export default async function DesktopPage() {
             option to launch at login.
           </p>
           {release ? (
-            <>
-              <Downloads release={release} />
-              <a className="home-link mt-4 text-muted-foreground" href={release.notes}>
-                {release.version} release notes <ArrowUpRight size={14} aria-hidden="true" />
-              </a>
-            </>
+            <Downloads release={release} />
           ) : (
             <>
               <p className="mb-3 text-muted-foreground">
                 The installer list is temporarily unavailable.
               </p>
-              <a className="home-action home-primary" href={desktopReleases}>
+              <a className="home-action home-primary" href={releasesUrl('desktop') + '/latest'}>
                 <Download size={16} aria-hidden="true" /> Download from GitHub
               </a>
             </>
           )}
+          <div>
+            <Link
+              className="home-link mt-4"
+              href={release ? notesPath('desktop', release.version) : '/releases#desktop'}
+            >
+              {release ? `${release.version} release notes` : 'Desktop release notes'}{' '}
+              <ArrowRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
         <div className="desktop-preview">
-          <Image
-            src="/desktop/settings.webp"
-            alt="Yapmod Desktop settings with controls for notifications, launch at login, and software updates."
-            width={1700}
-            height={1130}
-            sizes="(min-width: 1024px) 550px, (max-width: 768px) 90vw, 720px"
-            className="w-full rounded-lg shadow-xl"
-          />
+          <a
+            href="/desktop/macos-settings.webp"
+            aria-label="View the full-size macOS settings screenshot"
+            className="block rounded-lg cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-4"
+          >
+            <Image
+              src="/desktop/macos-settings.webp"
+              alt="Yapmod Desktop settings with controls for notifications, launch at login, and software updates."
+              width={1196}
+              height={896}
+              sizes="(min-width: 1024px) 550px, (max-width: 768px) 90vw, 720px"
+              className="w-full rounded-lg shadow-xl"
+            />
+          </a>
         </div>
       </div>
     </section>
