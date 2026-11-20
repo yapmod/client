@@ -14,7 +14,7 @@
 
 ### Added
 
-- **web:** download the latest Yapmod Desktop release for a detected or selected platform (#76).
+- **web:** download Yapmod Desktop for a detected or selected platform, install Yapmod Extension for Chrome or Firefox, and read both products’ release notes on the website (#76).
 - **web:** add a themed homepage preview, a first-run guide and the Yapmod 1.0 release story (#72).
 
 - **types:** publish @yapmod/types as a types-only npm package with build config and yapmod.d.ts global declaration (#39)
