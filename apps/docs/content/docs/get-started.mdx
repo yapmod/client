@@ -1,0 +1,30 @@
+---
+title: Get started with Yapmod
+description: Load the client mod into Yapin and apply your first CSS theme.
+---
+
+Yapmod runs inside the Yapin page. Once it is running, you will find a new **Yapmod** group in Yapin’s settings. If it is already there, skip ahead to [Try Rose Grid](#try-rose-grid).
+
+## Load the client
+
+The release contains a single file, `yapmod-client.js`. These steps use a saved browser snippet in desktop Chrome or Edge.
+
+1. Open the [official client release](https://github.com/yapmod/client/releases/latest). Under **Assets**, download **yapmod-client.js** and open it in a text editor.
+2. Open [Yapin](https://yapin.gg) and open Developer Tools in that tab. Under **Sources → Snippets**, choose **New snippet**. The **»** menu reveals **Snippets** if the tab is hidden.
+3. Name the snippet `yapmod-client.js`, copy the contents of the release file into it, and save. Run it with **⌘ Enter** on macOS or **Ctrl Enter** on Windows and Linux.
+4. Open Yapin’s settings and look for **Yapmod → Themes**. You can also check `YapmodClient.state` in the console. A loaded client returns `"ready"`.
+
+A page refresh unloads the client. Run the saved snippet again to bring it back. Yapmod remembers your themes and plugins in this browser.
+
+## Try Rose Grid
+
+Rose Grid is the theme in the homepage preview. It adds a pale pink pixel grid to cards in Yapmod’s settings.
+
+1. <a href="/rose-grid.theme.css" download="rose-grid.theme.css">
+     Download Rose Grid
+   </a>
+   .
+2. In **Yapin settings → Yapmod → Themes**, choose **Add Theme**, then **Upload CSS**. Select the downloaded file and confirm with **Add Theme**.
+3. Switch **Rose Grid** on and off. The theme’s own card changes immediately, so you can compare both looks in the same place.
+
+To unload the mod while keeping the page open, run `YapmodClient.dispose()` in the console. Your saved choices will be there the next time you load it.
