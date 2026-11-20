@@ -475,8 +475,8 @@ export async function addRemotePlugin(rawSource: string, update: boolean): Promi
 }
 
 /**
- * Saves an edit. Remote plugins are fetched before the running copy is
- * stopped, so a failed fetch leaves the old working plugin untouched.
+ * Saves an edit before restarting the plugin. A failed fetch or storage
+ * write leaves the working instance and its saved source intact.
  */
 export async function editPlugin(id: string, input: EditPluginInput): Promise<StoredPlugin> {
   const existing = getPluginRecord(id);
@@ -515,8 +515,8 @@ export async function editPlugin(id: string, input: EditPluginInput): Promise<St
     };
   }
 
-  stopPlugin(id);
   replacePluginRecord(id, next);
+  stopPlugin(id);
 
   if (wasOn && !startPlugin(id)) {
     setPluginEnabledRecord(id, false);
@@ -540,7 +540,6 @@ export async function updatePlugin(id: string): Promise<'updated' | 'current'> {
   if (!changed) return 'current';
 
   const wasRunning = loaded.has(id);
-  stopPlugin(id);
 
   const next: StoredPlugin = {
     ...existing,
@@ -549,6 +548,7 @@ export async function updatePlugin(id: string): Promise<'updated' | 'current'> {
     manifest: remote.manifest,
   };
   replacePluginRecord(id, next);
+  stopPlugin(id);
 
   if (wasRunning && !startPlugin(id)) {
     setPluginEnabledRecord(id, false);
@@ -557,10 +557,10 @@ export async function updatePlugin(id: string): Promise<'updated' | 'current'> {
   return 'updated';
 }
 
-/** Deletes a plugin, stopping it first if it is running. */
+/** Deletes a plugin and stops it once the removal has been saved. */
 export function removePlugin(id: string): void {
-  stopPlugin(id);
   removePluginRecord(id);
+  stopPlugin(id);
 }
 
 /** True when a running plugin exported a settings view. */

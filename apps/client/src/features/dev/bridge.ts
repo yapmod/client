@@ -145,6 +145,17 @@ function onMessage(event: MessageEvent): void {
   }
 }
 
+async function handleMessage(event: MessageEvent): Promise<void> {
+  try {
+    await onMessage(event);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    reply(event.source, event.origin, DEV_STATUS, { ok: false, message });
+    reportDevError(readPayload(event.data?.payload)?.name, message);
+    showToast(message, 'error');
+  }
+}
+
 /**
  * Installs the dev bridge for the lifetime of the client.
  *
@@ -152,8 +163,8 @@ function onMessage(event: MessageEvent): void {
  * never leaves two bridges listening for the same messages.
  */
 export function installDev(client: Client): void {
-  window.addEventListener('message', onMessage);
-  client.onDispose(() => window.removeEventListener('message', onMessage));
+  window.addEventListener('message', handleMessage);
+  client.onDispose(() => window.removeEventListener('message', handleMessage));
 
   announceToOpener();
 }
