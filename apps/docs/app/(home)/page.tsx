@@ -1,4 +1,12 @@
-import { ArrowRight, ArrowUpRight, Code2, Palette, Puzzle, SlidersHorizontal } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Code2,
+  Download,
+  Palette,
+  Puzzle,
+  SlidersHorizontal,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PixelHero } from '@/components/hero';
@@ -51,11 +59,14 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
               Yapmod is a free, open-source client mod for Yapin. Use themes and plugins to change
-              the interface right in your browser.
+              the interface in your browser or on your desktop.
             </p>
             <div className="mt-7 flex justify-center flex-wrap gap-3">
-              <Link href="/docs/get-started" className="home-action home-primary">
-                Get started <ArrowRight size={16} />
+              <Link href="/desktop" className="home-action home-primary">
+                <Download size={16} /> Download Desktop
+              </Link>
+              <Link href="/docs/get-started" className="home-action home-secondary">
+                Use in browser <ArrowRight size={16} />
               </Link>
               <Link href="/docs" className="home-action home-secondary">
                 <Code2 size={16} /> Build a plugin

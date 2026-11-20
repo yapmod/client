@@ -122,3 +122,24 @@
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
+
+.desktop-page {
+  background: radial-gradient(
+    ellipse at 96% 30%,
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent 58%
+  );
+}
+
+.desktop-preview {
+  padding: clamp(0.85rem, 2.5vw, 2.25rem);
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle, #dd5a8c40 1px, transparent 1px) 0 0 / 9px 9px,
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--primary) 9%, var(--card)),
+      color-mix(in srgb, var(--primary) 30%, var(--card))
+    );
+}
