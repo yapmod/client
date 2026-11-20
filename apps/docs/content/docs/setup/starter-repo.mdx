@@ -3,61 +3,31 @@ title: Starter Repository
 description: Clone the pre-configured starter repo to begin building your plugin.
 ---
 
-## What the starter repo gives you
+The [Plugin Starter](https://github.com/yapmod/plugin-starter) lets you develop several plugins in one repository. They share the Yapmod CLI, TypeScript configuration and SolidJS typings. Each plugin has its own entry point, metadata, download and import URL.
 
-The starter repository is a project that comes pre configured with everything you need to build a Yapmod plugin. Instead of setting up build tools, configuring TypeScript, and wiring up SolidJS from scratch, you get all of that ready to go. Here is what is included:
+## Start developing
 
-- The **Yapmod CLI** (`@yapmod/builder`) that bundles your code into the exact format Yapmod expects
-- A clean project structure with TypeScript and SolidJS support from the start
-- `@yapmod/types` already configured in `tsconfig.json`, so you get full autocompletion for the entire plugin API
-- Build scripts set up for pnpm so you can compile with a single command
-- Example plugin code that shows you the basic structure with lifecycle hooks
-
-Since `@yapmod/types` is configured from the beginning, your editor will suggest every property, method, and UI component prop as you type. If you want to understand all the available types in detail, check out the [Type Safety](/docs/development/type-safety) page.
-
-## Why not start from scratch?
-
-You could technically create a project from scratch and configure everything yourself. But building a Yapmod plugin requires bundling your code into a very specific format that the Yapmod runtime can load. Getting that right means configuring bundlers, setting up TypeScript compilation, handling JSX transforms, and making sure the output is valid.
-
-The starter repo handles all of that for you. With it, you can:
-
-- Write **TypeScript** without worrying about compilation
-- Use **JSX syntax** and **SolidJS components** naturally
-- Produce a ready to upload plugin file with a single command
-
-## How to set it up
-
-Setting up the starter repo is straightforward:
+Fork the starter into your GitHub account and clone your fork. From its root, run:
 
 ```bash
-# Clone the starter repository
-git clone https://github.com/yapmod/plugin-starter.git my-plugin
-cd my-plugin
-
-# Install all dependencies
 pnpm install
+pnpm dev starter
 ```
 
-That is it. Your project is ready.
+Edit `plugins/starter/index.tsx` while the dev server is running. With one plugin, you can also run `pnpm dev`.
 
-## Project structure
+## Add a second plugin
 
-The starter repo has a simple structure:
+1. Copy `plugins/starter/` to a sibling directory such as `plugins/weather/`.
+2. Edit its `package.json`. Set a distinct name and fill in the author, description and version.
+3. Replace the example code in `index.tsx` and give any settings sections their own IDs.
+4. Run `pnpm dev weather` to work on it. Run `pnpm build` at the root to type-check and bundle the entire collection.
 
-```
-├── src/
-│   └── index.tsx     # Your plugin entry point
-├── dist/              # Built output (generated)
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-The entry file uses `.tsx` extension so the builder enables JSX parsing through Babel.
+The starter discovers directories under `plugins/` automatically. Use lowercase letters, digits and hyphens for the directory name. Keep it stable after publication because it forms part of the import URL.
 
 ## Writing your plugin
 
-The entry point (`src/index.tsx`) exports a **default function** that returns an object with lifecycle hooks. The `yapmod` global API is available inside your plugin:
+The entry point (`plugins/starter/index.tsx`) exports a **default function** that returns an object with lifecycle hooks. The `yapmod` global API is available inside your plugin:
 
 ```tsx
 import { createSignal } from 'solid-js';
@@ -96,24 +66,6 @@ export default function () {
 
 The `onLoad` hook runs when the plugin starts, and `onUnload` runs when it is stopped. Use these to set up and clean up your plugin resources.
 
-## Building and developing
+## Share your plugins
 
-To compile your plugin into a file Yapmod can load:
-
-```bash
-pnpm build
-```
-
-This produces a single `dist/index.js` file that you can upload to Yapmod through the settings panel.
-
-For development with hot reload, use:
-
-```bash
-pnpm dev
-```
-
-This watches for file changes and rebuilds automatically. We will cover hot reloading in more detail on the next page.
-
-## What comes next
-
-Now that you understand the starter repo, let us look at how to [build your plugin](/docs/setup/building) and produce the final file you will upload to Yapmod.
+The build produces a catalog at `dist/index.html` and a manifest and bundle for each plugin under `dist/<slug>/`. The starter includes a GitHub Actions workflow to publish them from your repository. Follow [Plugin Distribution](/docs/development/distribution) for the one-time Pages setup and installation steps.

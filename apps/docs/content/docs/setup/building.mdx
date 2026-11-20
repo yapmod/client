@@ -7,7 +7,9 @@ Once you have written your plugin code, the next step is building it. Building t
 
 ## The build command
 
-Open your terminal in your plugin project directory and run:
+In the starter repository, run `pnpm build` to type-check all plugins and generate the catalog. Each plugin’s bundle is written to `dist/<slug>/plugin.js`.
+
+For a standalone project, invoke the builder directly:
 
 ```bash
 yapmod build --entry src/index.ts --outfile dist/plugin.js
@@ -16,16 +18,13 @@ yapmod build --entry src/index.ts --outfile dist/plugin.js
 Let me break down what happens when you run this command:
 
 1. The builder reads your TypeScript source files starting from the entry point you specified
-2. It runs TypeScript type checking to catch any errors before bundling
-3. It compiles any JSX syntax and SolidJS components into plain JavaScript
-4. It bundles everything into a single file
-5. It writes the final output to the path you specified
+2. It compiles any JSX syntax and SolidJS components into plain JavaScript
+3. It bundles everything into a single file
+4. It writes the final output to the path you specified
 
 <Callout type="info">
-  The builder runs TypeScript type checking as part of the build process. If your plugin has type
-  errors, for example if you pass invalid props to a UI component, the build will fail and show you
-  a clear error message. This helps you catch mistakes before they reach users. See the [Type
-  Safety](/docs/development/type-safety) page for details on all available types.
+  The starter runs TypeScript checking before bundling. When calling the CLI directly, run `tsc
+  --noEmit` separately to check your types.
 </Callout>
 
 ## Command options
