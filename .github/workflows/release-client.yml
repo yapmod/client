@@ -43,9 +43,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build client
-        run: pnpm build
-
       - name: Generate changelog & bump version
         run: |
           VERSION_INPUT="${{ github.event.inputs.version }}"
@@ -100,6 +97,9 @@ jobs:
           awk '/^## / { if (seen) exit; seen = 1 } seen' apps/client/CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
           test -s "$RUNNER_TEMP/release-notes.md"
           cat "$RUNNER_TEMP/release-notes.md"
+
+      - name: Build client
+        run: pnpm build
 
       - name: Push commit & tag
         run: |
