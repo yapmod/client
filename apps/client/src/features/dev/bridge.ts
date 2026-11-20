@@ -126,7 +126,10 @@ async function onMessage(event: MessageEvent): Promise<void> {
     }
 
     pendingUpdates.set(payload.id, payload);
-    const result = await applyDevUpdate(payload);
+    const result = await applyDevUpdate(payload).catch((error: unknown) => {
+      console.error(`[yapmod] could not apply build for ${payload.id}`, error);
+      return { ok: false, message: error instanceof Error ? error.message : String(error) };
+    });
     if (pendingUpdates.get(payload.id) !== payload) return;
     pendingUpdates.delete(payload.id);
     if (!developerFeatures()) return;
@@ -141,7 +144,7 @@ async function onMessage(event: MessageEvent): Promise<void> {
 
     showToast(
       result.ok
-        ? `${payload.name} reloaded.`
+        ? (result.message ?? `${payload.name} reloaded.`)
         : `${payload.name} failed to reload: ${result.message ?? 'unknown error'}`,
       result.ok ? 'success' : 'error',
     );
