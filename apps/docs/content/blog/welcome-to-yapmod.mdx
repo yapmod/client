@@ -1,111 +1,25 @@
 ---
 title: A Fresh Start for Yapmod
-description: Yapmod is being rebuilt from scratch with a new philosophy. Here's what changed, why it changed, and what to expect.
+description: Why the rewrite starts with one piece of the old desktop project, the client mod that runs inside Yapin.
 date: 2026-11-14
 tags: [Announcement]
-authors: [ilya]
+authors: [hdzilyes]
 ---
 
-Yapmod has been around for a while. For months, there was a desktop application that tried to do everything at once. It wrapped the Yapin website, managed windows, handled updates, and provided customization through plugins and themes.
+In the first version of Yapmod, changing the way a chat looked meant installing a whole desktop application. I was maintaining windows, a system tray and an updater alongside the code that let someone apply a few lines of CSS to Yapin. A fix in one part could mean shipping all of it again.
 
-That version is no longer available. I deprecated it and decided to start over.
+The part I wanted to keep was the one you could see _inside Yapin_. That is where I started the rewrite.
 
-This post explains what Yapmod is now, why the old version was replaced, and what the new approach brings.
+## A home in Yapin’s settings
 
-## What is Yapmod?
+Open settings to change something about Yapin and you are already in the right place. My aim was to give themes and plugins a spot in that sidebar. A theme can restyle the page you already have open. A plugin can add a control next to settings you already know how to use.
 
-Yapmod is a client modification tool for [Yapin](https://yapin.gg). The goal is simple: let you modify how Yapin behaves by adding new features like plugins and themes.
+That decision shaped the implementation. Yapin sometimes replaces the settings panel while you are using it. Holding on to the old panel would leave Yapmod rendering into an element that had disappeared. The client watches the settings area and attaches its entries to the replacement. A plugin author can register a section and let the client handle that detail.
 
-That is all it does. It provides an API, a stability system, and a way to change how Yapin works. Nothing more, nothing less.
+## One client that a host can load
 
-## Why start over?
+The old desktop project has been retired. The new client ships as one JavaScript file that runs in the Yapin page. A host that embeds Yapin can load that same file and register its own plugins. Those plugins get the same settings and storage tools as one you add yourself.
 
-The old project combined two very different things into one codebase. On one side, there was a desktop application that handled window management, auto updates, system tray integration, and all the native desktop features. On the other side, there was the client modification software that handled plugins, themes, settings injection, and DOM manipulation.
+That leaves room to work on a desktop host separately. Here on the site, I want to document the part they would share, from applying a first theme to building a plugin with a settings page of its own.
 
-Mixing them together meant that every change to the desktop layer risked breaking the mod layer. Every mod feature had to account for the desktop wrapper. It was not sustainable.
-
-The new approach separates them completely.
-
-### Separation of concerns
-
-The desktop application and the client modification software are now two independent projects with two different roles.
-
-This website is about the **client modification software** only. The desktop application will be rebuilt from scratch later, and it will be built on top of this client mod. For now, the focus is entirely on the foundation. This is the core that makes everything else possible.
-
-### A better architecture
-
-The new architecture is built around one key idea: **client registered plugins**.
-
-Every feature you see in a desktop client built on top of Yapmod will itself be a regular plugin. It will be registered by the client code, not by the user. These plugins share the same API, the same storage, and the same lifecycle as any user installed plugin. The only difference is who manages them.
-
-This means:
-
-- **User installed plugins** are plugins you download and load yourself. You control when they are enabled, disabled, or removed.
-- **Client registered plugins** are plugins embedded in the application code. They provide essential features and are managed by the host application.
-
-Both types run in the same environment, use the same API, and can interact with each other. This architecture makes it possible to build anything on top of Yapmod: a desktop client, a browser extension, an Electron app, or just a script injected into any webpage with a WebView.
-
-## Stability comes first
-
-The number one goal of this project is stability. Every design decision is made with one question in mind: will this still work reliably six months from now?
-
-The plugin API is versioned so plugins can check compatibility before using features. Breaking changes are rare and deliberate. The injection mechanism uses `MutationObserver` to stay attached to Yapin's React DOM without going stale. Cleanups are isolated so one failing plugin never crashes the entire system.
-
-This project is built to be reliable for years to come.
-
-## Lightweight by design
-
-Yapmod is intended to be lightweight, and it will stay that way.
-
-It ships as one self contained JavaScript file, an Immediately Invoked Function Expression (IIFE). There are no separate stylesheets, no shadow DOM islands, and no heavy dependencies. It reuses Yapin's own CSS classes so everything looks like it belongs.
-
-The codebase has very few features. It focuses on the plugin API, the injection mechanism, and the settings integration. Anyone can read it, fork it, or build their own version on top of it.
-
-## Developer experience matters
-
-Building a client modification tool is one thing. Making it easy for other developers to build plugins on top of it is another.
-
-Too many projects in this space completely ignore the developer experience. You are left to figure out how things work by reading code, guessing at APIs, and hoping nothing breaks. That is not acceptable.
-
-Yapmod focuses on making plugin development as smooth as possible.
-
-### SolidJS integration
-
-Yapmod uses [SolidJS](https://www.solidjs.com/) for its reactive UI layer. This is a deliberate choice.
-
-SolidJS is small, lightweight, and provides powerful reactive features without depending on React's internals. This gives us two important benefits:
-
-1. **Stability**. Yapmod does not depend on React's private APIs, which change without warning and break modifications instantly.
-2. **Developer experience**. SolidJS is easy to learn, has a growing ecosystem, and feels familiar to anyone who has used React, Vue, or Svelte.
-
-### Bundler plugin
-
-A bundler plugin has been created to make plugin development feel professional. It lets you use SolidJS JSX syntax and TypeScript easily, with type safety from the start. You do not have to configure anything. The plugin handles transpilation, data batching, and output formatting automatically.
-
-### Hot reloading
-
-Hot reloading is available for the development workflow. It is not a full Hot Module Replacement (HMR) system, because that is very difficult to achieve when manipulating a host website. Instead, when you save a plugin file during development, Yapmod stops and restarts the plugin automatically. Your changes appear immediately without manually reloading the page.
-
-This feature must be enabled in Yapmod's settings under Developer Mode, so regular users are not affected by it.
-
-### Starter repository
-
-A starter repository will be provided so you can begin building a plugin in minutes. It will include the bundler plugin configuration, type definitions, hot reloading setup, and a basic plugin template. The goal is simple: you clone it, make your changes, and your plugin is ready.
-
-This repository is not yet public, but it will be available soon.
-
-## What is not here yet
-
-A few things are explicitly not part of this release:
-
-- **The desktop application**. It will be rebuilt from scratch on top of this client mod and released separately.
-- **The starter repository**. It is still private but will be published soon.
-- **Hot reloading**. The feature is in progress and will be available in a future update.
-
-## What comes next?
-
-The client modification software is the foundation. Once it is stable and well documented, the desktop application will be rebuilt on top of it. It will use the same plugin system, the same API, and the same architecture.
-
-In the meantime, the [Plugin Developer Docs](/docs) are being written to guide you through building your first plugin, understanding the API, and reverse engineering the Yapin interface.
-
-If you want to contribute, check out the [GitHub issues](https://github.com/yapmod/client/issues) for ideas, or dive into the code yourself. The entire project is open source under the GNU General Public License v3.0.
+_November 20 update._ The client has reached its first stable release. [Read what shipped in Yapmod 1.0](/blog/yapmod-v1-0-0).
