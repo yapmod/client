@@ -1,49 +1,52 @@
-# Yapmod Client
+<div align="center">
+  <img src="https://raw.githubusercontent.com/yapmod/desktop/c3b333cc802e2bf6094cb368771faac8916f6739/docs/images/banner.svg" width="870" alt="Yapmod" />
+  <h1>Yapmod Client</h1>
+  <p>Customize Yapin in your browser with CSS themes and JavaScript plugins.</p>
+  <p>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v3-blue" alt="GPL v3 license" /></a>
+    <a href="https://github.com/yapmod/client/releases/latest"><img src="https://img.shields.io/github/v/release/yapmod/client" alt="Latest client release" /></a>
+  </p>
+</div>
 
-A client mod for <a href="https://yapin.gg">Yapin</a>. Customize your experience with plugins, themes and more.
+## Getting started
 
-Yapmod is an open-source client mod for Yapin. It lets you customize the client, extend its functionality with plugins and change its appearance with themes.
+1. Download `yapmod-client.js` from the **Assets** section of the [latest release](https://github.com/yapmod/client/releases/latest).
+2. Open [Yapin](https://yapin.gg) in Chrome or Edge. In that tab’s Developer Tools, go to **Sources → Snippets → New snippet**.
+3. Copy the contents of the downloaded file into the snippet, name it `yapmod-client.js`, and save. Press **⌘ Enter** on macOS or **Ctrl Enter** on Windows and Linux to run it.
+4. Open Yapin’s **Settings → Yapmod**. To try your first theme, follow the [Rose Grid walkthrough](apps/docs/content/docs/get-started.mdx#try-rose-grid).
 
-It also provides a development API for creating your own plugins and themes, with the goal of making customization accessible to both users and developers.
+Run the saved snippet again after refreshing Yapin. Your themes, plugins, and preferences stay in this browser. To update the client, replace the snippet contents with the latest release, refresh Yapin, and run the snippet.
 
-The project is still under active development, so things may change as it evolves.
+## Themes and plugins
+
+| In Yapin settings    | What you can do                                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Yapmod → Themes**  | Choose **Add Theme** to upload a CSS file or enter a theme URL. Toggle the theme to see the change immediately.       |
+| **Yapmod → Plugins** | Choose **Add Plugin** to install from a plugin URL or import JavaScript. Enable or disable each plugin from its card. |
 
 ## Development
+
+Install Node.js 22 or later and pnpm 12, then run these commands from the repository root.
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-The development build watches for changes and rebuilds the client automatically.
+The watcher rebuilds `apps/client/dist/yapmod-client.js` when you edit the source. To try a new build in the same tab, run `YapmodClient.dispose()` in the console, replace the snippet contents with the rebuilt file, and run it again. Check `YapmodClient.state` for `"ready"`.
 
-## Commands
+| Command                             | Result                                          |
+| ----------------------------------- | ----------------------------------------------- |
+| `pnpm build`                        | Builds the production browser bundle.           |
+| `pnpm docs`                         | Starts the documentation site locally.          |
+| `pnpm typecheck`                    | Checks TypeScript across the workspace.         |
+| `pnpm lint`                         | Runs Oxlint.                                    |
+| `pnpm format` / `pnpm format:check` | Formats the workspace or checks its formatting. |
 
-| Command             | Description                 |
-| ------------------- | --------------------------- |
-| `pnpm dev`          | Build and watch for changes |
-| `pnpm build`        | Build for production        |
-| `pnpm typecheck`    | Type-check the workspace    |
-| `pnpm lint`         | Run Oxlint                  |
-| `pnpm format`       | Format with Oxfmt           |
-| `pnpm format:check` | Check formatting            |
+Use [Conventional Commits](https://www.conventionalcommits.org/) for contributions. [Plugin development](apps/docs/content/docs/development/index.mdx) · [Changelog](CHANGELOG.md) · [Maintenance instructions](AGENTS.md)
 
-## Contributing
+## License and artwork
 
-Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/)
-(`feat:`, `fix:`, `docs:`, `chore:`, …) and stay short: one subject line, no long
-description body.
+Yapmod Client is licensed under GPL-3.0. The header uses the banner from Yapmod Desktop. [License](LICENSE) · [Banner artwork](https://github.com/yapmod/desktop/blob/c3b333cc802e2bf6094cb368771faac8916f6739/docs/images/banner.svg)
 
-## Documentation
-
-The documentation is available in `apps/docs`.
-
-```sh
-pnpm docs
-```
-
-Built with Astro and Fumadocs.
-
-## License
-
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
+<p align="center">Yapmod Client is an independent Yapin community project.</p>
