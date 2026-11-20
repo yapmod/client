@@ -464,3 +464,14 @@
   padding: 0 12px;
   font-size: 14px;
 }
+
+.yp-composer-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5em;
+  color: var(--text-muted, var(--yp-text-muted, currentColor));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}

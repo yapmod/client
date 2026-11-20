@@ -14,6 +14,8 @@
 
 ### Added
 
+- **sdk:** register plugin-owned text indicators for message composers (#80).
+
 - **docs:** document multi-plugin starter development, catalog publishing and URL imports (#78).
 
 - **web:** download Yapmod Desktop for a detected or selected platform, install Yapmod Extension for Chrome or Firefox, and read both products’ release notes on the website (#76).

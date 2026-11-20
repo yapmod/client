@@ -159,6 +159,20 @@ export interface SharedSolid {
   solidStore: typeof import('solid-js/store');
 }
 
+/** Read-only native textarea measurements, in UTF-16 code units. */
+export interface ComposerStatusState {
+  readonly length: number;
+  readonly maxLength: number | null;
+}
+
+/** A plain-text indicator, optionally emphasized at a limit. */
+export type ComposerStatus = string | { text: string; tone?: 'warning' };
+
+export interface PluginComposer {
+  /** Format an indicator for each composer. Unregister early with the returned disposer. */
+  registerStatus(format: (state: ComposerStatusState) => ComposerStatus): () => void;
+}
+
 /** The API object every started plugin receives, community or client-registered. */
 export interface YapmodPluginApi {
   /** API contract version. Plugins can check this before using v1 features. */
@@ -187,6 +201,8 @@ export interface YapmodPluginApi {
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */
   readonly settings: PluginSettings;
+  /** Read-only status indicators in message composers. */
+  readonly composer: PluginComposer;
   /** Registers a cleanup that runs when the plugin stops or Yapmod unloads. */
   onDispose(dispose: () => void): void;
   /** Opens the plugin's settings modal, when it exported `settings`. */

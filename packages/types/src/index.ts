@@ -1,5 +1,8 @@
 export type { Client, ClientHandle, ClientState } from './client';
 export type {
+  ComposerStatus,
+  ComposerStatusState,
+  PluginComposer,
   PluginFunction,
   PluginManifest,
   PluginModalOptions,
