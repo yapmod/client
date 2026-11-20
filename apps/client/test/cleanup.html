@@ -1,0 +1,94 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Plugin setup cleanup regression</title>
+<main class="settings">
+  <nav class="settings-nav"></nav>
+  <div class="settings-main"></div>
+</main>
+<output>Running</output>
+<script type="module">
+  import client from '../src/index';
+  import { applyDevUpdate } from '../src/features/dev/apply';
+  import {
+    addLocalPlugin,
+    removePlugin,
+    startClientPlugin,
+    startPlugin,
+  } from '../src/features/plugins/runtime';
+
+  function check(condition, message) {
+    if (!condition) throw new Error(message);
+  }
+
+  const output = document.querySelector('output');
+  const devId = 'dev:cleanup-regression-' + crypto.randomUUID();
+  let localId;
+  try {
+    const cleaned = [];
+    const id = 'client:cleanup-regression';
+    client.registerClientPlugin({
+      id,
+      manifest: { name: 'Failed setup' },
+      defaultEnabled: false,
+      setup(api) {
+        api.onDispose(() => cleaned.push('first'));
+        api.onDispose(() => {
+          throw new Error('Intentional cleanup failure');
+        });
+        api.onDispose(() => cleaned.push('last'));
+        throw new Error('Intentional setup failure');
+      },
+    });
+    check(!startClientPlugin(id), 'Throwing setup started');
+    check(cleaned.join(',') === 'last,first', 'Expected isolated cleanups in reverse order');
+
+    const styles = () => [...document.querySelectorAll('style')].map((style) => style.textContent);
+    const localCss = '.cleanup-local {}';
+    localId = addLocalPlugin({
+      name: 'Setup cleanup',
+      author: 'Test',
+      description: '',
+      code: '(api) => { api.ui.injectCss(".cleanup-local {}"); return null; }',
+    }).id;
+    check(!startPlugin(localId), 'Invalid community module started');
+    check(!styles().includes(localCss), 'Failed startup left a stylesheet');
+
+    function update(label, valid) {
+      const code = `(api) => {
+        api.ui.injectCss('.cleanup-${label} {}');
+        api.settings.registerSection({ id: 'tab', label: '${label}', render: () => '${label}' });
+        api.ui.openModal({ title: '${label}', content: () => '${label}' });
+        return ${valid ? '{}' : 'null'};
+      }`;
+      return applyDevUpdate({ id: devId, name: 'Cleanup', author: 'Test', description: '', code });
+    }
+
+    const section = () => document.querySelector(`button[data-yp-section="plugin:${devId}:tab"]`);
+    const modalTitle = () => document.querySelector('[role="dialog"]')?.getAttribute('aria-label');
+    check((await update('original', true)).ok, 'Initial build failed');
+    const originalSection = section();
+    check(originalSection?.textContent === 'original', 'Original section did not mount');
+    check(!(await update('rejected', false)).ok, 'Invalid reload succeeded');
+    check(styles().includes('.cleanup-original {}'), 'Rejected reload removed the active style');
+    check(!styles().includes('.cleanup-rejected {}'), 'Rejected reload left its style');
+    check(section() === originalSection, 'Rejected reload replaced the active section');
+    check(modalTitle() === 'original', 'Rejected reload closed the active modal');
+
+    check((await update('accepted', true)).ok, 'Valid reload failed');
+    check(section()?.textContent === 'accepted', 'Accepted section did not mount');
+    check(modalTitle() === 'accepted', 'Accepted modal did not mount');
+    check(!styles().includes('.cleanup-original {}'), 'Accepted reload retained the old style');
+    check(styles().includes('.cleanup-accepted {}'), 'Accepted style did not mount');
+    removePlugin(devId);
+    check(!section() && !modalTitle(), 'Stopped plugin retained UI');
+    check(!styles().includes('.cleanup-accepted {}'), 'Stopped plugin retained its style');
+    output.textContent = 'Passed';
+  } catch (error) {
+    output.textContent = 'Failed: ' + error.message;
+    throw error;
+  } finally {
+    if (localId) removePlugin(localId);
+    removePlugin(devId);
+    client.dispose();
+  }
+</script>
