@@ -27,6 +27,8 @@
 
 ### Changed
 
+- Adapt the README for browser setup, theme and plugin settings, and local development (#74).
+
 - **types:** derive UI prop types from @yapmod/ui components instead of hand-written mirrors (#47)
 - **client:** use satisfies operator for runtime ui object construction (#47)
 - **ci:** use npm Trusted Publisher (OIDC) instead of NPM_TOKEN for all npm publish workflows
