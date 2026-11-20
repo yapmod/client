@@ -13,14 +13,14 @@ These are plugins that you, as a user, manually add to your Yapmod instance. Thi
 
 The process is straightforward:
 
-1. You write or download a plugin file. This is a `.js` file containing your plugin code.
-2. You upload it through the Yapmod settings panel in the plugins section.
+1. Get the plugin’s import URL or download its JavaScript bundle.
+2. In **Plugins → Add Plugin**, fetch the URL or enable **Local plugin** and upload the file.
 3. Yapmod evaluates the plugin and loads it into your current session.
 4. The plugin is saved to your local Yapmod configuration, so it persists across page reloads.
 
 ### Key characteristics
 
-- **You install them manually**. There is no automatic discovery or installation system. You upload each plugin file yourself.
+- **You install them manually**. There is no automatic discovery or installation system. You choose each plugin to install.
 - **They live in your browser**. The plugin source and its settings are stored in your browser's `localStorage`.
 - **They are per user**. Each user manages their own set of plugins. Plugins are not shared between users automatically.
 - **Each plugin has its own storage**. Every plugin gets an isolated storage space backed by `localStorage`, so its data survives page reloads.
@@ -58,8 +58,8 @@ Here is a quick overview of the key differences:
 
 | Feature      | User installed             | Client registered       |
 | ------------ | -------------------------- | ----------------------- |
-| Installation | Manual upload              | Automatic on startup    |
-| Distribution | Shared as files            | Bundled with Yapmod     |
+| Installation | URL or file                | Automatic on startup    |
+| Distribution | Catalog or file            | Bundled with Yapmod     |
 | Maintenance  | Managed by the user        | Maintained by Yapmod    |
 | Storage      | Per plugin localStorage    | Per plugin localStorage |
 | API access   | Full `YapmodPluginApi`     | Full `YapmodPluginApi`  |
