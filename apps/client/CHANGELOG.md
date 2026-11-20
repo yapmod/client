@@ -1,5 +1,42 @@
 # Changelog
 
+## v1.1.0
+
+[compare changes](https://github.com/yapmod/client/compare/v1.0.0...v1.1.0)
+
+### 🚀 Enhancements
+
+- **web:** Introduce the Yapmod client on the homepage ([#73](https://github.com/yapmod/client/pull/73))
+- **web:** Add desktop and extension downloads with release notes ([#77](https://github.com/yapmod/client/pull/77))
+- **sdk:** Add composer status registration ([be2f10c](https://github.com/yapmod/client/commit/be2f10c))
+
+### 🩹 Fixes
+
+- **plugins:** Dispose resources after setup fails ([#71](https://github.com/yapmod/client/pull/71))
+- **dev:** Preserve the last working plugin on hot reload ([#70](https://github.com/yapmod/client/pull/70))
+- **plugins:** Report plugin save failures in the editor ([#69](https://github.com/yapmod/client/pull/69))
+- **client:** Implement stylesheet injection on the public handle ([#68](https://github.com/yapmod/client/pull/68))
+- **release:** Build the client after its version bump ([a4bb4b7](https://github.com/yapmod/client/commit/a4bb4b7))
+
+### 📖 Documentation
+
+- **blog:** Announce Yapmod v1.0.0 ([#63](https://github.com/yapmod/client/pull/63))
+- **blog:** Remove v1.0.0 announcement ([98a00d1](https://github.com/yapmod/client/commit/98a00d1))
+- **client:** Adapt the desktop README for the web client ([#75](https://github.com/yapmod/client/pull/75))
+- Center the homepage and refresh the Yapmod release story ([6fa9b75](https://github.com/yapmod/client/commit/6fa9b75))
+- **plugins:** Document starter catalog publishing ([#79](https://github.com/yapmod/client/pull/79))
+- **sdk:** Document composer status formatters ([220f3fd](https://github.com/yapmod/client/commit/220f3fd))
+
+### 🏡 Chore
+
+- **types:** Bump version for npm publish [skip ci] ([47723ce](https://github.com/yapmod/client/commit/47723ce))
+
+### ❤️ Contributors
+
+- GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
+- Hdzilyes ([@ilyeshdz](http://github.com/ilyeshdz))
+- Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
+
 ## v1.0.0
 
 [compare changes](https://github.com/yapmod/client/compare/v1.0.0-nightly...v1.0.0)
