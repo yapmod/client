@@ -87,6 +87,10 @@ function reply(
   }
 }
 
+// The control-page protocol has one status per build stream. A slow startup
+// must not overwrite a newer build's result or reopen a toast after disposal.
+const pendingUpdates = new Map<string, DevUpdatePayload>();
+
 /**
  * Handles one message from a possible dev server.
  *
@@ -94,7 +98,7 @@ function reply(
  * loopback address, developer features have to be on, and the payload has
  * to be a complete plugin.
  */
-function onMessage(event: MessageEvent): void {
+async function onMessage(event: MessageEvent): Promise<void> {
   if (!isDevOrigin(event.origin)) return;
 
   const data = event.data;
@@ -121,7 +125,12 @@ function onMessage(event: MessageEvent): void {
       return;
     }
 
-    const result = applyDevUpdate(payload);
+    pendingUpdates.set(payload.id, payload);
+    const result = await applyDevUpdate(payload);
+    if (pendingUpdates.get(payload.id) !== payload) return;
+    pendingUpdates.delete(payload.id);
+    if (!developerFeatures()) return;
+
     reply(event.source, event.origin, DEV_STATUS, result);
 
     if (result.ok) {
@@ -156,6 +165,7 @@ export function installDev(client: Client): void {
   client.onDispose(() => window.removeEventListener('message', onMessage));
 
   announceToOpener();
+  client.onDispose(() => pendingUpdates.clear());
 }
 
 /**

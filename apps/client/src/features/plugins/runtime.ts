@@ -44,6 +44,8 @@ import type { PluginFunction, PluginManifest, StoredPlugin, YapmodPluginApi } fr
 interface LoadedPlugin {
   module: Record<string, unknown>;
   api: YapmodPluginApi;
+  startup?: Promise<unknown>;
+  devBuild?: StoredPlugin;
   onUnload?: PluginFunction;
   settings?: unknown;
   disposers: (() => void)[];
@@ -85,12 +87,17 @@ function asFunction(value: unknown): PluginFunction | undefined {
   return typeof value === 'function' ? (value as PluginFunction) : undefined;
 }
 
-function callHook(hook: PluginFunction | undefined, thisArg: unknown, label: string): void {
+function callHook(
+  hook: PluginFunction | undefined,
+  thisArg: unknown,
+  label: string,
+): Promise<unknown> | undefined {
   if (!hook) return;
 
   const result = hook.call(thisArg);
   if (result instanceof Promise) {
     result.catch((error: unknown) => console.error(`[yapmod] ${label} failed`, error));
+    return result;
   }
 }
 
@@ -231,7 +238,7 @@ function activatePlugin(
   syncSettingsIds();
 
   try {
-    callHook(asFunction(module.onLoad), module, `plugin ${id} onLoad`);
+    record.startup = callHook(asFunction(module.onLoad), module, `plugin ${id} onLoad`);
   } catch (error) {
     console.error(`[yapmod] plugin ${id} onLoad failed`, error);
     stopPlugin(id);
@@ -270,10 +277,15 @@ export function startPlugin(id: string): boolean {
   return activatePlugin(id, module, api, disposers);
 }
 
+/** Includes dev plugins whose first async startup has not been saved yet. */
+export function runningPluginIds(): IterableIterator<string> {
+  return loaded.keys();
+}
+
 /** The outcome of a hot reload. */
 export interface ReloadResult {
   ok: boolean;
-  error?: string;
+  message?: string;
 }
 
 /**
@@ -287,13 +299,22 @@ export interface ReloadResult {
  * The plugin's storage survives, because it is keyed by the plugin id and
  * re-read from `localStorage` for the new instance.
  */
-export function reloadPlugin(id: string, source: string): ReloadResult {
-  if (runtimeDisposed) return { ok: false, error: 'Yapmod is shutting down.' };
+export async function reloadPlugin(next: StoredPlugin): Promise<ReloadResult> {
+  if (runtimeDisposed) return { ok: false, message: 'Yapmod is shutting down.' };
 
-  const record = getPluginRecord(id);
-  if (!record) return { ok: false, error: 'Plugin not found.' };
+  const { id, js: source, manifest } = next;
+  const previous = getPluginRecord(id);
+  const running = loaded.get(id);
+  if (
+    previous &&
+    running?.devBuild === previous &&
+    previous.js === source &&
+    JSON.stringify(previous.manifest) === JSON.stringify(manifest)
+  ) {
+    return { ok: true, message: 'Already up to date.' };
+  }
 
-  const { api, disposers } = createPluginApi(id, record.manifest);
+  const { api, disposers } = createPluginApi(id, manifest);
 
   let module: Record<string, unknown>;
   try {
@@ -302,16 +323,35 @@ export function reloadPlugin(id: string, source: string): ReloadResult {
     module = result;
   } catch (error) {
     console.error(`[yapmod] could not reload plugin ${id}`, error);
-    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    return { ok: false, message: error instanceof Error ? error.message : String(error) };
   }
 
   stopPlugin(id);
 
-  if (!activatePlugin(id, module, api, disposers)) {
-    return { ok: false, error: 'The plugin failed to start.' };
-  }
+  const activated = activatePlugin(id, module, api, disposers);
+  const candidate = loaded.get(id);
+  try {
+    if (!activated || !candidate) throw new Error('The plugin failed to start.');
+    if (candidate.startup) await candidate.startup;
+    // A newer build, a manual stop, or disposal can supersede a pending onLoad.
+    if (loaded.get(id) !== candidate) return { ok: false, message: 'Reload superseded.' };
 
-  return { ok: true };
+    if (previous) replacePluginRecord(id, next);
+    else addPluginRecord(next);
+    candidate.devBuild = next;
+    return { ok: true };
+  } catch (error) {
+    if (candidate && loaded.get(id) !== candidate) {
+      return { ok: false, message: 'Reload superseded.' };
+    }
+    if (candidate) stopPlugin(id);
+    // The previous source and manifest are still in the store. Restart its
+    // normal lifecycle so resources released by onUnload are acquired again.
+    if (running && previous && !startPlugin(id)) {
+      return { ok: false, message: 'Reload failed and the previous plugin could not restart.' };
+    }
+    return { ok: false, message: error instanceof Error ? error.message : String(error) };
+  }
 }
 
 /**
