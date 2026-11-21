@@ -1,4 +1,4 @@
-import { Icon, Switch } from '@yapmod/ui';
+import { Button, Icon, Switch } from '@yapmod/ui';
 import { Show } from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
@@ -6,11 +6,12 @@ import { openPluginEditor } from './editor';
 import {
   hasPluginSettings,
   removePlugin,
+  restorePlugin,
+  setPluginPinned,
   setPluginEnabled,
   showPluginSettings,
   updatePlugin,
 } from './runtime';
-import { getPluginRecord } from './store';
 import { isDevPluginId } from '../dev/apply';
 import type { StoredPlugin } from './types';
 
@@ -19,16 +20,14 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
 
   async function update(): Promise<void> {
     const current = plugin();
-    const wasOn = current.on;
 
     try {
       const result = await updatePlugin(current.id);
-      const saved = getPluginRecord(current.id);
 
       if (result === 'current') {
         showToast(`${current.manifest.name} is already up to date.`);
-      } else if (wasOn && !saved?.on) {
-        showToast(`${current.manifest.name} updated, but it failed to start.`, 'error');
+      } else if (result === 'failed' || result === 'rolled-back') {
+        showToast(`${current.manifest.name}: update ${result}.`, 'error');
       } else {
         showToast(`${current.manifest.name} updated.`);
       }
@@ -147,6 +146,42 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
       </div>
 
       <div class="hint">{plugin().manifest.description}</div>
+      <Show when={!plugin().local}>
+        <label class="toggle-label">
+          <Switch
+            checked={plugin().pinned === true}
+            aria-label={`Pin ${plugin().manifest.name} version`}
+            onChange={(pinned) => {
+              try {
+                setPluginPinned(plugin().id, pinned);
+              } catch (error) {
+                showToast(
+                  error instanceof Error ? error.message : 'Could not pin version.',
+                  'error',
+                );
+              }
+            }}
+          />
+          Pin current version {plugin().manifest.version}
+        </label>
+        <div class="hint">
+          Pinned versions skip automatic updates. Manual updates remain available. Disabled plugins
+          are never updated automatically.
+        </div>
+      </Show>
+      <Show when={plugin().previous}>
+        <Button
+          onClick={async () => {
+            const result = await restorePlugin(plugin().id);
+            showToast(
+              result === 'updated' ? 'Previous version restored and pinned.' : `Restore ${result}.`,
+              result === 'updated' ? 'success' : 'error',
+            );
+          }}
+        >
+          Restore previous version
+        </Button>
+      </Show>
     </section>
   );
 }

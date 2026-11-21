@@ -111,3 +111,34 @@ If you choose not to use the builder, you can write your plugin as a plain JavaS
 ## What comes next
 
 Now that you understand the plugin lifecycle, let us look at the tools available to you. Head over to the [Plugin API](/docs/development/plugin-api) page to see every method and property your plugin can use at runtime.
+
+## Updating and restoring installed plugins
+
+For an enabled remote plugin, Yapmod evaluates an update before stopping the installed
+instance, then waits for the candidate's `onLoad` hook, including a returned promise or
+thenable. Its source and manifest are saved only after startup succeeds. If evaluation,
+startup, or saving fails, Yapmod retains the installed source and restarts its lifecycle
+when necessary. Startup auto-updates use the same transaction.
+
+The plugin card reports **updated**, **current**, **failed**, or **rolled-back**. A failed
+fetch or a superseded operation reports failed; rolled-back means the prior source was
+retained and its lifecycle recovered if needed. If recovery itself fails, the plugin is
+disabled and the outcome is failed. Concurrent update attempts do not replace a pending
+candidate. Editing, toggling, pinning, removing, or shutting down invalidates pending work.
+
+Each successful update keeps exactly one previous source and manifest in browser storage.
+**Restore previous version** runs the same transaction and pins the restored version. The
+version replaced by a restore becomes the single previous version. This history does not
+include plugin data, and editing a plugin clears its previous-version snapshot.
+
+**Pin current version** prevents automatic updates. Manual updates remain available and
+leave the pin enabled. Unpinning permits startup updates when the plugin's auto-update
+setting is enabled. Disabled plugins are skipped during automatic updates; a manual update
+or restore saves their source without evaluating it. Their code is first evaluated when
+they are enabled, so a successful disabled update does not certify startup.
+
+Rollback covers installed source and API-managed lifecycle resources. Plugins are trusted
+page code: arbitrary side effects, network requests, and writes to plugin storage cannot
+be undone. Plugins should register cleanups and return their startup promise so Yapmod can
+observe failures. A startup promise that never settles leaves that update pending until
+another lifecycle action cancels it.

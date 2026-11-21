@@ -19,6 +19,10 @@ export interface StoredPlugin {
   on: boolean;
   /** Whether remote plugins should be refreshed when the page loads. */
   update: boolean;
+  /** Prevent automatic updates; manual updates remain available. */
+  pinned?: boolean;
+  /** One prior source snapshot, never a recursive history. */
+  previous?: Pick<StoredPlugin, 'js' | 'manifest' | 'src' | 'local'>;
   /** Base URL of a remote plugin, always ending in `/`. */
   src?: string;
   js: string;
