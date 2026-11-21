@@ -1,0 +1,81 @@
+---
+title: App Context and Navigation
+description: Observe the current selection and navigate with Yapin's native actions.
+---
+
+`yapmod.context` exposes detached, frozen identity snapshots for the currently selected
+channel (including existing direct/group conversations and threads), server, and local user.
+It does not expose profile objects, messages, participants, or permissions.
+
+```typescript
+const current = await yapmod.context.getCurrent();
+if (current.available) {
+  yapmod.log(current.channel?.id, current.server?.id, current.user?.id);
+}
+
+const unsubscribe = await yapmod.context.subscribe((current) => {
+  if (!current.available) return;
+  yapmod.log('Selected channel:', current.channel?.id ?? 'none');
+});
+// Optional early removal; stopping the plugin also removes the subscription.
+unsubscribe();
+```
+
+`AppContextState` is either `{ available: false }` or
+`{ available: true, channel, server, user }`. Each identity is `{ id: string }` or `null`.
+Null means a known empty selection, such as no server in a direct conversation. Unbooted,
+malformed, or unreadable store state produces `available: false`, including during an
+existing subscription. Failure to discover the host runtime/store rejects `getCurrent()`
+or `subscribe()` instead. Retry once Yapin has loaded.
+
+Subscriptions emit synchronously once installed, then only when these identities or
+availability change. Unrelated store updates do not notify. Each snapshot and its nested
+identities are frozen copies; put snapshots in a Solid signal for reactive UI. Listener
+exceptions are logged independently. Returned unsubscribe functions are idempotent.
+
+Selection reflects Yapin's store, including transient selections during native navigation.
+It is not a guarantee that a channel has finished loading or is currently unobscured by a
+modal. Names and profile metadata are deliberately outside this contract.
+
+## Navigation
+
+```typescript
+// Use IDs obtained from your own integration or a previous context snapshot.
+await yapmod.navigation.openChannel(channelId);
+await yapmod.navigation.openServer(serverId);
+await yapmod.navigation.openDirectMessages();
+```
+
+- `openChannel(id)` opens an existing loaded channel/conversation. It does not create DMs.
+- `openServer(id)` lets Yapin choose the server's remembered/default channel or lobby.
+- `openDirectMessages()` opens the DM area without selecting or creating a conversation.
+
+IDs must be non-empty strings and channel/server targets must exist in the loaded host
+store. Unknown targets, unavailable context/actions, and host failures reject. Resolution
+means the native action completed, not that the server acknowledged it. Yapin retains its
+normal loading and access behavior. Opening a channel does not join a voice call.
+
+Methods reject after plugin disposal, and pending discovery cannot install subscriptions
+or invoke navigation after disposal. An already invoked host action cannot be cancelled.
+Disabling, replacing, or unloading a plugin owns the same cleanup as other plugin APIs.
+Catch failures in plugin entry points and report them with
+`yapmod.ui.showToast('Navigation is unavailable.', 'error')`.
+
+## Compatibility and validation
+
+This is an additive API v1 feature; check `yapmod.context` and `yapmod.navigation` when
+supporting older clients. `AppContextIdentity`, `AppContextState`, `PluginContext`, and
+`PluginNavigation` are exported from `@yapmod/types`.
+
+The adapter shares runtime discovery with the calls API. It discovers loaded Turbopack
+exports by shape, without fixed module IDs, URL guesses, eval, or direct store writes.
+The deployed host inspected on November 22, 2026 uses `activeChannelId`, `activeServerId`,
+`userId`, `booted`, `useStore.subscribe`, and native `openChannel`/`openServer` exports.
+Yapin does not publish this internal interface; host changes can break discovery.
+
+Run `pnpm --filter @yapmod/client test:context` for focused fixture coverage. Before release,
+inject the production bundle into an authenticated Yapin tab (dispose the previous
+`YapmodClient` first), subscribe from a plugin, navigate through the native sidebar and all
+three API actions, and verify the observed IDs. Disable the plugin and dispose Yapmod;
+retained APIs must reject and old listeners must stop. Automated fixtures alone do not
+establish compatibility with the live host.

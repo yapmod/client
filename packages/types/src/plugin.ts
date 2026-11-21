@@ -275,6 +275,38 @@ export interface PluginCalls {
   leave(expected: CallState): Promise<void>;
 }
 
+/** Detached identity of a selected host entity. No host objects are exposed. */
+export interface AppContextIdentity {
+  readonly id: string;
+}
+
+/** Null is a known empty selection; unavailable is never represented as null. */
+export type AppContextState =
+  | { readonly available: false }
+  | {
+      readonly available: true;
+      /** Includes existing direct/group conversations and threads. */
+      readonly channel: AppContextIdentity | null;
+      readonly server: AppContextIdentity | null;
+      readonly user: AppContextIdentity | null;
+    };
+
+export interface PluginContext {
+  /** Rejects if the host runtime/store cannot be discovered. */
+  getCurrent(): Promise<AppContextState>;
+  /** Emits immediately and on changes, including unavailable state. Lifecycle-owned. */
+  subscribe(listener: (context: AppContextState) => void): Promise<() => void>;
+}
+
+export interface PluginNavigation {
+  /** Opens an existing loaded channel/conversation using Yapin's native action. */
+  openChannel(id: string): Promise<void>;
+  /** Opens a loaded server and lets Yapin choose its channel or lobby. */
+  openServer(id: string): Promise<void>;
+  /** Opens the direct-messages area without creating a conversation. */
+  openDirectMessages(): Promise<void>;
+}
+
 export interface YapmodPluginApi {
   /** API contract version. Plugins can check this before using v1 features. */
   readonly apiVersion: 1;
@@ -304,6 +336,8 @@ export interface YapmodPluginApi {
   readonly commands: PluginCommands;
   /** Current voice call state and controls. */
   readonly calls: PluginCalls;
+  readonly context: PluginContext;
+  readonly navigation: PluginNavigation;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */
