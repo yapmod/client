@@ -1,5 +1,9 @@
 export type { Client, ClientHandle, ClientState } from './client';
 export type {
+  LoadedMessage,
+  LoadedMessageResult,
+  MessageAttachment,
+  PluginMessages,
   AppContextIdentity,
   AppContextState,
   PluginContext,

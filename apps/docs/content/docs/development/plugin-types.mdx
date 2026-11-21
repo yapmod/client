@@ -68,3 +68,10 @@ Here is a quick overview of the key differences:
 ## What comes next
 
 Now that you understand the two plugin types, learn about [plugin distribution](/docs/development/distribution) and how plugins are shared, since Yapmod does not provide a built in marketplace.
+
+## Loaded message contracts
+
+`PluginMessages`, `LoadedMessageResult`, `LoadedMessage`, and `MessageAttachment`
+are exported from `@yapmod/types`. `YapmodPluginApi.messages` exposes
+`getLoaded(messageId: string): Promise<LoadedMessageResult>`. Narrow on `status`
+before accessing `message`; all metadata except its ID is optional.
