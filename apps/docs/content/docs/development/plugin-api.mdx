@@ -400,3 +400,9 @@ for host discovery/access failure. It reads only already-loaded messages and nev
 fetches history. A cache miss does not imply deletion. See
 [Message context menu actions](/docs/development/context-menu-actions#read-loaded-message-data)
 for optional fields, attachment metadata, lifetime behavior and an asynchronous menu example.
+
+## App context and navigation
+
+Use `yapmod.context.getCurrent()` / `subscribe()` for detached current channel, server, and
+local-user identities, and `yapmod.navigation` for native navigation. See
+[App Context and Navigation](/docs/development/app-context) for availability semantics and examples.

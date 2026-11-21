@@ -11,6 +11,7 @@
     "---API Reference---",
     "plugin-api",
     "current-call",
+    "app-context",
     "composer-blocks",
     "type-safety",
     "context-menu-actions",
