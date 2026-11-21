@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/yapmod/client/compare/v1.2.0...v1.3.0) (2026-11-21)
+
+
+### Features
+
+* add collections to the plugin manager ([#102](https://github.com/yapmod/client/issues/102)) ([39e4e5a](https://github.com/yapmod/client/commit/39e4e5ab81ba1aa33d7106fed286e910599798f2))
+* **plugins:** add local slash command API ([878d503](https://github.com/yapmod/client/commit/878d5036c6785203cf3a4289a1c9ddf952033be2))
+* **plugins:** add local slash command API ([f6bf3db](https://github.com/yapmod/client/commit/f6bf3dbf96468d2479ff16218a158814f075c0d8)), closes [#98](https://github.com/yapmod/client/issues/98)
+* **plugins:** make updates transactional with restore and pinning ([#104](https://github.com/yapmod/client/issues/104)) ([0801d6e](https://github.com/yapmod/client/commit/0801d6e3130e4deb3e3d6b801bc62dd62f809c59))
+* **plugins:** support registered custom icons ([#101](https://github.com/yapmod/client/issues/101)) ([8b8c0f5](https://github.com/yapmod/client/commit/8b8c0f5ded9ccfb64ef3e4e1231f5af5de678460))
+* **sdk:** expose composer text insertion ([#105](https://github.com/yapmod/client/issues/105)) ([2244548](https://github.com/yapmod/client/commit/2244548f6e4ad10f4d4e61ee9b4f224073d30c0a))
+
 ## [Unreleased]
 
 ### Added
