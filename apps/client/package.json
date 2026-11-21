@@ -9,6 +9,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:insertion": "node --test test/insertion.test.mjs",
+    "test:locations": "node --test test/locations.test.mjs",
     "test:calls": "node --test test/calls.test.mjs"
   },
   "dependencies": {

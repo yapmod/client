@@ -1,5 +1,11 @@
 export type { Client, ClientHandle, ClientState } from './client';
 export type {
+  ChatLocationContext,
+  LocationAction,
+  ChannelMenuContext,
+  UserMenuContext,
+  ContextMenuTargets,
+  DockedPanelOptions,
   CallState,
   PluginCalls,
   CommandContext,
@@ -20,6 +26,7 @@ export type {
   PluginSettings,
   PluginSettingsSection,
   PluginUi,
+  PluginUiExtensions,
   SharedSolid,
   ToastKind,
   YapmodPluginApi,

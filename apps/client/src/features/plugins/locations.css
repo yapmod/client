@@ -1,0 +1,52 @@
+.yp-location {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.yp-location-header {
+  max-width: 160px;
+}
+.yp-location .yp-btn {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.yp-location-sidebar {
+  padding: 4px 10px;
+}
+.yp-location-sidebar .yp-btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+.yp-docked-panel {
+  width: 320px;
+  max-width: 100%;
+  flex: 0 1 320px;
+  min-width: 0;
+  overflow: auto;
+  background: var(--panel, var(--yp-panel, #202127));
+  color: var(--text, var(--yp-text, #eee));
+  border-left: 1px solid var(--border, var(--yp-border, #45454f));
+}
+.yp-docked-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+}
+.yp-docked-content {
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .yp-location-header {
+    max-width: 90px;
+  }
+  .yp-docked-panel {
+    position: fixed;
+    inset: 60px 0 0 auto;
+    width: min(320px, 100vw);
+    z-index: 55;
+    box-shadow: 0 0 20px #0006;
+  }
+}

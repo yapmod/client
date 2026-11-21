@@ -156,3 +156,35 @@ export function commandsContract(api: YapmodPluginApi): () => void {
   api.commands.register({ name: 'missing', description: 'Missing callback' });
   return remove;
 }
+
+export function locationsContract(api: YapmodPluginApi): void {
+  api.ui.registerHeaderAction({
+    id: 'header',
+    label: 'Header',
+    onSelect: ({ chatId }) => {
+      api.log(chatId);
+    },
+  });
+  api.ui.registerSidebarEntry({ id: 'sidebar', label: 'Sidebar', onSelect: () => {} });
+  api.contextMenus.registerAction('channel', {
+    id: 'channel',
+    label: 'Channel',
+    onSelect: (context) => {
+      const id: string = context.channelId;
+      api.log(id);
+      // @ts-expect-error Channel contexts are not user contexts.
+      api.log(context.userId);
+    },
+  });
+  api.contextMenus.registerAction('user', {
+    id: 'user',
+    label: 'User',
+    onSelect: (context) => {
+      const id: string = context.userId;
+      api.log(id);
+      // @ts-expect-error Member contexts are not message contexts.
+      api.log(context.messageId);
+    },
+  });
+  api.ui.openPanel({ id: 'notes', title: 'Notes', render: ({ chatId }) => chatId });
+}
