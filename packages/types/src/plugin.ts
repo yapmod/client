@@ -9,6 +9,10 @@ import type { Component, JSX } from 'solid-js';
 
 import type {
   IconName,
+  IconSource,
+  IconDefinition,
+  IconPath,
+  RegisteredIcon,
   IconProps,
   ButtonProps,
   HintProps,
@@ -28,6 +32,10 @@ import type {
 
 export type {
   IconName,
+  IconSource,
+  IconDefinition,
+  IconPath,
+  RegisteredIcon,
   IconProps,
   ButtonProps,
   HintProps,
@@ -81,6 +89,11 @@ export interface PluginModalOptions {
 
 /** UI helpers and Solid components available to every plugin. */
 export interface PluginUi {
+  /**
+   * Registers SVG data under a name local to this plugin setup. Duplicate names throw.
+   * References expire when the plugin stops; expired references render the puzzle icon.
+   */
+  registerIcon(name: string, definition: IconDefinition): RegisteredIcon;
   /** Shows a short-lived message over the page. */
   showToast(message: string, kind?: ToastKind): void;
   /**
@@ -99,7 +112,7 @@ export interface PluginUi {
   Hint: Component<HintProps>;
   /** A card-like container in Yapmod's `yp-` style. */
   Panel: Component<PanelProps>;
-  /** An inline SVG icon from Yapmod's built-in set. */
+  /** An inline SVG icon from the built-in set or a registered definition. */
   Icon: Component<IconProps>;
   /** A toggle switch matching Yapin's `.switch` style. */
   Switch: Component<SwitchProps>;
@@ -128,7 +141,7 @@ export interface PluginSettingsSection {
   /** Label shown in Yapin's settings navigation. */
   label: string;
   /** Icon rendered in front of the label. */
-  icon?: IconName;
+  icon?: IconSource;
   /** Solid content rendered into the section's panel. */
   render: () => JSX.Element;
 }
@@ -142,7 +155,7 @@ export interface MessageMenuAction {
   /** Unique within this plugin. */
   id: string;
   label: string;
-  icon?: IconName;
+  icon?: IconSource;
   /** Checked when showing and selecting the action. */
   visible?: (context: MessageMenuContext) => boolean;
   onSelect: (context: MessageMenuContext) => void | Promise<void>;
@@ -198,8 +211,8 @@ export interface ComposerTool {
   id: string;
   /** Accessible button name and visible overflow label. */
   label: string;
-  /** Choose a built-in icon or render decorative Solid content. */
-  icon: IconName | (() => JSX.Element);
+  /** Choose a built-in or registered icon, or render decorative Solid content. */
+  icon: IconSource | (() => JSX.Element);
   onActivate(context: ComposerToolContext): void | Promise<void>;
 }
 

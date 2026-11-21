@@ -17,6 +17,10 @@ export { Divider } from './components/Divider';
 
 export type {
   IconName,
+  IconSource,
+  IconDefinition,
+  IconPath,
+  RegisteredIcon,
   IconProps,
   ButtonProps,
   HintProps,
@@ -33,3 +37,5 @@ export type {
   SettingTextProps,
   DividerProps,
 } from '@yapmod/types';
+
+export { createIconRegistry, isIconSource } from './registry';

@@ -1,5 +1,5 @@
 import type { Client } from '@yapmod/types';
-import { createIcon, injectStyle, removeStyle, type IconName } from '@yapmod/ui';
+import { createIcon, injectStyle, removeStyle, type IconSource } from '@yapmod/ui';
 import type { JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 
@@ -12,7 +12,7 @@ export interface SettingsSection {
   /** Label shown in Yapin's settings navigation. */
   label: string;
   /** Icon rendered in front of the label. */
-  icon?: IconName;
+  icon?: IconSource;
   /** Solid content rendered into the section's panel. */
   render: () => JSX.Element;
 }

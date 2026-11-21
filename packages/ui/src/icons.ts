@@ -1,18 +1,6 @@
 /** SVG path data for the built-in icons. */
-import type { IconName } from '@yapmod/types';
-
-/**
- * One path of an icon.
- *
- * The icons are filled shapes, so each path carries its own fill rule. The
- * colour comes from the parent `<svg>` (`currentColor`), never from the path.
- */
-export interface IconPath {
-  /** SVG path data. */
-  d: string;
-  /** Fill rule for this path. Defaults to `nonzero`. */
-  fillRule?: 'evenodd';
-}
+import type { IconName, IconPath, IconSource } from '@yapmod/types';
+import { resolveIcon } from './registry';
 
 const paths = {
   /** Options and configuration. */
@@ -92,21 +80,27 @@ export type CreateIconOptions = {
  * Creates an icon as a plain DOM element.
  *
  * This is the non-Solid counterpart of the `Icon` component, for markup that
- * is built imperatively (Yapin's settings navigation). The paths are filled
- * with `currentColor`, so the icon needs no stylesheet.
+ * is built imperatively (Yapin's settings navigation). Fill and stroke use
+ * `currentColor`, so the icon needs no stylesheet.
  */
-export function createIcon(name: IconName, options?: CreateIconOptions): SVGSVGElement {
+export function createIcon(name: IconSource, options?: CreateIconOptions): SVGSVGElement {
   const size = options?.size ?? 16;
+  const definition = resolveIcon(name);
 
   const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('viewBox', definition.viewBox ?? '0 0 24 24');
   svg.setAttribute('width', String(size));
   svg.setAttribute('height', String(size));
-  svg.setAttribute('fill', 'currentColor');
+  svg.setAttribute('fill', definition.fill ?? 'currentColor');
+  svg.setAttribute('stroke', definition.stroke ?? 'none');
+  if (definition.strokeWidth !== undefined)
+    svg.setAttribute('stroke-width', String(definition.strokeWidth));
+  if (definition.strokeLinecap) svg.setAttribute('stroke-linecap', definition.strokeLinecap);
+  if (definition.strokeLinejoin) svg.setAttribute('stroke-linejoin', definition.strokeLinejoin);
   svg.setAttribute('aria-hidden', 'true');
   if (options?.class) svg.setAttribute('class', options.class);
 
-  for (const path of iconPaths[name]) {
+  for (const path of definition.paths) {
     const element = document.createElementNS(SVG_NS, 'path');
     element.setAttribute('d', path.d);
     if (path.fillRule) element.setAttribute('fill-rule', path.fillRule);

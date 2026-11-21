@@ -34,9 +34,37 @@ export type IconName =
   | 'pencil'
   | 'close';
 
+/** A path using theme-aware fill or stroke colors. */
+export interface IconPath {
+  d: string;
+  fillRule?: 'nonzero' | 'evenodd';
+}
+
+/** Inline SVG data; external resources and arbitrary markup are not supported. */
+export interface IconDefinition {
+  /** Defaults to `0 0 24 24`. Width and height must be positive. */
+  viewBox?: string;
+  paths: readonly IconPath[];
+  /** Defaults to `currentColor`. */
+  fill?: 'currentColor' | 'none';
+  /** Defaults to `none`. */
+  stroke?: 'currentColor' | 'none';
+  strokeWidth?: number;
+  strokeLinecap?: 'butt' | 'round' | 'square';
+  strokeLinejoin?: 'miter' | 'round' | 'bevel';
+}
+
+declare const registeredIcon: unique symbol;
+/** Opaque, runtime-only reference returned by `ui.registerIcon`. */
+export interface RegisteredIcon {
+  readonly [registeredIcon]: true;
+}
+
+export type IconSource = IconName | RegisteredIcon;
+
 /** Props for the `Icon` component. */
 export type IconProps = {
-  name: IconName;
+  name: IconSource;
   size?: number;
   label?: string;
   class?: string;

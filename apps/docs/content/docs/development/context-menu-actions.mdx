@@ -35,7 +35,7 @@ export default function () {
 | ------------------- | ---------------------------------------------------------------------------------------------- |
 | `id`                | Stable, nonempty identifier unique within the running plugin. Two plugins can use the same ID. |
 | `label`             | Visible text and accessible name of the menu item.                                             |
-| `icon`              | Optional built-in `IconName` rendered alongside the label.                                     |
+| `icon`              | Optional `IconSource`: a built-in name or an `api.ui.registerIcon()` reference.                |
 | `visible(context)`  | Optional synchronous predicate. Return `true` to show the item for this message.               |
 | `onSelect(context)` | Called once for the selected message. Accepts a synchronous or asynchronous callback.          |
 

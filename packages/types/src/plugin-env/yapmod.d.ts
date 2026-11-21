@@ -36,6 +36,9 @@ declare module '@yapmod/ui' {
   export type DividerProps = import('../ui').DividerProps;
   export type HintProps = import('../ui').HintProps;
   export type IconName = import('../ui').IconName;
+  export type IconSource = import('../ui').IconSource;
+  export type IconDefinition = import('../ui').IconDefinition;
+  export type RegisteredIcon = import('../ui').RegisteredIcon;
   export type IconProps = import('../ui').IconProps;
   export type InputProps = import('../ui').InputProps;
   export type PanelProps = import('../ui').PanelProps;
@@ -57,13 +60,7 @@ declare module '@yapmod/ui' {
     class?: string;
   }
 
-  /** One path of an icon. */
-  export interface IconPath {
-    /** SVG path data. */
-    d: string;
-    /** Fill rule for this path. Defaults to `nonzero`. */
-    fillRule?: 'evenodd';
-  }
+  export type IconPath = import('../ui').IconPath;
 
   /** The bundled component stylesheet, as shipped in the JavaScript bundle. */
   export const uiCss: string;
@@ -82,8 +79,10 @@ declare module '@yapmod/ui' {
   ): () => void;
   /** SVG path data for the built-in icons, keyed by name. */
   export const iconPaths: Record<IconName, readonly IconPath[]>;
+  /** Registers SVG data for the current plugin setup; cleaned up when it stops. */
+  export function registerIcon(name: string, definition: IconDefinition): RegisteredIcon;
   /** Creates an icon as a plain DOM element. */
-  export function createIcon(name: IconName, options?: CreateIconOptions): SVGSVGElement;
+  export function createIcon(name: IconSource, options?: CreateIconOptions): SVGSVGElement;
 
   /** A button styled like Yapin's `.btn`. */
   export const Button: import('solid-js').Component<ButtonProps>;

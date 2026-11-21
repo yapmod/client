@@ -1,5 +1,7 @@
 import type { Client } from '@yapmod/types';
 import {
+  createIconRegistry,
+  isIconSource,
   Button,
   Divider,
   Hint,
@@ -122,6 +124,8 @@ function createPluginApi(
 } {
   const { storage, persist } = createPluginStorage(id);
   const disposers = new PluginScope(loaded.has(id));
+  const icons = createIconRegistry();
+  disposers.onDispose(icons.dispose);
   const commandNames = new Set<string>();
 
   const api: YapmodPluginApi = {
@@ -166,6 +170,7 @@ function createPluginApi(
       },
     },
     ui: {
+      registerIcon: icons.registerIcon,
       showToast: showToast,
       openModal(options) {
         return disposers.installUi(() => openModal(options));
@@ -210,6 +215,9 @@ function createPluginApi(
       registerSection(section) {
         if (typeof section.label !== 'string' || !section.label.trim()) {
           throw new Error('registerSection(): section.label must be a non-empty string.');
+        }
+        if (section.icon !== undefined && !isIconSource(section.icon)) {
+          throw new TypeError('registerSection(): invalid icon reference.');
         }
         if (typeof section.render !== 'function') {
           throw new Error('registerSection(): section.render must be a function.');
