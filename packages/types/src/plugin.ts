@@ -87,7 +87,42 @@ export interface PluginModalOptions {
   onClose?: () => void;
 }
 
-/** UI helpers and Solid components available to every plugin. */
+/** Context captured from the current host chat. */
+export interface ChatLocationContext {
+  /** Host chat identifier; may identify a channel or direct conversation. */
+  readonly chatId: string;
+}
+
+export interface LocationAction<C> {
+  id: string;
+  label: string;
+  icon?: IconSource;
+  visible?: (context: C) => boolean;
+  onSelect: (context: C) => void | Promise<void>;
+}
+
+export interface ChannelMenuContext {
+  readonly channelId: string;
+}
+export interface UserMenuContext {
+  readonly userId: string;
+}
+export interface DockedPanelOptions {
+  id: string;
+  title: string;
+  render: (context: ChatLocationContext, close: () => void) => JSX.Element;
+}
+
+export interface PluginUiExtensions {
+  /** Current chat header. Missing host anchors leave the registration dormant. */
+  registerHeaderAction(action: LocationAction<ChatLocationContext>): () => void;
+  /** Entries at the end of the channel sidebar's scroll area. */
+  registerSidebarEntry(action: LocationAction<Readonly<Record<string, never>>>): () => void;
+  /** Opens a chat-scoped panel deliberately. Closes on navigation or plugin disposal. */
+  openPanel(options: DockedPanelOptions): () => void;
+}
+
+/** Shared UI helpers; plugin-owned locations are in PluginUiExtensions. */
 export interface PluginUi {
   /**
    * Registers SVG data under a name local to this plugin setup. Duplicate names throw.
@@ -196,8 +231,18 @@ export interface MessageMenuAction {
   onSelect: (context: MessageMenuContext) => void | Promise<void>;
 }
 
+export interface ContextMenuTargets {
+  message: MessageMenuContext;
+  channel: ChannelMenuContext;
+  /** Member-list context menus only. */
+  user: UserMenuContext;
+}
+
 export interface PluginContextMenus {
-  registerAction(target: 'message', action: MessageMenuAction): () => void;
+  registerAction<K extends keyof ContextMenuTargets>(
+    target: K,
+    action: LocationAction<ContextMenuTargets[K]>,
+  ): () => void;
 }
 
 /** The settings hooks on the plugin API. */
@@ -388,7 +433,7 @@ export interface YapmodPluginApi {
   readonly context: PluginContext;
   readonly navigation: PluginNavigation;
   /** Toasts, modals, stylesheets and Solid components. */
-  readonly ui: PluginUi;
+  readonly ui: PluginUi & PluginUiExtensions;
   /** Sections in the Yapmod settings group. */
   readonly settings: PluginSettings;
   /** Read-only status indicators in message composers. */

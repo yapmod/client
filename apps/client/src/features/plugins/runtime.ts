@@ -1,4 +1,10 @@
-import type { Client } from '@yapmod/types';
+import type {
+  Client,
+  MessageMenuAction,
+  LocationAction,
+  ChannelMenuContext,
+  UserMenuContext,
+} from '@yapmod/types';
 import {
   createIconRegistry,
   isIconSource,
@@ -35,6 +41,8 @@ import { createMessages } from './messages';
 import { createAppContext } from './context';
 import { registerCommand, validateCommand } from './commands';
 import { registerMessageAction } from './menus';
+import { registerLocation, openDockedPanel } from './locations';
+import { registerLocationMenu } from './location-menus';
 import { createPluginStorage } from './storage';
 import {
   addClientPlugin,
@@ -173,11 +181,29 @@ function createPluginApi(
     },
     contextMenus: {
       registerAction(target, action) {
-        if (target !== 'message') throw new TypeError('Unsupported context menu target.');
-        return disposers.installUi(() => registerMessageAction(id, action));
+        if (target === 'message')
+          return disposers.installUi(() => registerMessageAction(id, action as MessageMenuAction));
+        if (target === 'channel')
+          return disposers.installUi(() =>
+            registerLocationMenu(id, 'channel', action as LocationAction<ChannelMenuContext>),
+          );
+        if (target === 'user')
+          return disposers.installUi(() =>
+            registerLocationMenu(id, 'user', action as LocationAction<UserMenuContext>),
+          );
+        throw new TypeError('Unsupported context menu target.');
       },
     },
     ui: {
+      registerHeaderAction(action) {
+        return disposers.installUi(() => registerLocation(id, 'header', action));
+      },
+      registerSidebarEntry(action) {
+        return disposers.installUi(() => registerLocation(id, 'sidebar', action));
+      },
+      openPanel(options) {
+        return disposers.installUi(() => openDockedPanel(id, options));
+      },
       registerIcon: icons.registerIcon,
       showToast: showToast,
       openModal(options) {

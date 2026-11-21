@@ -1,0 +1,87 @@
+---
+title: UI extension locations
+description: Typed header actions, sidebar entries, context menus and optional panels.
+---
+
+Plugins can contribute to concrete Yapin locations without managing selectors or DOM observers.
+These APIs are on the plugin's `api.ui`, not the global client UI helpers.
+
+```ts
+const remove = api.ui.registerHeaderAction({
+  id: 'notes',
+  label: 'Notes',
+  icon: 'puzzle',
+  onSelect({ chatId }) {
+    api.ui.openPanel({
+      id: 'notes',
+      title: 'Chat notes',
+      render(context, close) {
+        return api.solidWeb.createComponent(api.ui.Button, {
+          children: `Close notes for ${context.chatId}`,
+          onClick: close,
+        });
+      },
+    });
+    api.log('Opened notes', chatId);
+  },
+});
+
+api.ui.registerSidebarEntry({
+  id: 'overview',
+  label: 'Plugin overview',
+  onSelect() {
+    api.ui.showToast('Overview selected');
+  },
+});
+
+api.contextMenus.registerAction('channel', {
+  id: 'channel-info',
+  label: 'Show channel identifier',
+  onSelect({ channelId }) {
+    api.ui.showToast(channelId);
+  },
+});
+api.contextMenus.registerAction('user', {
+  id: 'member-info',
+  label: 'Show member identifier',
+  visible: ({ userId }) => Boolean(userId),
+  onSelect({ userId }) {
+    api.ui.showToast(userId);
+  },
+});
+```
+
+Actions require a nonempty `id`, `label`, and `onSelect`. Icons and synchronous `visible(context)`
+predicates are optional. IDs are namespaced by plugin and location; duplicate IDs in the same
+location throw. The returned disposer is idempotent. Disabling a plugin removes all its actions,
+open panels, observers and Solid roots. Async action failures are logged and shown as error toasts.
+Visibility failures hide the action and are logged. Visibility is checked when reconciling host DOM
+and again on selection; it is not a reactive subscription to arbitrary plugin state.
+
+Header context contains a captured `chatId` from the host message container. It can identify a
+channel or direct conversation; it is not assumed to be a server channel ID. Sidebar callbacks
+receive an empty frozen context. Channel menus capture the clicked channel ID (not the selected
+chat); member menus capture the clicked user ID. Stale or detached host targets cannot invoke
+callbacks. Host replacement remounts header/sidebar controls without duplicate registrations.
+
+`openPanel` returns a close function. Panels render shared Solid content in the chat layout,
+with a labeled Close button and Escape support. They close on chat navigation, host removal,
+manual close, or plugin disposal. Registration of an action never opens a panel automatically.
+Repeated opening of the same plugin/panel ID while open throws. Multiple plugins may each open
+panels. A missing chat layout makes `openPanel` a no-op; it does not open later unexpectedly.
+
+## Supported host surfaces and limitations
+
+Verified against Yapin's authenticated web UI on November 22, 2026:
+
+- Header: `.main-head` alongside a `.chat-wrap > .chat > .messages[data-chat]`.
+- Sidebar: channel sidebar's scroll area. Home/friends sidebars are not supported.
+- Channel menus: right-click on `.channel-row[data-nav-chan]` in the channel sidebar.
+- User menus: right-click on member-list rows with `data-vkey="member:<id>"`.
+- Panels: beside the current chat, with a compact overlay layout on narrow screens.
+
+Message-author right-click opens Yapin's **message** menu, not a user menu. User profile popovers,
+friends lists, and other user surfaces are not supported by this API. No IDs are inferred from
+display names, avatar URLs, React internals, or clipboard actions. Menu actions attach only to a
+new native menu from a supported opener; ambiguous or reused menus fail closed. Missing host
+anchors leave actions dormant. Host markup changes may require a Yapmod adapter update.
