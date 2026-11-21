@@ -1,0 +1,12 @@
+---
+title: Put a plugin action next to your draft
+description: How composer toolbar tools keep the right draft in scope, even from a narrow thread pane.
+date: 2026-11-21
+tags: [SDK]
+---
+
+Imagine writing in a thread while a longer draft sits in the main channel. Click **Check draft length** in the thread and the result should describe the two words in front of you. With `composer.registerTool`, Yapmod captures the length and native limit from the composer where you activated the action.
+
+A tool supplies a label, an icon and a callback. Yapmod renders it beside the built-in toolbar where there’s room. Shrink the pane and **Composer tools** opens a list with the same labels and callbacks. Authors can use the pencil or settings icon from the SDK, or supply a small piece of Solid JSX.
+
+The [Composer tools guide](/docs/development/composer-tools) walks through a working draft-length action, keyboard activation and returning focus to the original input.

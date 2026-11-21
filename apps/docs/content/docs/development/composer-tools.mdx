@@ -1,0 +1,48 @@
+---
+title: Composer tools
+description: Add an accessible action to each message composer and read the originating draft length.
+---
+
+Use `yapmod.composer.registerTool` in a plugin’s `onLoad` hook. Yapmod mounts a native button beside the composer toolbar and removes it when the plugin stops. Plugins targeting older clients can check `typeof yapmod.composer?.registerTool === 'function'` before registration.
+
+```tsx
+import type { ComposerToolContext } from '@yapmod/types';
+
+export default function () {
+  return {
+    onLoad() {
+      yapmod.composer.registerTool({
+        id: 'draft-length',
+        label: 'Check draft length',
+        icon: 'pencil',
+        onActivate({ length, maxLength, focus }: ComposerToolContext) {
+          const count = maxLength === null ? String(length) : `${length} / ${maxLength}`;
+          yapmod.ui.showToast(`Draft length: ${count}`);
+          focus();
+        },
+      });
+    },
+  };
+}
+```
+
+## Tool options
+
+| Option       | Meaning                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------ |
+| `id`         | Stable string scoped to your plugin. Registering it again replaces the previous action in place.             |
+| `label`      | Accessible name, button tooltip and visible overflow label. Use an action such as “Check draft length”.      |
+| `icon`       | An `IconName` or a Solid render function returning decorative JSX. Keep custom artwork within the icon area. |
+| `onActivate` | Synchronous or async function called once per activation.                                                    |
+
+Built-in icons are `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil` and `close`. For custom artwork, pass a function such as `icon: () => <span>¶</span>`. The button label provides its accessible name.
+
+## Composer context and placement
+
+The callback receives the current draft length in UTF-16 code units, matching the native textarea. `maxLength` is the native maximum or `null` when unlimited. `focus()` returns focus to the originating input. The context is captured when the user chooses the action, including when the picker is open and the draft has changed.
+
+Wide composers show tools in registration order. A narrow composer groups them under **Composer tools**, which opens a dialog of labeled actions. Each composer measures its own width, so a thread composer and a channel composer can use different layouts on the same page. Enter and Space activate the focused button. Escape closes the picker and restores focus to the opener.
+
+## Cleanup
+
+Registration returns an early disposer. Calling the disposer after replacing the same ID leaves the replacement active. Unloading or hot reloading a plugin cleans up its tools automatically. When Yapin replaces a composer, Yapmod moves the available actions to the new instance.

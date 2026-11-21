@@ -268,6 +268,10 @@ export default function () {
 - The returned function removes this registration early. Yapmod also removes its indicators on plugin unload, failed startup or replacement. A newly mounted composer picks up all active registrations.
 - Older clients can also report `apiVersion: 1`. Check for `yapmod.composer?.registerStatus` if your plugin supports those clients.
 
+## Composer tools
+
+Use `api.composer.registerTool(tool)` to place an icon button beside the native composer tools. The activation callback receives measurements from the composer containing the button and a function to focus its input. See [Composer tools](/docs/development/composer-tools) for the full contract and responsive layout.
+
 ## What comes next
 
 Now that you know the full API, learn about the different [plugin types](/docs/development/plugin-types) and how user installed plugins differ from client registered plugins.
