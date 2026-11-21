@@ -127,9 +127,17 @@ export function composerToolContract(api: YapmodPluginApi): () => void {
     id: 'settings',
     label: 'Open settings',
     icon: 'settings',
-    onActivate({ length, maxLength, focus }) {
+    onActivate({ length, maxLength, focus, insertText }) {
       const remaining = maxLength === null ? undefined : maxLength - length;
       if (remaining === 0) focus();
+      const result = insertText('Hello');
+      if (!result.ok) {
+        const reason: 'stale-target' | 'draft-changed' | 'max-length' | 'not-editable' =
+          result.reason;
+        api.log(reason);
+      }
+      // @ts-expect-error Insertion accepts plain text only.
+      insertText(42);
     },
   });
 }

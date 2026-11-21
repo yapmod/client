@@ -200,10 +200,19 @@ export interface ComposerStatusState {
 /** A plain-text indicator, optionally emphasized at a limit. */
 export type ComposerStatus = string | { text: string; tone?: 'warning' };
 
+/** An insertion failure leaves the draft untouched. */
+export type ComposerInsertResult =
+  | { ok: true }
+  | { ok: false; reason: 'stale-target' | 'draft-changed' | 'max-length' | 'not-editable' };
+
 /** A snapshot of the composer where the user activated a tool. */
 export interface ComposerToolContext extends ComposerStatusState {
   /** Return keyboard focus to this input while it remains mounted. */
   focus(): void;
+  /** Replace the captured selection, preserving surrounding text. Never sends a message.
+   * Rejects changed drafts and stale targets; activate again to capture a fresh draft.
+   */
+  insertText(text: string): ComposerInsertResult;
 }
 
 export interface ComposerTool {

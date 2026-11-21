@@ -7,6 +7,7 @@ export type {
   ComposerStatusState,
   ComposerTool,
   ComposerToolContext,
+  ComposerInsertResult,
   PluginComposer,
   PluginFunction,
   PluginManifest,
