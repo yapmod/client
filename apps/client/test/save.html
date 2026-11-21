@@ -50,7 +50,9 @@
     [...document.querySelectorAll('button')]
       .find((button) => button.textContent.trim() === 'Add Plugin')
       .click();
-    select('[aria-label="Local plugin"]').click();
+    [...document.querySelectorAll('[aria-label="Plugin source"] button')]
+      .find((button) => button.textContent.trim() === 'Local')
+      .click();
 
     const original =
       '({ onLoad() { document.body.dataset.version = "one"; }, onUnload() { delete document.body.dataset.version; } })';

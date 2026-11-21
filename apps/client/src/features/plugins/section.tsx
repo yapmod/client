@@ -1,156 +1,14 @@
 import { Button, Icon, Input, SettingsPage, Switch } from '@yapmod/ui';
 import { For, Show, createMemo, createSignal } from 'solid-js';
-import { openConfirmModal } from '../../lib/modal';
-import { showToast } from '../../lib/toast';
 import { showClientPlugins } from '../settings/store';
 import { openPluginEditor } from './editor';
-import {
-  hasPluginSettings,
-  removePlugin,
-  setPluginEnabled,
-  showPluginSettings,
-  updatePlugin,
-} from './runtime';
-import { clientPlugins, clientPluginEnabled, getPluginRecord, pluginState } from './store';
-import { isDevPluginId } from '../dev/apply';
-import type { ClientPlugin, StoredPlugin } from './types';
-
-function PluginCard(props: { plugin: StoredPlugin }) {
-  const plugin = () => props.plugin;
-
-  async function update(): Promise<void> {
-    const current = plugin();
-    const wasOn = current.on;
-
-    try {
-      const result = await updatePlugin(current.id);
-      const saved = getPluginRecord(current.id);
-
-      if (result === 'current') {
-        showToast(`${current.manifest.name} is already up to date.`);
-      } else if (wasOn && !saved?.on) {
-        showToast(`${current.manifest.name} updated, but it failed to start.`, 'error');
-      } else {
-        showToast(`${current.manifest.name} updated.`);
-      }
-    } catch (error) {
-      console.error('[yapmod] could not update plugin', error);
-      showToast(error instanceof Error ? error.message : 'Could not update plugin.', 'error');
-    }
-  }
-
-  async function remove(): Promise<void> {
-    const current = plugin();
-    const confirmed = await openConfirmModal({
-      title: 'Delete plugin',
-      body: `Delete ${current.manifest.name}? This cannot be undone.`,
-      confirmText: 'Delete',
-      danger: true,
-    });
-
-    if (!confirmed) return;
-
-    try {
-      removePlugin(current.id);
-      showToast(`${current.manifest.name} deleted.`);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not delete plugin.', 'error');
-    }
-  }
-
-  return (
-    <section class="ss2-card">
-      <div style={{ display: 'flex', 'align-items': 'flex-start', gap: '12px' }}>
-        <div style={{ flex: '1 1 0', 'min-width': '0' }}>
-          <div
-            class="toggle-label"
-            style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
-          >
-            <span>{plugin().manifest.name}</span>
-            <Show when={isDevPluginId(plugin().id)}>
-              <span
-                class="hint"
-                style={{
-                  border: '1px solid var(--border, #ffffff12)',
-                  'border-radius': '999px',
-                  'font-size': '11px',
-                  padding: '1px 8px',
-                }}
-              >
-                Dev
-              </span>
-            </Show>
-          </div>
-          <div class="hint">by {plugin().manifest.author}</div>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            'align-items': 'center',
-            'justify-content': 'flex-end',
-            'flex-wrap': 'wrap',
-            gap: '4px',
-          }}
-        >
-          <Show when={hasPluginSettings(plugin().id) && plugin().on}>
-            <button
-              type="button"
-              class="icon-btn"
-              title="Plugin settings"
-              aria-label={`${plugin().manifest.name} settings`}
-              onClick={() => showPluginSettings(plugin().id)}
-            >
-              <Icon name="settings" size={16} />
-            </button>
-          </Show>
-
-          <Show when={!plugin().local}>
-            <button
-              type="button"
-              class="icon-btn"
-              title="Update plugin"
-              aria-label={`Update ${plugin().manifest.name}`}
-              onClick={() => void update()}
-            >
-              <Icon name="refresh" size={16} />
-            </button>
-          </Show>
-
-          <button
-            type="button"
-            class="icon-btn"
-            title="Edit plugin"
-            aria-label={`Edit ${plugin().manifest.name}`}
-            onClick={() => openPluginEditor(plugin().id)}
-          >
-            <Icon name="pencil" size={16} />
-          </button>
-
-          <button
-            type="button"
-            class="icon-btn muted"
-            title="Delete plugin"
-            aria-label={`Delete ${plugin().manifest.name}`}
-            onClick={() => void remove()}
-          >
-            <Icon name="trash" size={16} />
-          </button>
-
-          <Switch
-            checked={plugin().on}
-            aria-label={`Enable ${plugin().manifest.name}`}
-            onChange={(enabled) => {
-              setPluginEnabled(plugin().id, enabled);
-            }}
-          />
-        </div>
-      </div>
-
-      <div class="hint">{plugin().manifest.description}</div>
-    </section>
-  );
-}
+import { hasPluginSettings, setPluginEnabled, showPluginSettings } from './runtime';
+import { clientPlugins, clientPluginEnabled, pluginState } from './store';
+import { PluginCard } from './card';
+import { CollectionCard } from '../collections/section';
+import { collections } from '../collections/store';
+import { collectionMatches, findCollectionPlugin } from '../collections/membership';
+import type { ClientPlugin } from './types';
 
 /**
  * A card for a client-registered plugin.
@@ -231,8 +89,8 @@ function ClientPluginCard(props: { definition: ClientPlugin }) {
 /**
  * The Plugins page.
  *
- * The layout uses a search field and an "Add Plugin" button above a list of
- * plugin cards. Each card has the
+ * The layout uses a search field and an "Add Plugin" button above standalone
+ * plugins and collapsible collection groups. Each installed plugin card has the
  * plugin's name, author and description, plus settings, update, edit and
  * delete actions and an enable switch. Everything is built from Yapin's own
  * settings primitives, so it keeps the host's look.
@@ -248,7 +106,12 @@ export function PluginsPage() {
   const plugins = createMemo(() => {
     const term = search().trim().toLowerCase();
     const installed = pluginState()
-      .plugins.slice()
+      .plugins.filter(
+        (plugin) =>
+          !collections().some((collection) =>
+            collection.plugins.some((entry) => findCollectionPlugin(entry, [plugin])),
+          ),
+      )
       // oxlint-disable-next-line unicorn/no-array-sort -- sorting a fresh copy
       .sort((left, right) => left.manifest.name.localeCompare(right.manifest.name));
 
@@ -260,6 +123,12 @@ export function PluginsPage() {
         .includes(term),
     );
   });
+
+  const visibleCollections = createMemo(() =>
+    collections().filter((collection) =>
+      collectionMatches(collection, search(), pluginState().plugins),
+    ),
+  );
 
   const clientList = createMemo(() => {
     const term = search().trim().toLowerCase();
@@ -280,12 +149,12 @@ export function PluginsPage() {
   return (
     <SettingsPage
       title="Plugins"
-      description="Install plugins from a URL or paste JavaScript. Plugins are stored in this browser."
+      description="Install plugins from a URL, local code, or a collection. Everything is stored in this browser."
     >
       <div class="row-gap" style={{ 'margin-bottom': '14px' }}>
         <Input
           type="search"
-          placeholder="Search plugins..."
+          placeholder="Search plugins and collections..."
           aria-label="Search plugins"
           value={search()}
           onChange={setSearch}
@@ -297,33 +166,22 @@ export function PluginsPage() {
         </Button>
       </div>
 
-      <Show
-        when={pluginState().plugins.length > 0}
-        fallback={
-          <p class="hint" style={{ 'margin-top': '12px' }}>
-            No plugins installed yet.
-          </p>
-        }
-      >
-        <Show
-          when={plugins().length > 0}
-          fallback={
-            <p class="hint" style={{ 'margin-top': '12px' }}>
-              No plugins match your search.
-            </p>
-          }
+      <Show when={plugins().length > 0}>
+        <div
+          style={{ display: 'flex', 'flex-direction': 'column', gap: '10px', 'margin-top': '12px' }}
         >
-          <div
-            style={{
-              display: 'flex',
-              'flex-direction': 'column',
-              gap: '10px',
-              'margin-top': '12px',
-            }}
-          >
-            <For each={plugins()}>{(plugin) => <PluginCard plugin={plugin} />}</For>
-          </div>
-        </Show>
+          <For each={plugins()}>{(plugin) => <PluginCard plugin={plugin} />}</For>
+        </div>
+      </Show>
+      <For each={visibleCollections()}>
+        {(collection) => <CollectionCard collection={collection} search={search()} />}
+      </For>
+      <Show when={plugins().length === 0 && visibleCollections().length === 0}>
+        <p class="hint" style={{ 'margin-top': '12px' }}>
+          {search().trim()
+            ? 'No plugins or collections match your search.'
+            : 'No plugins or collections yet. Select Add Plugin to get started.'}
+        </p>
       </Show>
 
       <Show when={showClientPlugins()}>

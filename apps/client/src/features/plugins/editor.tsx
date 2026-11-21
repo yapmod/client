@@ -3,14 +3,21 @@ import { Show, createSignal, type Accessor, type Setter } from 'solid-js';
 import { openModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
 import { addLocalPlugin, addRemotePlugin, editPlugin } from './runtime';
+import { addCollection } from '../collections/store';
 import { getPluginRecord } from './store';
 import type { StoredPlugin } from './types';
 
+type EditorMode = 'url' | 'local' | 'collection';
+
 interface EditorState {
+  mode: Accessor<EditorMode>;
+  changeMode: (mode: EditorMode) => void;
+  collectionUrl: Accessor<string>;
+  setCollectionUrl: Setter<string>;
   pluginId?: string;
   existing?: StoredPlugin;
   local: Accessor<boolean>;
-  setLocal: Setter<boolean>;
+  setLocal: (local: boolean) => void;
   url: Accessor<string>;
   setUrl: Setter<string>;
   autoUpdate: Accessor<boolean>;
@@ -34,7 +41,10 @@ interface EditorState {
 function createEditorState(pluginId?: string): EditorState {
   const existing = pluginId ? getPluginRecord(pluginId) : undefined;
 
-  const [local, setLocal] = createSignal(existing?.local ?? false);
+  const [mode, setMode] = createSignal<EditorMode>(existing?.local ? 'local' : 'url');
+  const local = () => mode() === 'local';
+  const setLocal = (value: boolean) => setMode(value ? 'local' : 'url');
+  const [collectionUrl, setCollectionUrl] = createSignal('');
   const [url, setUrl] = createSignal(existing?.src ?? '');
   const [autoUpdate, setAutoUpdate] = createSignal(existing?.update ?? true);
   const [name, setName] = createSignal(existing?.manifest.name ?? '');
@@ -48,6 +58,7 @@ function createEditorState(pluginId?: string): EditorState {
 
   const canSubmit = () => {
     if (busy()) return false;
+    if (mode() === 'collection') return Boolean(collectionUrl().trim());
     if (local()) return Boolean(name().trim() && author().trim() && code().trim());
     return Boolean(url().trim());
   };
@@ -92,6 +103,9 @@ function createEditorState(pluginId?: string): EditorState {
         } else {
           showToast('Plugin saved.', 'success');
         }
+      } else if (mode() === 'collection') {
+        await addCollection(collectionUrl());
+        showToast('Collection added.', 'success');
       } else if (local()) {
         addLocalPlugin({
           name: name(),
@@ -107,6 +121,12 @@ function createEditorState(pluginId?: string): EditorState {
 
       close();
     } catch (submitError) {
+      console.error('[yapmod] could not save plugin or collection', submitError);
+      if (mode() === 'collection')
+        showToast(
+          submitError instanceof Error ? submitError.message : 'Could not add collection.',
+          'error',
+        );
       setError(submitError instanceof Error ? submitError.message : String(submitError));
     } finally {
       setBusy(false);
@@ -114,6 +134,15 @@ function createEditorState(pluginId?: string): EditorState {
   }
 
   return {
+    mode,
+    changeMode: (next) => {
+      if (!busy()) {
+        setMode(next);
+        setError('');
+      }
+    },
+    collectionUrl,
+    setCollectionUrl,
     pluginId,
     existing,
     local,
@@ -157,93 +186,150 @@ function PluginEditorFields(props: { state: EditorState; onClose: () => void }) 
         </p>
       </Show>
 
-      <div class="toggle-row" style={{ 'border-bottom': 'none', padding: '0 0 12px' }}>
-        <div>
-          <div class="toggle-label">Local plugin</div>
-          <div class="hint">Write or upload the JavaScript instead of fetching it from a URL.</div>
+      <Show when={!state.pluginId}>
+        <div
+          class="row-gap"
+          role="group"
+          aria-label="Plugin source"
+          style={{ 'margin-bottom': '16px' }}
+        >
+          <Button
+            variant={state.mode() === 'url' ? undefined : 'secondary'}
+            aria-pressed={state.mode() === 'url'}
+            disabled={state.busy()}
+            onClick={() => state.changeMode('url')}
+          >
+            URL
+          </Button>
+          <Button
+            variant={state.mode() === 'local' ? undefined : 'secondary'}
+            aria-pressed={state.mode() === 'local'}
+            disabled={state.busy()}
+            onClick={() => state.changeMode('local')}
+          >
+            Local
+          </Button>
+          <Button
+            variant={state.mode() === 'collection' ? undefined : 'secondary'}
+            aria-pressed={state.mode() === 'collection'}
+            disabled={state.busy()}
+            onClick={() => state.changeMode('collection')}
+          >
+            Collection
+          </Button>
         </div>
-        <Switch checked={state.local()} aria-label="Local plugin" onChange={state.setLocal} />
-      </div>
-
-      <Show
-        when={state.local()}
-        fallback={
-          <>
-            <div class="field">
-              <label for="yp-plugin-url">Plugin URL</label>
-              <Input
-                id="yp-plugin-url"
-                type="text"
-                inputmode="url"
-                placeholder="https://example.com/my-plugin/"
-                value={state.url()}
-                onChange={state.setUrl}
-              />
-            </div>
-
-            <p class="hint" style={{ margin: '-6px 0 14px' }}>
-              Point at a folder containing <code>plugin.json</code> and <code>plugin.js</code>.
-              Yapin only allows downloads from a few hosts, including{' '}
-              <code>raw.githubusercontent.com</code>.
-            </p>
-
-            <div class="toggle-row">
-              <div>
-                <div class="toggle-label">Automatically update</div>
-                <div class="hint">Fetch a fresh copy when Yapin loads.</div>
-              </div>
-              <Switch
-                checked={state.autoUpdate()}
-                aria-label="Automatically update plugin"
-                onChange={state.setAutoUpdate}
-              />
-            </div>
-          </>
-        }
-      >
+      </Show>
+      <Show when={state.mode() === 'collection'}>
         <div class="field">
-          <label for="yp-plugin-name">Name</label>
-          <Input id="yp-plugin-name" value={state.name()} onChange={state.setName} />
-        </div>
-
-        <div class="field">
-          <label for="yp-plugin-author">Author</label>
-          <Input id="yp-plugin-author" value={state.author()} onChange={state.setAuthor} />
-        </div>
-
-        <div class="field">
-          <label for="yp-plugin-description">Description</label>
+          <label for="yp-collection-url">Collection index URL</label>
           <Input
-            id="yp-plugin-description"
-            value={state.description()}
-            onChange={state.setDescription}
+            id="yp-collection-url"
+            inputmode="url"
+            placeholder="https://raw.githubusercontent.com/owner/repo/plugin-dist/index.json"
+            value={state.collectionUrl()}
+            onChange={state.setCollectionUrl}
+            disabled={state.busy()}
           />
         </div>
+        <p class="hint">
+          Add a collection to browse and install its plugins together. Use a JSON index on a host
+          allowed by Yapin, such as raw.githubusercontent.com. Adding a collection does not install
+          its plugins.
+        </p>
+      </Show>
+      <Show when={state.mode() !== 'collection'}>
+        <Show when={state.pluginId}>
+          <div class="toggle-row" style={{ 'border-bottom': 'none', padding: '0 0 12px' }}>
+            <div>
+              <div class="toggle-label">Local plugin</div>
+              <div class="hint">
+                Write or upload the JavaScript instead of fetching it from a URL.
+              </div>
+            </div>
+            <Switch checked={state.local()} aria-label="Local plugin" onChange={state.setLocal} />
+          </div>
+        </Show>
 
-        <div class="field">
-          <label for="yp-plugin-code">Code</label>
-          <Textarea
-            id="yp-plugin-code"
-            rows={12}
-            spellcheck={false}
-            value={state.code()}
-            onChange={state.setCode}
-          />
-        </div>
+        <Show
+          when={state.local()}
+          fallback={
+            <>
+              <div class="field">
+                <label for="yp-plugin-url">Plugin URL</label>
+                <Input
+                  id="yp-plugin-url"
+                  type="text"
+                  inputmode="url"
+                  placeholder="https://example.com/my-plugin/"
+                  value={state.url()}
+                  onChange={state.setUrl}
+                />
+              </div>
 
-        <div class="row-gap" style={{ 'margin-bottom': '8px' }}>
-          <label class="btn small secondary file-pick" style={{ position: 'relative' }}>
-            <Icon name="upload" size={14} />
-            Upload JS
-            <input
-              ref={state.setFileInput}
-              class="file-pick-input"
-              type="file"
-              accept="text/javascript,.js"
-              onChange={(event) => void state.readFile(event.currentTarget.files)}
+              <p class="hint" style={{ margin: '-6px 0 14px' }}>
+                Point at a folder containing <code>plugin.json</code> and <code>plugin.js</code>.
+                Yapin only allows downloads from a few hosts, including{' '}
+                <code>raw.githubusercontent.com</code>.
+              </p>
+
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Automatically update</div>
+                  <div class="hint">Fetch a fresh copy when Yapin loads.</div>
+                </div>
+                <Switch
+                  checked={state.autoUpdate()}
+                  aria-label="Automatically update plugin"
+                  onChange={state.setAutoUpdate}
+                />
+              </div>
+            </>
+          }
+        >
+          <div class="field">
+            <label for="yp-plugin-name">Name</label>
+            <Input id="yp-plugin-name" value={state.name()} onChange={state.setName} />
+          </div>
+
+          <div class="field">
+            <label for="yp-plugin-author">Author</label>
+            <Input id="yp-plugin-author" value={state.author()} onChange={state.setAuthor} />
+          </div>
+
+          <div class="field">
+            <label for="yp-plugin-description">Description</label>
+            <Input
+              id="yp-plugin-description"
+              value={state.description()}
+              onChange={state.setDescription}
             />
-          </label>
-        </div>
+          </div>
+
+          <div class="field">
+            <label for="yp-plugin-code">Code</label>
+            <Textarea
+              id="yp-plugin-code"
+              rows={12}
+              spellcheck={false}
+              value={state.code()}
+              onChange={state.setCode}
+            />
+          </div>
+
+          <div class="row-gap" style={{ 'margin-bottom': '8px' }}>
+            <label class="btn small secondary file-pick" style={{ position: 'relative' }}>
+              <Icon name="upload" size={14} />
+              Upload JS
+              <input
+                ref={state.setFileInput}
+                class="file-pick-input"
+                type="file"
+                accept="text/javascript,.js"
+                onChange={(event) => void state.readFile(event.currentTarget.files)}
+              />
+            </label>
+          </div>
+        </Show>
       </Show>
 
       <p class="hint" style={{ margin: '12px 0 0' }}>
@@ -273,7 +359,15 @@ export function openPluginEditor(pluginId?: string): void {
             void state.submit(close);
           }}
         >
-          {state.busy() ? 'Saving...' : pluginId ? 'Save' : state.local() ? 'Add' : 'Fetch'}
+          {state.busy()
+            ? 'Saving...'
+            : pluginId
+              ? 'Save'
+              : state.mode() === 'collection'
+                ? 'Add Collection'
+                : state.local()
+                  ? 'Add'
+                  : 'Fetch'}
         </Button>
       </>
     ),
