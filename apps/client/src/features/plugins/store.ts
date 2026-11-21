@@ -34,6 +34,8 @@ function readStoredPlugin(value: unknown): StoredPlugin | null {
     local,
     on: value.on === true,
     update: value.update === true,
+    pinned: value.pinned === true,
+    previous: readPrevious(value.previous),
     src,
     js,
     manifest: normalizeManifest(value.manifest, {
@@ -42,6 +44,17 @@ function readStoredPlugin(value: unknown): StoredPlugin | null {
       description: 'A Yapin plugin.',
     }),
   };
+}
+
+/** Validate a single snapshot without following nested history. */
+function readPrevious(value: unknown): StoredPlugin['previous'] {
+  if (!isRecord(value) || typeof value.js !== 'string' || !value.js.trim()) return;
+  if (typeof value.local !== 'boolean' || !isRecord(value.manifest)) return;
+  if (!readString(value.manifest.name)?.trim() || !readString(value.manifest.author)?.trim())
+    return;
+  const src = value.local ? undefined : normalizeRemoteSource(readString(value.src) ?? '');
+  if (!value.local && !src) return;
+  return { local: value.local, src, js: value.js, manifest: normalizeManifest(value.manifest) };
 }
 
 /** Reads the persisted plugin list, dropping malformed records. */

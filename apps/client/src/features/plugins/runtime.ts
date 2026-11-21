@@ -76,6 +76,7 @@ export interface EditPluginInput {
   update: boolean;
 }
 
+const updates = new Map<string, symbol>();
 const loaded = new Map<string, LoadedPlugin>();
 const [settingsIds, setSettingsIds] = createSignal<string[]>([]);
 let runtimeDisposed = false;
@@ -104,9 +105,10 @@ function callHook(
   if (!hook) return;
 
   const result = hook.call(thisArg);
-  if (result instanceof Promise) {
-    result.catch((error: unknown) => console.error(`[yapmod] ${label} failed`, error));
-    return result;
+  if (result != null && typeof (result as PromiseLike<unknown>).then === 'function') {
+    const promise = Promise.resolve(result);
+    promise.catch((error: unknown) => console.error(`[yapmod] ${label} failed`, error));
+    return promise;
   }
 }
 
@@ -284,7 +286,7 @@ function activatePlugin(
     record.startup = callHook(asFunction(module.onLoad), module, `plugin ${id} onLoad`);
   } catch (error) {
     console.error(`[yapmod] plugin ${id} onLoad failed`, error);
-    stopPlugin(id);
+    stopLoadedPlugin(id);
     return false;
   }
 
@@ -454,6 +456,11 @@ export function registerClientPlugin(definition: unknown): boolean {
 
 /** Stops one running plugin without changing its persisted enabled flag. */
 export function stopPlugin(id: string): void {
+  updates.delete(id);
+  stopLoadedPlugin(id);
+}
+
+function stopLoadedPlugin(id: string): void {
   const plugin = loaded.get(id);
   if (!plugin) return;
 
@@ -480,6 +487,7 @@ export function stopPlugin(id: string): void {
  * removed or updated.
  */
 export function setPluginEnabled(id: string, enabled: boolean): boolean {
+  if (updates.has(id)) stopPlugin(id);
   if (isClientPluginId(id)) {
     if (enabled) {
       const started = startClientPlugin(id);
@@ -568,6 +576,10 @@ export async function editPlugin(id: string, input: EditPluginInput): Promise<St
   const existing = getPluginRecord(id);
   if (!existing) throw new Error('Plugin not found.');
 
+  if (updates.has(id)) {
+    stopPlugin(id);
+    if (existing.on) startPlugin(id);
+  }
   const wasOn = existing.on;
   let next: StoredPlugin;
 
@@ -601,7 +613,8 @@ export async function editPlugin(id: string, input: EditPluginInput): Promise<St
     };
   }
 
-  replacePluginRecord(id, next);
+  if (runtimeDisposed || getPluginRecord(id) !== existing) throw new Error('Edit superseded.');
+  replacePluginRecord(id, { ...next, pinned: existing.pinned });
   stopPlugin(id);
 
   if (wasOn && !startPlugin(id)) {
@@ -611,36 +624,127 @@ export async function editPlugin(id: string, input: EditPluginInput): Promise<St
   return getPluginRecord(id) ?? next;
 }
 
-/** Refreshes a remote plugin from its source folder. */
-export async function updatePlugin(id: string): Promise<'updated' | 'current'> {
-  const existing = getPluginRecord(id);
-  if (!existing) throw new Error('Plugin not found.');
-  if (existing.local) throw new Error('Local plugins cannot be updated.');
-  if (!existing.src) throw new Error('Plugin has no source URL.');
+export type UpdateResult = 'updated' | 'current' | 'failed' | 'rolled-back';
 
-  const remote = await fetchRemotePlugin(existing.src);
-  const changed =
-    remote.js !== existing.js ||
-    JSON.stringify(remote.manifest) !== JSON.stringify(existing.manifest);
+function snapshot(plugin: StoredPlugin): NonNullable<StoredPlugin['previous']> {
+  return { js: plugin.js, manifest: plugin.manifest, src: plugin.src, local: plugin.local };
+}
 
-  if (!changed) return 'current';
-
-  const wasRunning = loaded.has(id);
-
-  const next: StoredPlugin = {
-    ...existing,
-    src: remote.src,
-    js: remote.js,
-    manifest: remote.manifest,
-  };
-  replacePluginRecord(id, next);
-  stopPlugin(id);
-
-  if (wasRunning && !startPlugin(id)) {
-    setPluginEnabledRecord(id, false);
+/** Commit only after startup, retaining the saved source throughout the attempt. */
+async function replaceVersion(
+  existing: StoredPlugin,
+  next: StoredPlugin,
+  token: symbol,
+): Promise<UpdateResult> {
+  const { id } = existing;
+  const current = () =>
+    !runtimeDisposed && updates.get(id) === token && getPluginRecord(id) === existing;
+  if (!current()) return 'failed';
+  let candidate: LoadedPlugin | undefined;
+  let stopped = false;
+  try {
+    if (existing.on) {
+      const { api, disposers } = createPluginApi(id, next.manifest);
+      let module: Record<string, unknown>;
+      try {
+        const result = evaluatePluginSource(next.js, api, `yapmod://${id}`);
+        if (!isRecord(result)) throw new Error('Plugin code must return an object.');
+        module = result;
+      } catch (error) {
+        disposers.dispose();
+        throw error;
+      }
+      if (!current()) {
+        disposers.dispose();
+        return 'failed';
+      }
+      stopLoadedPlugin(id);
+      stopped = true;
+      const activated = activatePlugin(id, module, api, disposers);
+      candidate = loaded.get(id);
+      if (!activated || !candidate) throw new Error('Plugin failed to start.');
+      await candidate.startup;
+      if (!current() || loaded.get(id) !== candidate) return 'failed';
+    }
+    replacePluginRecord(id, { ...next, previous: snapshot(existing) });
+    return 'updated';
+  } catch (error) {
+    console.error(`[yapmod] could not update plugin ${id}`, error);
+    if (!current()) return 'failed';
+    if (stopped || (existing.on && !loaded.has(id))) {
+      stopLoadedPlugin(id);
+      if (!startPlugin(id)) {
+        setPluginEnabledRecord(id, false);
+        return 'failed';
+      }
+      const restored = loaded.get(id);
+      try {
+        await restored?.startup;
+        if (!current() || loaded.get(id) !== restored) return 'failed';
+      } catch {
+        if (current() && loaded.get(id) === restored) {
+          stopLoadedPlugin(id);
+          setPluginEnabledRecord(id, false);
+        }
+        return 'failed';
+      }
+    }
+    return 'rolled-back';
   }
+}
 
-  return 'updated';
+/** Pinned versions permit explicit manual updates, but never automatic changes. */
+export async function updatePlugin(id: string, automatic = false): Promise<UpdateResult> {
+  const existing = getPluginRecord(id);
+  if (runtimeDisposed || !existing || existing.local || !existing.src || updates.has(id))
+    return 'failed';
+  if (automatic && (existing.pinned || !existing.update || !existing.on)) return 'current';
+  const token = Symbol();
+  updates.set(id, token);
+  try {
+    const remote = await fetchRemotePlugin(existing.src);
+    if (runtimeDisposed || updates.get(id) !== token || getPluginRecord(id) !== existing)
+      return 'failed';
+    if (
+      remote.js === existing.js &&
+      JSON.stringify(remote.manifest) === JSON.stringify(existing.manifest)
+    )
+      return 'current';
+    return await replaceVersion(existing, { ...existing, ...remote }, token);
+  } catch (error) {
+    console.error(`[yapmod] could not fetch plugin ${id}`, error);
+    return 'failed';
+  } finally {
+    if (updates.get(id) === token) updates.delete(id);
+  }
+}
+
+/** Restoring also pins the selected version against the next automatic update. */
+export async function restorePlugin(id: string): Promise<UpdateResult> {
+  const existing = getPluginRecord(id);
+  if (runtimeDisposed || !existing?.previous || updates.has(id)) return 'failed';
+  const token = Symbol();
+  updates.set(id, token);
+  try {
+    return await replaceVersion(
+      existing,
+      { ...existing, ...existing.previous, pinned: true },
+      token,
+    );
+  } finally {
+    if (updates.get(id) === token) updates.delete(id);
+  }
+}
+
+export function setPluginPinned(id: string, pinned: boolean): void {
+  const existing = getPluginRecord(id);
+  if (!existing) return;
+  // Persist first so a storage failure leaves the running transaction intact.
+  replacePluginRecord(id, { ...existing, pinned });
+  if (updates.has(id)) {
+    stopPlugin(id);
+    if (existing.on) startPlugin(id);
+  }
 }
 
 /** Deletes a plugin and stops it once the removal has been saved. */
@@ -692,7 +796,10 @@ async function updateInstalledPlugins(): Promise<void> {
   await Promise.allSettled(
     plugins.map(async (plugin) => {
       try {
-        await updatePlugin(plugin.id);
+        const result = await updatePlugin(plugin.id, true);
+        if (result === 'failed' || result === 'rolled-back') {
+          showToast(`${plugin.manifest.name}: update ${result}.`, 'error');
+        }
       } catch (error) {
         console.error(`[yapmod] could not update plugin ${plugin.id}`, error);
       }
@@ -717,6 +824,7 @@ export function installPlugins(client: Client): void {
 
   client.onDispose(() => {
     runtimeDisposed = true;
+    updates.clear();
 
     for (const id of loaded.keys()) {
       try {
