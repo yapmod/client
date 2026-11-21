@@ -7,11 +7,12 @@ This section is for developers who want to contribute to the Yapmod client codeb
 
 ## How the codebase is organized
 
-Yapmod is a monorepo with three workspace packages and two apps:
+Yapmod is a monorepo with shared workspace packages and two apps:
 
 - **`packages/core`** contains the `createClient()` API. This is where lifecycle management and disposal logic live.
 - **`packages/types`** holds all the public type contracts. These are type only exports that define the plugin API surface.
 - **`packages/ui`** provides the SolidJS components and CSS that are bundled into the client. Every form control and layout component lives here.
+- **`packages/builder`** compiles plugins and provides the development control page.
 - **`apps/client`** is the composition root that bootstraps the final IIFE bundle. This is where everything comes together.
 - **`apps/docs`** is this documentation site, built with Next.js and Fumadocs.
 
@@ -20,10 +21,26 @@ The workspace packages export raw `.ts` files with no build step. In the client,
 ## Key conventions to follow
 
 - **Use SolidJS only** in `apps/client` and `packages/ui`. Never import React or Fumadocs in these packages.
-- **Always use `@yapmod/ui` for form controls**. Never hand write `<input>`, `<select>`, or `<textarea>` elements in the client. Use the provided components instead.
+- **Always use `@yapmod/ui` for form controls**. Use native file inputs only where a file picker is needed. Use the provided components instead.
 - **Manage state with module level signals**. Define signals at the module level and export getter functions and actions from the same module. Persist state to versioned `localStorage` keys.
 - **Reuse Yapin's CSS classes** for styling. Use classes like `.settings-main`, `.ss2-card`, and `.hint`. Add `--yp-*` fallback CSS variables where needed.
 - **Handle errors gracefully**. Catch errors locally, log them with a `[yapmod]` prefix, and surface them to the user with `showToast(..., 'error')`.
+
+## Run the project
+
+From the repository root, use Node.js 22 or later and pnpm 12:
+
+```bash
+pnpm install
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm format:check
+```
+
+The client build produces `apps/client/dist/yapmod-client.js`. Inject it into Yapin to test; call `YapmodClient.dispose()` before injecting a replacement. `pnpm dev` watches the bundle but does not serve a client webpage.
+
+For documentation changes, run `pnpm docs` locally and `pnpm docs:build` before submitting. Write guides around a task, give examples that match the runtime, and link to references for exhaustive contracts. Keep Solid in the client and React in the docs application.
 
 ## What comes next
 

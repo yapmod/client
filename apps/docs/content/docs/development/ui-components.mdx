@@ -18,7 +18,7 @@ When you use `@yapmod/builder` (the `yapmod build` and `yapmod dev` commands), y
 ```tsx
 import { Switch, Input, Select } from '@yapmod/ui';
 
-export default function (yapmod) {
+export default function () {
   // Components work normally. The builder rewrites the imports at build time.
 }
 ```
@@ -40,7 +40,7 @@ All of these imports are rewritten by the builder to use the shared instances (`
 If you write your plugin as a raw JavaScript file without using the builder, you access components directly through the `yapmod.ui` object:
 
 ```js
-export default function (yapmod) {
+export default function () {
   const { Switch, Input, Select } = yapmod.ui;
 
   // Use SolidJS through yapmod.solid
@@ -350,16 +350,10 @@ import {
   Hint,
 } from '@yapmod/ui';
 
-export default function (yapmod) {
+export default function () {
   return {
-    manifest: {
-      name: 'My Plugin',
-      author: 'Me',
-      description: 'Demonstrates UI components',
-      version: '1.0.0',
-    },
-    start(api) {
-      api.settings.registerSection({
+    onLoad() {
+      yapmod.settings.registerSection({
         id: 'my-plugin',
         label: 'My Plugin',
         icon: 'settings',
@@ -371,7 +365,7 @@ export default function (yapmod) {
           return (
             <SettingsPage title="My Plugin" description="Configure my plugin settings">
               <Section label="General">
-                <SettingRow label="Enabled" hint="Toggle the plugin on or off">
+                <SettingRow label="Enabled" hint="Example local toggle">
                   <Switch checked={enabled()} onChange={setEnabled} />
                 </SettingRow>
 
@@ -399,8 +393,13 @@ export default function (yapmod) {
                 <SettingText label="Version" hint="Current version" value="v1.0.0" />
               </Section>
 
-              <div style={{ marginTop: '1rem' }}>
-                <Button variant="primary">Save</Button>
+              <div style={{ 'margin-top': '1rem' }}>
+                <Button
+                  variant="primary"
+                  onClick={() => yapmod.ui.showToast('Preview settings applied')}
+                >
+                  Preview
+                </Button>
               </div>
             </SettingsPage>
           );
@@ -410,5 +409,7 @@ export default function (yapmod) {
   };
 }
 ```
+
+This example demonstrates layout and in-memory controls; it does not change the host theme or persist preferences. Follow [Settings and storage](/docs/development/settings-and-storage) to connect controls to saved data.
 
 The builder compiles all of this into a single `.js` file where every `import` statement is rewritten to use the shared `yapmod` API. You do not need to bundle SolidJS or `@yapmod/ui` yourself.

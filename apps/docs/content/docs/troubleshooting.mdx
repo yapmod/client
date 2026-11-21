@@ -1,0 +1,50 @@
+---
+title: Troubleshooting
+description: Diagnose missing UI, failed plugin loads, and disconnected development sessions.
+---
+
+Start with the layer that is missing: the client, the installed customization, or the development connection. Refreshing Yapin removes the running client even though its saved themes and plugins remain in this browser.
+
+## The Yapmod settings group is missing
+
+Run `globalThis.YapmodClient?.state` in the Yapin tab's console. `"ready"` means the client started. `undefined` means there is no client handle in that page: run your saved snippet again, then reopen settings.
+
+When replacing the client bundle, call `YapmodClient.dispose()` before running the new snippet. Duplicate injection deliberately does nothing. Make sure you are running the snippet in the Yapin page rather than a different tab or frame. See [Get started](/docs/get-started) for the installation steps.
+
+## A theme is enabled but nothing changed
+
+Disable other themes, confirm your CSS targets the current host, and re-upload with the same filename. Begin with a visible token such as `--accent` before adding specific selectors. External `@import` stylesheets may be blocked; keep CSS in the file itself. [Create a theme](/docs/themes) includes a minimal example.
+
+## A plugin appears in the list but does not run
+
+Check its enable switch. Then inspect the console for `[yapmod]` errors and use `yapmod.log` inside the plugin to trace startup. Upload the generated `plugin.js`, not the TypeScript entry point. The object must use `onLoad` and `onUnload`; `start` and `stop` are not lifecycle hooks.
+
+For a missing-method error, update the client or guard the optional API. New features can be added while `apiVersion` stays at `1`. For a parsing error, rebuild with the Yapmod builder so the file has the required expression format.
+
+## Development changes do not appear
+
+1. Confirm `pnpm dev starter` is still running and its latest build succeeded. Replace `starter` with your actual directory name if you renamed it.
+2. Open the control page URL printed in the terminal. Keep that tab open.
+3. Use its **Open Yapin** button. If you refreshed or opened a new Yapin tab, load Yapmod there too.
+4. Enable **Yapmod → Settings → Enable hot reload** in the target tab.
+5. Check for the plugin's **Dev** badge. A separately installed copy is not the development instance.
+
+The connection uses `postMessage` from loopback origins, not a direct request from Yapin to your dev server. Use the local control-page address. If compilation fails, fix the terminal error first; no working build is available to send.
+
+## UI is duplicated or survives disable
+
+Disable any installed copy while working on the development version. If duplication remains, check that registrations happen once in `onLoad`, not inside a repeatedly running effect. Timers, browser listeners, and manually inserted nodes need explicit cleanup. Follow [Lifecycle and cleanup](/docs/development/how-plugins-work).
+
+## A preference does not survive reload
+
+Use a top-level assignment to `yapmod.storage`, or call `flushStorage()` after a nested mutation. Validate existing data before applying defaults. Check whether you switched from a `dev:` plugin to an installed plugin: different IDs have different storage. Browser profiles and devices do not synchronize these values.
+
+## A URL install or update fails
+
+Use a plugin import URL that resolves to `plugin.json` and `plugin.js`, not the catalog's HTML page. Yapin restricts network destinations; a URL that opens in a browser tab is not necessarily fetchable from Yapin. The [distribution guide](/docs/development/distribution) describes the GitHub Raw layout.
+
+If an update rolls back, the previous source was retained after the candidate failed. Inspect the startup error before retrying. A disabled plugin can save an update without executing it, so enable it to verify startup too.
+
+## Report a reproducible problem
+
+Include your client and plugin versions, browser, the action that failed, the expected result, and the relevant console error. Say whether it reproduces with other plugins and themes disabled. Remove message content and credentials from logs before posting them in the [issue tracker](https://github.com/yapmod/client/issues).

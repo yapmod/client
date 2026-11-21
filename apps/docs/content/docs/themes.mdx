@@ -1,0 +1,66 @@
+---
+title: Create a theme
+description: Use Yapin's color tokens to make a small, maintainable CSS theme.
+---
+
+A theme is a CSS file applied to the Yapin page. It is a good fit for colors, spacing, and typography. If your idea needs a button that performs an action or a setting that stores data, use a [plugin](/docs/development) instead.
+
+## Start with a few color tokens
+
+Create a file named `rose-accent.css` with this content:
+
+```css
+/* A small accent theme; keep Yapin's existing light and dark surfaces. */
+:root {
+  --accent: #dd5a8c;
+  --accent-hover: #c74778;
+  --accent-soft: #dd5a8c29;
+  --accent-fill: #aa3863;
+  --accent-fill-hover: #922d54;
+  --on-accent: #ffffff;
+}
+```
+
+Yapin and Yapmod controls read these variables. Changing the tokens lets existing components keep their hover and pressed states without restyling every button. `--accent` is the highlight; `--accent-fill` is the stronger background used behind button labels.
+
+## Load and revise it
+
+In **Yapmod → Themes → Add Theme → Upload CSS**, select the file and confirm. Enable the theme, then inspect buttons, settings, and a conversation. Edit the CSS and upload it again with the **same filename** to update the installed copy. Theme filenames define identity; a different filename creates a different theme.
+
+Disable other themes while testing. When multiple stylesheets change the same property, CSS specificity and source order determine the result, which can hide the effect of your edit.
+
+## Extend the palette carefully
+
+| Token                                    | What it controls                      |
+| ---------------------------------------- | ------------------------------------- |
+| `--bg-main`                              | Main page surface.                    |
+| `--bg-side`                              | Sidebar and card surfaces.            |
+| `--bg-elev`, `--bg-float`                | Elevated surfaces and floating menus. |
+| `--bg-hover`, `--bg-active`              | Hovered and selected surfaces.        |
+| `--bg-input`, `--bg-rail`                | Input and rail surfaces.              |
+| `--text`, `--text-muted`, `--text-faint` | Primary and secondary text.           |
+| `--border`                               | Separation between surfaces.          |
+
+Changing only the accent is a useful first step because the host keeps its light/dark contrast. If you replace surfaces, update their text and border colors together and scope mode-specific rules to the host's theme state. Inspect the current page rather than assuming every host selector is a permanent contract.
+
+## Style a specific feature
+
+Prefer a small, scoped selector over a broad rule such as `button { ... }`, which would affect unrelated controls. For plugin-owned UI, prefix classes with your plugin name and use host tokens with fallbacks:
+
+```css
+.my-plugin-note {
+  color: var(--text-muted, #a6a7b4);
+  background: var(--bg-side, #1b1c21);
+  border: 1px solid var(--border, #ffffff12);
+  border-radius: 10px;
+  padding: 12px;
+}
+```
+
+A plugin can install this CSS with `yapmod.ui.injectCss`; Yapmod removes that stylesheet when the plugin stops. A standalone theme is enabled and disabled separately in Themes.
+
+## Check before sharing
+
+Try both light and dark mode, keyboard focus, disabled controls, menus, and a narrow window. Check that muted labels remain legible and selected controls are distinguishable. Disable the theme and confirm the host appearance returns.
+
+Share the CSS file with its intended filename and any light/dark assumptions. External stylesheet links are blocked by Yapin's CSP; keep the theme self-contained rather than relying on remote `@import` rules.

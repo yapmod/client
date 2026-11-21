@@ -1,0 +1,99 @@
+---
+title: Settings and storage
+description: Add a persistent preference to the character counter with shared Solid controls.
+---
+
+A setting needs two things: a control the user can change and a value that survives the next reload. We will extend [the character counter](/docs/development/first-plugin) with a **Show character limit** switch.
+
+## Keep the value with the plugin
+
+`yapmod.storage` is a per-plugin object backed by browser storage. Its values have type `unknown` because an older version of your plugin, or a user editing browser data, may have written a different shape. Check the value before using it; a TypeScript cast alone does not validate saved data.
+
+Top-level assignments persist automatically and notify reactive readers. For a simple preference, store a boolean directly. For structured data, prefer replacing a whole top-level value. Nested mutations need `flushStorage()` to persist and do not provide the same top-level reactive update.
+
+## Add the settings page
+
+Replace the tutorial entry point with this complete version:
+
+```tsx
+import { Section, SettingRow, SettingsPage, Switch } from '@yapmod/ui';
+
+export default function () {
+  return {
+    onLoad() {
+      if (typeof yapmod.storage.showLimit !== 'boolean') {
+        yapmod.storage.showLimit = true;
+      }
+
+      const showLimit = () => yapmod.storage.showLimit === true;
+
+      yapmod.composer.registerBlock((composer) => (
+        <span
+          style={{
+            color:
+              showLimit() && composer.maxLength !== null && composer.length >= composer.maxLength
+                ? 'var(--danger, #c44)'
+                : undefined,
+          }}
+        >
+          {composer.length}
+          {showLimit() && composer.maxLength !== null ? ` / ${composer.maxLength}` : ' characters'}
+        </span>
+      ));
+
+      yapmod.settings.registerSection({
+        id: 'counter',
+        label: 'Character counter',
+        icon: 'settings',
+        render: () => (
+          <SettingsPage
+            title="Character counter"
+            description="Choose how your draft count appears."
+          >
+            <Section label="Display">
+              <SettingRow
+                label="Show character limit"
+                hint="Include the maximum when Yapin provides one."
+              >
+                <Switch
+                  aria-label="Show character limit"
+                  checked={showLimit()}
+                  onChange={(checked) => {
+                    yapmod.storage.showLimit = checked;
+                  }}
+                />
+              </SettingRow>
+            </Section>
+          </SettingsPage>
+        ),
+      });
+    },
+  };
+}
+```
+
+This version uses `registerBlock` instead of `registerStatus`: the text formatter receives measurement snapshots, while a Solid block can react to both the measurements and the stored preference. Keep `composer.length` and `composer.maxLength` reads inside JSX so they stay reactive.
+
+The builder rewrites `@yapmod/ui` imports to the controls supplied by the client. Those controls use Yapin's styling and the shared Solid runtime, so your settings fit the surrounding application.
+
+The section ID is local to your plugin. Keep it stable between versions. `render` creates the view when needed; the registration and its mounted content are removed when the plugin stops.
+
+## Why the preference is a function
+
+`showLimit()` reads storage each time a reactive consumer runs. Reading it once into `const showLimit = yapmod.storage.showLimit` would capture a snapshot. The switch and composer block need the current value, not the value from startup.
+
+This is the same principle as a Solid signal: call the getter inside JSX, an effect, or another reactive callback. You do not need a second signal that copies this stored preference.
+
+## Verify the complete flow
+
+Open **Yapmod → Character counter**, turn the switch off, and return to a composer. It should show the count without a limit. Disable and re-enable the plugin: the preference should remain off. Refresh Yapin, load Yapmod again, and check it once more.
+
+If the composer has no native limit, both settings produce the same label. Test the switch's saved value in the settings page even when that is the case.
+
+Development instances have a `dev:` identity and do not necessarily share storage with an installed release. Storage follows the plugin ID, not its display name. Removing a plugin keeps its stored data; reinstalling under a different identity does not migrate it.
+
+## When the shape of your data changes
+
+For a larger configuration, store a schema version alongside validated values and migrate older shapes in `onLoad`. Keep the migration small and repeatable. Do not overwrite every preference with defaults on each startup, or users will lose their choices after every hot reload.
+
+Next, read [Lifecycle and cleanup](/docs/development/how-plugins-work) before adding timers, listeners, or asynchronous work. The [UI component reference](/docs/development/ui-components) has the remaining controls and their props.

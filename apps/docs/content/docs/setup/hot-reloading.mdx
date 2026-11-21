@@ -19,7 +19,7 @@ Setting up hot reloading takes just a few steps:
 3. The dev server will print a control page URL, usually `http://127.0.0.1:5173`. Open that URL in your browser, then click the **Open Yapin** button to connect.
 4. Keep that control page tab open while you work. Every time you save a file, the builder recompiles your plugin and pushes the update into Yapin automatically.
 
-That is all there is to it. You are now in hot reload mode.
+If **Open Yapin** creates a new tab, load Yapmod in that tab too. Confirm that the plugin has a **Dev** badge, then make a visible change using [the character counter tutorial](/docs/development/first-plugin).
 
 ### Available options
 
@@ -42,7 +42,7 @@ The builder watches all your source files for changes. When you save a file, it 
 
 Once Yapmod receives the new code, it evaluates it and restarts your plugin in place. Your plugin's storage is preserved, so any data you had saved remains intact.
 
-One important detail: if you make a mistake and save broken code, your running plugin is not affected. The new code is evaluated before the old one is stopped, so a syntax error simply leaves your working version running. You can fix the error and save again without any disruption.
+A compilation error produces no new bundle, so the running plugin stays in place. Evaluation errors are also handled before replacement. The new code is evaluated before the old one is stopped, so a syntax error simply leaves your working version running. Startup failures are a separate stage; see [Lifecycle and cleanup](/docs/development/how-plugins-work) for what an update can and cannot restore.
 
 <Callout type="info">
   Plugins running in dev mode appear with a `dev:` prefix in their ID and show a **Dev** badge. If

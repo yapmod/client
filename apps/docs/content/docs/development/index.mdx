@@ -1,41 +1,45 @@
 ---
-title: Plugin Development Overview
-description: Learn how to build Yapmod plugins, from fundamentals to the API reference.
+title: Build a plugin
+description: Turn a small improvement to Yapin into a plugin you can use and share.
 ---
 
-Welcome to the development section. This is where we dive into everything you need to know about building Yapmod plugins, from the basic concepts to the complete API reference.
+A plugin is a small program that runs while Yapmod is active. It can add a composer tool, show information beside a draft, register a settings page, or respond to the selected conversation. Yapmod supplies the integration points and shared UI; your code supplies the behavior.
 
-## What you will learn
+## Start with something you can see
 
-Here is what we will cover in this section:
+The first tutorial builds a **draft character counter**. It needs no server or DOM selectors, and you can verify it immediately by typing in a conversation. The next guide adds a saved setting to the same plugin.
 
-- **Fundamentals**. The skills and tools you should be comfortable with before writing a plugin, including JavaScript, TypeScript, and browser developer tools.
-- **How plugins work**. The plugin lifecycle from start to stop, how Yapmod loads and runs your code, and how the evaluation process works.
-- **The Plugin API**. Every method and property available to your plugin, from reactive storage and DOM observation to UI helpers and toast notifications.
-- **UI Components**. All the built in SolidJS components like Switch, Input, and Select, plus how to use them with the builder for clean import syntax.
-- **Plugin types**. The difference between plugins you install yourself and plugins that are built into the Yapmod client.
-- **Reverse engineering**. How to inspect the Yapin interface, find the right DOM elements, and understand the patterns you will work with.
-- **Distribution**. How plugins are shared and loaded, and what Yapmod does not provide in terms of a marketplace or discovery system.
+<Cards>
+  <Card
+    title="1. Set up your project"
+    href="/docs/setup"
+    description="Install the tools, clone the starter, and connect it to Yapin."
+  />
+  <Card
+    title="2. Build a character counter"
+    href="/docs/development/first-plugin"
+    description="Write a complete plugin and check its behavior in the app."
+  />
+  <Card
+    title="3. Add a saved setting"
+    href="/docs/development/settings-and-storage"
+    description="Use Solid components and persistent storage to make it your own."
+  />
+  <Card
+    title="4. Prepare it for sharing"
+    href="/docs/development/distribution"
+    description="Build a release and give other people an import URL."
+  />
+</Cards>
 
-## Two ways to build a plugin
+## Understand the pieces
 
-There are two approaches to building a Yapmod plugin:
+Your **source** exports a function returning lifecycle hooks. The **builder** compiles TypeScript and Solid JSX into a single JavaScript expression. The **client** evaluates that expression and calls `onLoad` when the plugin starts. Inside the plugin, `yapmod` is the API for that particular instance; it owns registrations and storage.
 
-1. **Using the starter repo** (this is what we recommend). You clone a pre configured repository that already has the Yapmod plugin builder set up. This lets you write TypeScript and SolidJS the natural way, and produces a ready to upload plugin with a single command.
-2. **Writing it manually**. You write your plugin as a raw JavaScript expression that returns the plugin object, without any build tool. This works, but you will need to handle bundling, compilation, and formatting yourself.
+Plugin metadata comes from the installation form or remote `plugin.json`. In the starter, maintain it in the plugin's `package.json`. You do not need to put a manifest in the object returned by your source function.
 
-We recommend the starter repo approach for almost everyone. The manual approach exists for reference, but the builder tool and built in API give you a much better development experience.
+## Move on to your own idea
 
-## Why use the built in Plugin API
+[Choose an integration](/docs/development/choosing-an-api) before inspecting Yapin's DOM. Built-in registrations handle host replacements and remove their UI when the plugin stops. If you need something outside those integrations, [working with the host DOM](/docs/development/reverse-engineering) explains the extra responsibilities.
 
-You could technically write a plugin that does everything by manually inspecting and manipulating the DOM. But Yapmod provides a Plugin API that makes your life much easier. The API methods are:
-
-- **More performant**, because they are optimized and integrated with Yapmod internal systems
-- **Easier to use**, because reactive storage, DOM observation, and UI helpers are all provided out of the box
-- **More reliable**, because they handle cleanup and disposal automatically when your plugin stops
-
-Use the built in API whenever you can. If you are ever unsure how to use a particular method, look at the existing plugin code for examples. The API is designed to be the foundation your plugins are built on.
-
-## Where to start
-
-If you are new to this, begin with [Fundamentals](/docs/development/fundamentals) to make sure you have the right background. Then move on to [How Plugins Work](/docs/development/how-plugins-work) to understand the plugin lifecycle before we dive into the API details.
+You only need basic JavaScript to begin. [Core concepts](/docs/development/fundamentals) introduces the small amount of Solid reactivity used in these guides. Keep the [API reference](/docs/development/plugin-api) nearby for method signatures; it is a lookup resource, not a prerequisite for the tutorial.

@@ -1,13 +1,5 @@
 {
-  "title": "Setup",
+  "title": "Development setup",
   "icon": "Wrench",
-  "pages": [
-    "---Getting Started---",
-    "index",
-    "prerequisites",
-    "starter-repo",
-    "---Building---",
-    "building",
-    "hot-reloading"
-  ]
+  "pages": ["index", "prerequisites", "starter-repo", "hot-reloading", "building"]
 }

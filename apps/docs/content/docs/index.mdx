@@ -1,28 +1,43 @@
 ---
-title: Introduction
-description: Learn how to build Yapmod plugins for the Yapin chat app.
+title: Make Yapin your own
+description: Install Yapmod, shape your workspace, and build the features you wish were there.
 ---
 
-Welcome. If you are here, you probably want to learn how to create plugins for Yapmod, and you have come to the right place.
+Yapmod adds themes, plugins, and extra settings to Yapin. It runs inside the Yapin page: your conversations stay in the same app, while your customizations live in this browser.
 
-To load the client and try a theme in Yapin, follow [Get started with Yapmod](/docs/get-started). This introduction and the developer guides below cover **building plugins**.
+## What would you like to do?
 
-## What you will learn
+<Cards>
+  <Card
+    title="Start using Yapmod"
+    href="/docs/get-started"
+    description="Load the client, open its settings, and apply your first theme."
+  />
+  <Card
+    title="Create a theme"
+    href="/docs/themes"
+    description="Change colors with a small stylesheet and the same tokens Yapin uses."
+  />
+  <Card
+    title="Build your first plugin"
+    href="/docs/development/first-plugin"
+    description="Add a working character counter, then learn how to make it configurable."
+  />
+  <Card
+    title="Fix a problem"
+    href="/docs/troubleshooting"
+    description="Find out why a client, theme, plugin, or development connection is missing."
+  />
+</Cards>
 
-Think of this documentation as a step by step guide that takes you from knowing nothing about Yapmod plugins to having your first one running. Here is what we will cover together:
+## Themes change appearance. Plugins add behavior.
 
-- **How to build a plugin** and what a plugin looks like. You will learn about the plugin object, its structure, and what each property does.
-- **The full API reference** so you know every tool and method available to your plugin while it runs.
-- **How Yapmod works under the hood**. You will see how Yapmod injects itself into the Yapin interface, customizes the DOM, and manages the plugin runtime behind the scenes.
-- **How to share your plugin** with others, since Yapmod does not have a built in marketplace.
-- **How to reverse engineer Yapin** so you can inspect the website, find the right DOM elements and hooks, and understand the patterns you will work with.
+Use a **theme** for colors, spacing, and other CSS changes. Use a **plugin** for actions, settings, or information that changes as you use Yapin. A character counter needs a plugin; a different accent color only needs a theme.
 
-## What you should already know
+You choose what to install. There is no built-in marketplace. Plugins run as trusted code in the page, so install code from authors you trust. Themes and plugin data are saved locally; they do not automatically follow you to another browser or device.
 
-To get the most out of this guide, you should feel comfortable with:
+## A path from idea to working plugin
 
-- **JavaScript or TypeScript**. You do not need to be an expert, but you should understand the basics like variables, functions, and how modules work.
-- **Basic DOM concepts**. Knowing what the DOM is and how elements are structured will help a lot.
-- **Browser extensions or content scripts**. This is helpful to know about, but not required. We will explain things as we go.
+Start with [the development setup](/docs/setup), then follow [Your first plugin](/docs/development/first-plugin). The tutorial explains each part as you build it. Continue with [settings and storage](/docs/development/settings-and-storage) to give the counter a saved preference, and [lifecycle and cleanup](/docs/development/how-plugins-work) to understand what happens when it is disabled or reloaded.
 
-If you have these basics down, you are ready to start. Head over to the [Setup guide](/docs/setup) to get your development environment ready, and then move on to [Plugin Development](/docs/development) where we will build your first plugin together.
+Already building something? The [API reference](/docs/development/plugin-api) is organized for looking up contracts and edge cases. [Choose an integration](/docs/development/choosing-an-api) helps you decide which API fits your idea before you start.

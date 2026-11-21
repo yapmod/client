@@ -3,6 +3,8 @@ title: Current Call
 description: Observe and control the local user's current Yapin voice call.
 ---
 
+Use this API for a call indicator, a mute control, or an integration that follows the local user’s call. Subscribe when the UI should stay up to date; use a one-time read for an action. Keep the returned snapshot when changing call state so a delayed action cannot accidentally target a different call.
+
 The `yapmod.calls` API gives community and desktop client plugins access to the current
 voice call. It wraps the host discovery approach used by Desktop's Yaplay integration.
 
