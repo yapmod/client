@@ -1,5 +1,6 @@
 {
   "name": "yapmod-client",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +15,6 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "changelogen": "^0.5.7",
     "husky": "^9.1.7",
     "oxfmt": "^0.78.0",
     "oxlint": "^1.93.0",

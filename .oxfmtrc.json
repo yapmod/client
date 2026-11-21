@@ -5,5 +5,13 @@
   "singleQuote": true,
   "semi": true,
   "trailingComma": "all",
-  "ignorePatterns": ["dist", ".astro", "pnpm-lock.yaml", "coverage"]
+  "ignorePatterns": [
+    "dist",
+    ".astro",
+    "pnpm-lock.yaml",
+    "coverage",
+    "apps/client/CHANGELOG.md",
+    "packages/builder/CHANGELOG.md",
+    "packages/types/CHANGELOG.md"
+  ]
 }

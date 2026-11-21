@@ -1,73 +1,57 @@
-name: Publish to npm
+name: Publish @yapmod/builder to npm
 
+# Preserve this filename: npm trusted publishing is bound to the workflow name.
 on:
   workflow_dispatch:
     inputs:
-      package:
-        description: 'Package to publish'
+      tag:
+        description: 'Existing release tag (builder-v1.4.0); also used to retry publishing'
         required: true
-        default: 'builder'
-        type: choice
-        options:
-          - builder
-      version:
-        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.3.0)'
-        required: true
-        default: 'patch'
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: publish-builder
+  cancel-in-progress: false
 
 jobs:
-  publish-builder:
-    if: ${{ github.event.inputs.package == 'builder' }}
+  publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write # Required for npm Trusted Publisher (OIDC)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
     steps:
+      - name: Validate tag format
+        run: '[[ "$RELEASE_TAG" =~ ^builder-v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
       - uses: actions/checkout@v4
         with:
+          ref: refs/tags/${{ inputs.tag }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Git user config
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
-
-      - run: npm install -g npm@latest
-
+      - name: Verify approved source and version
+        run: node .github/scripts/release.mjs verify builder
       - run: pnpm install --frozen-lockfile
-
-      - name: Build @yapmod/builder
-        run: pnpm --filter @yapmod/builder build
-
-      - name: Typecheck
-        run: pnpm --filter @yapmod/builder typecheck
-
-      - name: Generate changelog & bump version
-        run: pnpm changelogen --bump ${{ github.event.inputs.version }}
-        working-directory: packages/builder
-        env:
-          HUSKY: 0
-
-      - name: Commit & push changes
-        run: |
-          git add .
-          git commit -m "chore(builder): bump version for npm publish [skip ci]"
-          git push origin HEAD:main
-        env:
-          HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm --filter @yapmod/builder build
+      - name: Check npm for this version
+        id: registry
+        run: node .github/scripts/release.mjs npm-status builder
       - name: Publish to npm
+        if: steps.registry.outputs.publish == 'true'
         working-directory: packages/builder
         run: |
           unset NODE_AUTH_TOKEN
           npm publish --provenance --access public
+      - name: Publish GitHub release
+        run: node .github/scripts/release.mjs finalize builder
