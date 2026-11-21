@@ -133,3 +133,18 @@ export function composerToolContract(api: YapmodPluginApi): () => void {
     },
   });
 }
+
+export function commandsContract(api: YapmodPluginApi): () => void {
+  const remove: () => void = api.commands.register({
+    name: 'hello',
+    description: 'Show a greeting',
+    async execute({ args, signal }) {
+      const text: string = args;
+      const aborted: boolean = signal.aborted;
+      if (!aborted) api.ui.showToast(text);
+    },
+  });
+  // @ts-expect-error Commands require an execute callback.
+  api.commands.register({ name: 'missing', description: 'Missing callback' });
+  return remove;
+}
