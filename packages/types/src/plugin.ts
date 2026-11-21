@@ -207,6 +207,16 @@ export type ComposerInsertResult =
 
 /** A snapshot of the composer where the user activated a tool. */
 export interface ComposerToolContext extends ComposerStatusState {
+  /** Immutable activation snapshot, never a live draft reader. */
+  readonly draft: string;
+  /** UTF-16 offsets, matching textarea selection and String.slice. */
+  readonly selection: { readonly start: number; readonly end: number };
+  /** Yapin conversation ID (also used for DMs/groups); null when unverified. */
+  readonly channelId: string | null;
+  /** Replace the captured selection using the same guards as insertText. */
+  replaceSelection(text: string): ComposerInsertResult;
+  /** Replace the entire captured draft using the same guards as insertText. */
+  replaceDraft(text: string): ComposerInsertResult;
   /** Return keyboard focus to this input while it remains mounted. */
   focus(): void;
   /** Replace the captured selection, preserving surrounding text. Never sends a message.
@@ -237,6 +247,8 @@ export interface PluginComposer {
 /** The API object every started plugin receives, community or client-registered. */
 /** Arguments are raw text after the command name, trimmed at both ends. */
 export interface CommandContext {
+  /** Captured Yapin conversation ID (including DMs/groups); null when unverified. */
+  readonly channelId: string | null;
   readonly args: string;
   /** Aborted when the command is unregistered or the plugin stops. */
   readonly signal: AbortSignal;

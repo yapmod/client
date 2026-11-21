@@ -1,6 +1,6 @@
 ---
 title: Composer tools
-description: Add an accessible action to each message composer and read the originating draft length.
+description: Add composer actions with captured draft, selection and conversation context.
 ---
 
 Use `yapmod.composer.registerTool` in a plugin’s `onLoad` hook. Yapmod mounts a native button beside the composer toolbar and removes it when the plugin stops. Plugins targeting older clients can check `typeof yapmod.composer?.registerTool === 'function'` before registration.
@@ -71,3 +71,36 @@ A changed draft is rejected rather than overwritten or silently appended to. Act
 Contexts expire when their tool is removed or replaced, the client is disposed, the input or an ancestor is removed or moved, or navigation occurs (including a switch away and back). They never fall back to another textarea. `focus()` also does nothing for a stale context. Navigation invalidation is conservative: even a history update on the same page requires a fresh activation.
 
 For clients predating this API, check `typeof context.insertText === 'function'` and show an upgrade message if it is unavailable.
+
+## Rewrite a selection or apply a template
+
+`draft` is the immutable text at activation. `selection.start` and `selection.end` are UTF-16 offsets into that text (an emoji can occupy two code units). `replaceSelection(text)` has the same behavior as `insertText(text)`; `replaceDraft(text)` replaces the entire captured draft. Both use every insertion guard described above, including after asynchronous work. They preserve host attachments and reply state and never send messages.
+
+```ts
+// A local rewrite of just the selected text.
+const selected = context.draft.slice(context.selection.start, context.selection.end);
+const result = context.replaceSelection(selected.toUpperCase());
+if (!result.ok) yapmod.ui.showToast(`Rewrite failed: ${result.reason}`, 'error');
+
+// In a separate tool activation, build a whole-draft template.
+const templateResult = context.replaceDraft(`Summary:\n${context.draft}\n\nNext steps:\n`);
+if (!templateResult.ok) yapmod.ui.showToast(`Template failed: ${templateResult.reason}`, 'error');
+```
+
+`channelId` identifies the originating Yapin conversation, including server channels, DMs and group conversations. It is captured, not reactive. Yapmod verifies the host composer's draft key against its enclosing conversation; it does not infer identity from URLs, labels or the globally selected channel. Unsupported or ambiguous host contexts return `null`. Do not interpret `null` as a shared conversation or use it as a storage key. No messages, channel metadata or member information are exposed.
+
+Slash commands receive the same captured `channelId` alongside `args` and `signal`:
+
+```ts
+yapmod.commands.register({
+  name: 'template',
+  description: 'Remember a template for this conversation',
+  execute({ args, channelId, signal }) {
+    if (signal.aborted || channelId == null) return;
+    yapmod.storage[`template:${channelId}`] = args;
+    yapmod.ui.showToast('Template saved for this conversation.');
+  },
+});
+```
+
+Commands consume and clear their invocation through the existing host integration before execution; they do not send the slash text. The command context does not grant draft editing. For older clients, feature-detect `replaceDraft` and treat an absent `channelId` like `null`.

@@ -1,4 +1,5 @@
 import type { PluginCommand } from '@yapmod/types';
+import { composerChannelId, composerProps, expando, record } from './composer-context';
 import { showToast } from '../../lib/toast';
 
 interface Registration {
@@ -20,32 +21,6 @@ const selector = '.composer textarea';
 const registrations = new Map<string, Registration>();
 const patches = new Map<RecordValue, Patch>();
 let stopWatching: (() => void) | undefined;
-
-function record(value: unknown): value is RecordValue {
-  return typeof value === 'object' && value !== null;
-}
-
-function expando(element: Element, prefix: string): unknown {
-  const key = Object.keys(element).find((name) => name.startsWith(prefix));
-  return key ? (element as unknown as RecordValue)[key] : undefined;
-}
-
-// Yapin has no public command extension point. Keep this structural, bounded adapter
-// here (no React imports or bundle module IDs), refresh it after DOM changes, and restore
-// only properties we still own. Event interception remains independent of suggestions.
-function composerProps(input: HTMLTextAreaElement): RecordValue[] {
-  let fiber = expando(input, '__reactFiber$');
-  const result: RecordValue[] = [];
-  for (let depth = 0; record(fiber) && depth < 30; depth += 1, fiber = fiber.return) {
-    for (const node of [fiber, fiber.alternate]) {
-      if (!record(node) || !record(node.memoizedProps)) continue;
-      const props = node.memoizedProps;
-      if (typeof props.onSend === 'function' && 'draftKey' in props) result.push(props);
-    }
-    if (result.length) break;
-  }
-  return result;
-}
 
 function nativeCommands(props: RecordValue): unknown[] {
   const provider = patches.has(props) ? patches.get(props)?.original : props.commands;
@@ -157,6 +132,7 @@ function submit(input: HTMLTextAreaElement, event: Event): void {
     showToast(`/${entry.command.name} is still running.`, 'error');
     return;
   }
+  const channelId = composerChannelId(input);
   try {
     const props = composerProps(input)[0];
     if (!props) throw new Error('Unsupported composer.');
@@ -179,7 +155,7 @@ function submit(input: HTMLTextAreaElement, event: Event): void {
   entry.busy = true;
   void (async () => {
     try {
-      await entry.command.execute({ args, signal: entry.controller.signal });
+      await entry.command.execute({ args, channelId, signal: entry.controller.signal });
     } catch (error) {
       console.error(`[yapmod] command /${entry.command.name} failed (${entry.pluginId})`, error);
       if (!entry.controller.signal.aborted)
