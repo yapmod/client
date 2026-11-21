@@ -16,22 +16,22 @@ The workflow type-checks and builds the collection before publishing. It deploys
 ## Install a plugin by URL
 
 1. On the author’s catalog page, copy the **Yapmod import URL** for the plugin you want.
-2. In Yapmod settings, open **Plugins → Add Plugin** and leave **Local plugin** off.
+2. In Yapmod settings, open **Plugins → Add Plugin** and select **URL**.
 3. Paste the link into **Plugin URL** and select **Fetch**.
 
 The import URL points to a public GitHub Raw folder such as `https://raw.githubusercontent.com/OWNER/REPO/plugin-dist/weather/`. Yapmod fetches `plugin.json` for metadata and `plugin.js` for the code. Share this URL for a specific plugin, or share the Pages URL for the whole collection.
 
 ## Install a download
 
-Choose **Download JavaScript** in the catalog. In **Plugins → Add Plugin**, turn on **Local plugin**, choose **Upload JS**, enter the plugin details and select **Add**.
+Choose **Download JavaScript** in the catalog. In **Plugins → Add Plugin**, select **Local**, choose **Upload JS**, enter the plugin details and select **Add**.
 
 ## Share a collection
 
 A collection is a JSON index that lists plugins together inside Yapmod. Host an `index.json` (or another JSON filename) on a host Yapin allows, such as `raw.githubusercontent.com`, and share its direct URL.
 
-In **Yapmod → Collections**, paste the index URL and select **Add Collection**. You can search collections and their plugins, install individual entries, and use **Refresh** to fetch a new listing. Collections are cached in this browser, so reopening Yapin does not require downloading them again. A failed refresh keeps the previous listing. Removing a collection keeps its installed plugins.
+In **Plugins → Add Plugin**, select **Collection**, paste the index URL and select **Add Collection**. The collection appears as a collapsible group in Plugins, with its name, description, plugin count, and a Collection label. Expand it to browse and install individual entries. The Plugins search also searches collections and opens matching groups. Use the collection’s **•••** actions to **Refresh** its listing or **Remove collection**. Collections are cached in this browser, so reopening Yapin does not require downloading them again. A failed refresh keeps the previous listing. Removing a collection keeps its installed plugins: they appear outside the group, or in another collection that still lists them.
 
-Adding a collection only downloads metadata. **Install** fetches the selected plugin's `plugin.json` and `plugin.js` through the normal plugin manager. The plugin starts disabled with automatic updates off; enable it or change its update preference in **Plugins**. Plugins already installed from the same source are marked **Installed**, including when they appear in several collections.
+Adding a collection only downloads metadata. **Install** fetches the selected plugin's `plugin.json` and `plugin.js` through the normal plugin manager. The plugin starts disabled with automatic updates off; enable it directly inside the collection, or use its edit action to change its update preference. Installed entries use the normal plugin controls, including settings, update, edit, delete, and enable/disable. If a plugin appears in several collections, each group controls the same installation. Standalone plugins remain outside collection groups.
 
 ### Index format (version 1)
 

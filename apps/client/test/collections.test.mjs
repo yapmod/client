@@ -140,6 +140,39 @@ test('collection indexes validate, persist atomically, and keep installations in
   assert.equal(plugin.on, false);
   assert.equal(plugin.update, false);
   assert.equal(plugin.manifest.name, 'Actual manifest name');
+  const { findCollectionPlugin, collectionMatches, collectionPluginIdConflict } =
+    await server.ssrLoadModule('/src/features/collections/membership.ts');
+  const entry = collections()[0].plugins[0];
+  assert.equal(findCollectionPlugin(entry, pluginState().plugins), plugin);
+  assert.equal(
+    collectionMatches(collections()[0], 'Actual manifest name', pluginState().plugins),
+    true,
+    'search includes the installed manifest as well as index metadata',
+  );
+  assert.equal(collectionMatches(collections()[0], 'Examples', []), true);
+  assert.equal(collectionMatches(collections()[0], 'missing', pluginState().plugins), false);
+  const sharedCollection = { ...collections()[0], name: 'Another collection' };
+  assert.equal(
+    findCollectionPlugin(sharedCollection.plugins[0], pluginState().plugins),
+    plugin,
+    'shared collection entries control the same installation',
+  );
+  const edited = { ...plugin, src: 'https://example.com/changed/' };
+  assert.equal(
+    findCollectionPlugin(entry, [edited]),
+    undefined,
+    'changing the source moves a plugin out of its old collection',
+  );
+  assert.equal(
+    findCollectionPlugin(entry, [{ ...plugin, local: true }]),
+    undefined,
+    'converting a plugin to local moves it outside collections',
+  );
+  assert.equal(
+    collectionPluginIdConflict(entry, [edited]),
+    true,
+    'a retained id must not offer an installation that will fail',
+  );
   await assert.rejects(
     addRemotePlugin(collections()[0].plugins[0].url, false),
     /already installed/,
