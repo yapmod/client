@@ -1,5 +1,5 @@
 import type { ComposerTool } from '@yapmod/types';
-import { Button, Icon, appendStyle, iconPaths } from '@yapmod/ui';
+import { Button, Icon, appendStyle, isIconSource } from '@yapmod/ui';
 import { ErrorBoundary, For, Show, createSignal, onCleanup } from 'solid-js';
 import { render } from 'solid-js/web';
 import { openModal } from '../../lib/modal';
@@ -17,7 +17,7 @@ let stopWatching: (() => void) | undefined;
 
 function ToolIcon(props: { entry: Entry }) {
   const icon = props.entry.tool.icon;
-  if (typeof icon === 'string') return <Icon name={icon} />;
+  if (typeof icon !== 'function') return <Icon name={icon} />;
   return (
     <span aria-hidden="true" inert class="yp-tool-art">
       <ErrorBoundary fallback={() => <Icon name="puzzle" />}>{icon()}</ErrorBoundary>
@@ -172,7 +172,7 @@ export function registerComposerTool(pluginId: string, tool: ComposerTool): () =
     typeof tool.label !== 'string' ||
     !tool.label.trim() ||
     typeof tool.onActivate !== 'function' ||
-    (typeof tool.icon !== 'function' && !Object.prototype.hasOwnProperty.call(iconPaths, tool.icon))
+    (typeof tool.icon !== 'function' && !isIconSource(tool.icon))
   ) {
     throw new TypeError('registerTool expects an ID, label, icon, and activation callback.');
   }

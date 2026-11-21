@@ -1,4 +1,4 @@
-import { createIcon, iconPaths } from '@yapmod/ui';
+import { createIcon, isIconSource } from '@yapmod/ui';
 import type { MessageMenuAction, MessageMenuContext } from '@yapmod/types';
 import { showToast } from '../../lib/toast';
 
@@ -216,7 +216,7 @@ export function registerMessageAction(plugin: string, action: MessageMenuAction)
     !action.label.trim() ||
     typeof action.onSelect !== 'function' ||
     (action.visible !== undefined && typeof action.visible !== 'function') ||
-    (action.icon !== undefined && !Object.keys(iconPaths).includes(action.icon))
+    (action.icon !== undefined && !isIconSource(action.icon))
   ) {
     throw new TypeError('Invalid message context menu action.');
   }

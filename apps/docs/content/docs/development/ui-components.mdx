@@ -208,7 +208,10 @@ import { Hint } from '@yapmod/ui';
 
 ### Icon
 
-Renders an SVG icon from the bundled icon set. The available icons are: `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil`, and `close`.
+The `name` prop accepts a built-in name or a reference returned by
+[`api.ui.registerIcon`](/docs/development/plugin-api#apiuiregistericonname-definition).
+
+Renders a registered SVG icon or one from the bundled set. The built-in icons are: `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil`, and `close`.
 
 <IconPreview />
 
@@ -220,11 +223,11 @@ import { Icon } from '@yapmod/ui';
 
 **Props:**
 
-| Prop    | Type     | Description                                       |
-| ------- | -------- | ------------------------------------------------- |
-| `name`  | `string` | Icon name (`settings`, `puzzle`, `trash`, etc.)   |
-| `size`  | `number` | Width and height in pixels (default: 16)          |
-| `label` | `string` | Accessible label (without it, icon is decorative) |
+| Prop    | Type         | Description                                       |
+| ------- | ------------ | ------------------------------------------------- |
+| `name`  | `IconSource` | Built-in name or registered icon reference        |
+| `size`  | `number`     | Width and height in pixels (default: 16)          |
+| `label` | `string`     | Accessible label (without it, icon is decorative) |
 
 ## Settings layout
 

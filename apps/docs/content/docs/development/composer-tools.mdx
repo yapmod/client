@@ -28,14 +28,14 @@ export default function () {
 
 ## Tool options
 
-| Option       | Meaning                                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------------------------ |
-| `id`         | Stable string scoped to your plugin. Registering it again replaces the previous action in place.             |
-| `label`      | Accessible name, button tooltip and visible overflow label. Use an action such as “Check draft length”.      |
-| `icon`       | An `IconName` or a Solid render function returning decorative JSX. Keep custom artwork within the icon area. |
-| `onActivate` | Synchronous or async function called once per activation.                                                    |
+| Option       | Meaning                                                                                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`         | Stable string scoped to your plugin. Registering it again replaces the previous action in place.                                                            |
+| `label`      | Accessible name, button tooltip and visible overflow label. Use an action such as “Check draft length”.                                                     |
+| `icon`       | An `IconSource` (built-in name or registered icon reference) or a Solid render function returning decorative JSX. Keep custom artwork within the icon area. |
+| `onActivate` | Synchronous or async function called once per activation.                                                                                                   |
 
-Built-in icons are `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil` and `close`. For custom artwork, pass a function such as `icon: () => <span>¶</span>`. The button label provides its accessible name.
+Built-in icons are `settings`, `puzzle`, `trash`, `palette`, `upload`, `refresh`, `plus`, `pencil` and `close`. For reusable SVG artwork, use [`api.ui.registerIcon`](/docs/development/plugin-api#apiuiregistericonname-definition). You can also pass a function such as `icon: () => <span>¶</span>`. The button label provides its accessible name.
 
 ## Composer context and placement
 

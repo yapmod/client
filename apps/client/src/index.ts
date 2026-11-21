@@ -1,6 +1,7 @@
 import { createClient } from '@yapmod/core';
 import type { ClientHandle, PluginUi } from '@yapmod/types';
 import {
+  createIconRegistry,
   Button,
   Divider,
   Hint,
@@ -85,7 +86,11 @@ function bootstrap(): YapmodClientHandle {
     publicStyles.clear();
   });
 
+  const icons = createIconRegistry();
+  client.onDispose(icons.dispose);
+
   const ui = {
+    registerIcon: icons.registerIcon,
     showToast,
     openModal,
     injectCss(css) {
