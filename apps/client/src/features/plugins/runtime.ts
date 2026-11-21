@@ -30,6 +30,7 @@ import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './ma
 import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
 import { PluginScope } from './scope';
+import { registerCommand, validateCommand } from './commands';
 import { registerMessageAction } from './menus';
 import { createPluginStorage } from './storage';
 import {
@@ -125,6 +126,7 @@ function createPluginApi(
   const disposers = new PluginScope(loaded.has(id));
   const icons = createIconRegistry();
   disposers.onDispose(icons.dispose);
+  const commandNames = new Set<string>();
 
   const api: YapmodPluginApi = {
     apiVersion: 1,
@@ -139,6 +141,27 @@ function createPluginApi(
     },
     observe(selector, onFound) {
       return disposers.install(() => observeElements(selector, onFound));
+    },
+    commands: {
+      register(command) {
+        const validated = validateCommand(id, command);
+        if (commandNames.has(validated.name))
+          throw new Error(`/${validated.name} is already registered.`);
+        commandNames.add(validated.name);
+        try {
+          const remove = disposers.installUi(() => registerCommand(id, validated));
+          let active = true;
+          return () => {
+            if (!active) return;
+            active = false;
+            commandNames.delete(validated.name);
+            remove();
+          };
+        } catch (error) {
+          commandNames.delete(validated.name);
+          throw error;
+        }
+      },
     },
     contextMenus: {
       registerAction(target, action) {

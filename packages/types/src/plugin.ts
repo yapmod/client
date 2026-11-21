@@ -226,6 +226,26 @@ export interface PluginComposer {
 }
 
 /** The API object every started plugin receives, community or client-registered. */
+/** Arguments are raw text after the command name, trimmed at both ends. */
+export interface CommandContext {
+  readonly args: string;
+  /** Aborted when the command is unregistered or the plugin stops. */
+  readonly signal: AbortSignal;
+}
+
+export interface PluginCommand {
+  /** Unique lowercase name, 1–32 letters, digits, underscores or hyphens; omit /. */
+  readonly name: string;
+  /** Non-empty suggestion description, at most 200 characters. */
+  readonly description: string;
+  execute(context: CommandContext): void | Promise<void>;
+}
+
+export interface PluginCommands {
+  /** Register a local slash command. Returns an idempotent disposer. */
+  register(command: PluginCommand): () => void;
+}
+
 export interface YapmodPluginApi {
   /** API contract version. Plugins can check this before using v1 features. */
   readonly apiVersion: 1;
@@ -251,6 +271,8 @@ export interface YapmodPluginApi {
   observe(selector: string, onFound: (element: Element) => void): () => void;
   /** Actions in Yapin’s message context menu. */
   readonly contextMenus: PluginContextMenus;
+  /** Local slash commands in message composers; cleaned up when the plugin stops. */
+  readonly commands: PluginCommands;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */
