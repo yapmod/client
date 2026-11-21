@@ -20,6 +20,7 @@ import { createSignal } from 'solid-js';
 import { openContentModal, openModal } from '../../lib/modal';
 import { sharedSolid } from '../../lib/solid';
 import { showToast } from '../../lib/toast';
+import { registerComposerTool } from './tools';
 import { registerSettingsSection } from '../settings/install';
 import { registerComposerStatus } from './composer';
 import { evaluatePluginSource } from './eval';
@@ -165,6 +166,9 @@ function createPluginApi(
         if (typeof format !== 'function')
           throw new TypeError('registerStatus expects a formatter.');
         return disposers.installUi(() => registerComposerStatus(id, format));
+      },
+      registerTool(tool) {
+        return disposers.installUi(() => registerComposerTool(id, tool));
       },
     },
     settings: {

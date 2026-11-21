@@ -1,0 +1,37 @@
+.yp-composer-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.yp-composer-tools .yp-composer-tool {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  flex: 0 0 auto;
+}
+
+.yp-composer-tool:focus-visible,
+.yp-tool-picker button:focus-visible {
+  outline: 2px solid var(--accent, var(--yp-accent, currentColor));
+  outline-offset: 2px;
+}
+
+.yp-tool-picker {
+  display: grid;
+  gap: 4px;
+}
+
+.yp-tool-picker button {
+  justify-content: flex-start;
+}
+
+.yp-tool-art {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  pointer-events: none;
+}

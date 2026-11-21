@@ -1,0 +1,161 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Composer toolbar regression</title>
+<style>
+  .composer-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+  }
+  textarea {
+    min-width: 0;
+    flex: 1;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #0007;
+  }
+  .modal {
+    background: Canvas;
+    color: CanvasText;
+    padding: 1rem;
+  }
+</style>
+<form id="wide" class="composer">
+  <div class="composer-box" style="width: 720px">
+    <button type="button" class="upload-btn">Attach</button
+    ><textarea maxlength="12">hello</textarea>
+    <div class="composer-tools"><button type="button">GIF</button></div>
+    <button>Send</button>
+  </div>
+</form>
+<form id="narrow" class="composer">
+  <div class="composer-box" style="width: 340px">
+    <textarea>😀</textarea>
+    <div class="composer-tools"><button type="button">Emoji</button></div>
+    <button>Send</button>
+  </div>
+</form>
+<output id="result">Running</output>
+<p id="activation"></p>
+<script type="module">
+  import client from '../src/index';
+  import { applyDevUpdate } from '../src/features/dev/apply';
+  import { removePlugin } from '../src/features/plugins/runtime';
+
+  const result = document.querySelector('#result');
+  const activation = document.querySelector('#activation');
+  const wait = () => new Promise((resolve) => setTimeout(resolve, 80));
+  const check = (ok, message) => {
+    if (!ok) throw Error(message);
+  };
+  const text = (scope, label) =>
+    [...document.querySelector(scope).querySelectorAll('button')].find(
+      (button) => button.title === label || button.textContent.trim() === label,
+    );
+  const id = 'dev:tool-fixture';
+  let release;
+  let submits = 0;
+  document.addEventListener('submit', (event) => {
+    event.preventDefault();
+    submits++;
+  });
+  try {
+    const calls = [];
+    client.registerClientPlugin({
+      id: 'client:reader',
+      manifest: { name: 'Draft reader' },
+      setup(api) {
+        const stale = api.composer.registerTool({
+          id: 'action',
+          label: 'Stale reader',
+          icon: 'settings',
+          onActivate() {},
+        });
+        release = api.composer.registerTool({
+          id: 'action',
+          label: 'Inspect draft',
+          icon: 'pencil',
+          onActivate(context) {
+            calls.push([context.length, context.maxLength]);
+            activation.textContent = 'Inspect draft: ' + JSON.stringify(calls.at(-1));
+            context.focus();
+          },
+        });
+        stale();
+        return {};
+      },
+    });
+    const send = (code) =>
+      applyDevUpdate({ id, name: 'Preferences', author: 'Fixture', description: '', code });
+    const plugin = (label) => `(api) => ({onLoad() { api.composer.registerTool({
+      id:'action', label:${JSON.stringify(label)}, icon:() => '?',
+      onActivate: () => {document.querySelector('#activation').textContent='Preferences';}
+    }); }})`;
+    check((await send(plugin('Preferences'))).ok, 'dev load failed');
+    await wait();
+    check(
+      document.querySelectorAll('#wide .yp-composer-tool').length === 2,
+      'wide layout or plugin ID collision',
+    );
+    text('#wide', 'Inspect draft').click();
+    check(calls.length === 1 && calls[0][0] === 5 && calls[0][1] === 12, 'wide context');
+    check(document.activeElement === document.querySelector('#wide textarea'), 'wide focus');
+    text('#narrow', 'Composer tools').click();
+    text('.yp-tool-picker', 'Inspect draft').click();
+    check(calls.length === 2 && calls[1][0] === 2 && calls[1][1] === null, 'overflow context');
+    check(document.activeElement === document.querySelector('#narrow textarea'), 'overflow focus');
+    const narrowBox = document.querySelector('#narrow .composer-box');
+    narrowBox.style.width = '720px';
+    await wait();
+    check(!!text('#narrow', 'Preferences'), 'resize');
+    narrowBox.style.width = '340px';
+    await wait();
+    text('#narrow', 'Composer tools').click();
+    const replaced = narrowBox.cloneNode(true);
+    replaced.querySelector('.yp-composer-tools').remove();
+    narrowBox.replaceWith(replaced);
+    await wait();
+    check(
+      !document.querySelector('.yp-tool-picker') && !!text('#narrow', 'Composer tools'),
+      'remount',
+    );
+    check(
+      !(
+        await send(
+          '(api)=>{api.composer.registerTool({id:"x",label:"Broken",icon:"plus",onActivate(){}}); throw Error("fixture rejection")}',
+        )
+      ).ok,
+      'rejected reload',
+    );
+    check(
+      !!text('#wide', 'Preferences') && !text('#wide', 'Broken'),
+      'failed reload changed tools',
+    );
+    check((await send(plugin('Updated preferences'))).ok, 'valid reload');
+    check(
+      !text('#wide', 'Preferences') && !!text('#wide', 'Updated preferences'),
+      'duplicate after reload',
+    );
+    text('#wide', 'Send').click();
+    check(submits === 1, 'native send');
+    release();
+    release();
+    check(
+      !text('#wide', 'Inspect draft') && !!text('#wide', 'Updated preferences'),
+      'early disposal',
+    );
+    removePlugin(id);
+    check(!document.querySelector('.yp-composer-tools'), 'last plugin left a host');
+    result.textContent = 'Passed';
+  } catch (error) {
+    result.textContent = 'Failed: ' + error.message;
+    throw error;
+  } finally {
+    client.dispose();
+  }
+</script>

@@ -107,3 +107,15 @@ export function composerStatusContract(api: YapmodPluginApi): () => void {
     return { text: String(maxLength - length), tone: 'warning' };
   });
 }
+
+export function composerToolContract(api: YapmodPluginApi): () => void {
+  return api.composer.registerTool({
+    id: 'settings',
+    label: 'Open settings',
+    icon: 'settings',
+    onActivate({ length, maxLength, focus }) {
+      const remaining = maxLength === null ? undefined : maxLength - length;
+      if (remaining === 0) focus();
+    },
+  });
+}
