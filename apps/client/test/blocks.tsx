@@ -25,7 +25,7 @@ try {
   removePlugin('dev:blocks-fixture');
   client.registerClientPlugin({
     id,
-    manifest: { name: 'Block fixtures' },
+    manifest: { name: 'Block fixtures', author: 'Test', description: 'Synthetic draft data' },
     setup(api) {
       api.composer.registerStatus((s) => String(s.length));
       api.composer.registerBlock((s) => {
