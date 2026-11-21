@@ -168,11 +168,29 @@ export interface ComposerStatusState {
 /** A plain-text indicator, optionally emphasized at a limit. */
 export type ComposerStatus = string | { text: string; tone?: 'warning' };
 
+/** A snapshot of the composer where the user activated a tool. */
+export interface ComposerToolContext extends ComposerStatusState {
+  /** Return keyboard focus to this input while it remains mounted. */
+  focus(): void;
+}
+
+export interface ComposerTool {
+  /** Stable ID scoped to the registering plugin. */
+  id: string;
+  /** Accessible button name and visible overflow label. */
+  label: string;
+  /** Choose a built-in icon or render decorative Solid content. */
+  icon: IconName | (() => JSX.Element);
+  onActivate(context: ComposerToolContext): void | Promise<void>;
+}
+
 export interface PluginComposer {
   /** Mount Solid content once per composer. Read the reactive measurements inside JSX. */
   registerBlock(render: (composer: ComposerStatusState) => JSX.Element): () => void;
   /** Format an indicator for each composer. Unregister early with the returned disposer. */
   registerStatus(format: (state: ComposerStatusState) => ComposerStatus): () => void;
+  /** Add a tool to each message composer. The returned function removes it early. */
+  registerTool(tool: ComposerTool): () => void;
 }
 
 /** The API object every started plugin receives, community or client-registered. */

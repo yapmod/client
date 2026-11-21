@@ -13,6 +13,7 @@
     "composer-blocks",
     "type-safety",
     "ui-components",
+    "composer-tools",
     "plugin-types",
     "---Distribution---",
     "distribution"

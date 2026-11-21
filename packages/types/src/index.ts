@@ -2,6 +2,8 @@ export type { Client, ClientHandle, ClientState } from './client';
 export type {
   ComposerStatus,
   ComposerStatusState,
+  ComposerTool,
+  ComposerToolContext,
   PluginComposer,
   PluginFunction,
   PluginManifest,

@@ -18,6 +18,7 @@
 - **sdk:** render reactive SolidJS blocks beneath each message composer (#84).
 
 - **docs:** document multi-plugin starter development, catalog publishing and URL imports (#78).
+- **sdk:** add plugin buttons and a compact tool picker to each message composer (#85).
 
 - **web:** download Yapmod Desktop for a detected or selected platform, install Yapmod Extension for Chrome or Firefox, and read both products’ release notes on the website (#76).
 - **web:** add a themed homepage preview, a first-run guide and the Yapmod 1.0 release story (#72).
