@@ -1,5 +1,9 @@
 export type { Client, ClientHandle, ClientState } from './client';
 export type {
+  AppContextIdentity,
+  AppContextState,
+  PluginContext,
+  PluginNavigation,
   CallState,
   PluginCalls,
   CommandContext,
