@@ -30,6 +30,7 @@ import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './ma
 import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
 import { PluginScope } from './scope';
+import { createCalls } from './calls';
 import { registerCommand, validateCommand } from './commands';
 import { registerMessageAction } from './menus';
 import { createPluginStorage } from './storage';
@@ -132,6 +133,7 @@ function createPluginApi(
 
   const api: YapmodPluginApi = {
     apiVersion: 1,
+    calls: createCalls(disposers),
     id,
     manifest: { ...manifest },
     storage,

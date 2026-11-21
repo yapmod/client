@@ -1,0 +1,117 @@
+---
+title: Current Call
+description: Observe and control the local user's current Yapin voice call.
+---
+
+The `yapmod.calls` API gives community and desktop client plugins access to the current
+voice call. It wraps the host discovery approach used by Desktop's Yaplay integration.
+
+## Read and observe
+
+`await yapmod.calls.getCurrent()` returns a detached, frozen `CallState`, or `null` when
+not in a call. Unavailable host internals reject the promise instead of returning `null`.
+
+| Field       | Meaning                    |
+| ----------- | -------------------------- |
+| `channelId` | Current voice channel ID.  |
+| `serverId?` | Server ID, when present.   |
+| `muted`     | Host microphone mute flag. |
+| `deafened`  | Host deafen flag.          |
+
+Deafening can suppress microphone audio too. Use `call.muted || call.deafened` for an
+effective mute indicator, and `call.muted` when deciding whether to change the mute flag.
+
+`await yapmod.calls.subscribe(listener)` emits immediately, then only when these fields
+change, including `null` on leaving. It returns an idempotent unsubscribe function.
+Yapmod also unsubscribes when the plugin stops, including disposal during discovery.
+Listeners are synchronous; exceptions are logged without interrupting other subscribers.
+Snapshots are not reactive themselves; put them in a Solid signal for reactive UI:
+
+```typescript
+const [call, setCall] =
+  yapmod.solid.createSignal<Awaited<ReturnType<typeof yapmod.calls.getCurrent>>>(null);
+
+try {
+  await yapmod.calls.subscribe(setCall);
+} catch (error) {
+  yapmod.log(error);
+  yapmod.ui.showToast('Call state is unavailable. Try again once Yapin has loaded.', 'error');
+}
+```
+
+## Controls
+
+Each method returns `Promise<void>`:
+
+- `setMuted(muted: boolean, expected: CallState)`
+- `setDeafened(deafened: boolean, expected: CallState)`
+- `leave(expected: CallState)`
+
+Pass a snapshot identifying the intended channel/server. If the current call no longer
+matches, the operation rejects. A snapshot does not identify a unique call session:
+leaving and rejoining the same channel is still a match.
+
+Setters check fresh state and toggle only if necessary. Operations are serialized across
+plugins to avoid double toggles. Resolution means the host function completed, not that
+a server acknowledged the change. Subscriptions remain the source of observed state.
+Yapin's native behavior, including any coupling between mute and deafen, is preserved.
+
+This command tests muting without changing audio during plugin startup:
+
+```typescript
+yapmod.commands.register({
+  name: 'call-mute',
+  description: 'Mute my microphone in the current call',
+  async execute() {
+    const call = await yapmod.calls.getCurrent();
+    if (!call) {
+      yapmod.ui.showToast('Join a call first.', 'error');
+      return;
+    }
+    await yapmod.calls.setMuted(true, call);
+  },
+});
+```
+
+Command failures already receive an error toast. In other entry points, catch failures
+and report them with `yapmod.ui.showToast(message, 'error')`. Methods and queued actions
+reject after plugin disposal. An already invoked host operation cannot be cancelled.
+
+## Compatibility and scope
+
+This is an additive API v1 feature. Check `if (!yapmod.calls)` when supporting older clients.
+`CallState` and `PluginCalls` are exported by `@yapmod/types`.
+
+Yapin has no public call interface. The adapter discovers loaded Turbopack exports by shape,
+without hard-coded module IDs, DOM button clicks, or eval. Discovery times out after three
+seconds; failures can be retried by calling the API again. Yapin's runtime and store must
+have loaded. Host updates can break this adapter. Subscription read errors are logged;
+no invented state is emitted.
+
+This API covers local voice flags and leaving the current call. It does not join calls,
+control other members, expose media streams, or provide participant profiles. Desktop can
+migrate its local controls to this API; participant/overlay features still need its existing
+host adapter. This change does not modify Desktop.
+
+## Testing before release
+
+Run `pnpm --filter @yapmod/client test:calls`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`.
+The automated fixture checks discovery, snapshots, subscriptions, concurrent setters,
+stale channels, host errors, and disposal.
+
+For live testing, call `YapmodClient.dispose()` before injecting the updated
+`apps/client/dist/yapmod-client.js`; confirm `YapmodClient.state === 'ready'`.
+Install a local plugin with the command example above, wrapped as
+`(() => { /* registration here */ return {}; })()`. With a second participant:
+
+1. Subscribe and check `null` before joining, then the correct channel/server and flags.
+2. Run `/call-mute` twice. The microphone should stay muted; verify audio with the participant.
+3. Exercise `setMuted(false, call)` and both deafen values from a plugin button. Compare
+   native UI and actual audio. Confirm native button changes reach the subscription.
+4. Save a snapshot, switch channels, and confirm `leave(oldSnapshot)` rejects.
+   Leaving with a fresh snapshot should leave and emit `null`.
+5. Disable/re-enable the plugin and dispose/re-inject Yapmod. Old listeners must stop and
+   retained API methods must reject after disposal.
+
+Live audio behavior requires verification in Yapin. The fixture does not establish
+compatibility with a deployed host build.

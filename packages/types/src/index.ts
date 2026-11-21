@@ -1,5 +1,7 @@
 export type { Client, ClientHandle, ClientState } from './client';
 export type {
+  CallState,
+  PluginCalls,
   CommandContext,
   PluginCommand,
   PluginCommands,

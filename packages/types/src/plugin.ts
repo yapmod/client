@@ -255,6 +255,26 @@ export interface PluginCommands {
   register(command: PluginCommand): () => void;
 }
 
+/** Detached snapshot of the local user's current voice call. */
+export interface CallState {
+  readonly channelId: string;
+  readonly serverId?: string;
+  /** The microphone mute flag; deafening can also suppress microphone audio. */
+  readonly muted: boolean;
+  readonly deafened: boolean;
+}
+
+export interface PluginCalls {
+  /** Null means no call. Rejects when Yapin's internal API is unavailable. */
+  getCurrent(): Promise<CallState | null>;
+  /** Emits immediately, then on changes. Automatically removed when the plugin stops. */
+  subscribe(listener: (call: CallState | null) => void): Promise<() => void>;
+  /** Setters reject if the snapshot's channel/server is no longer current. */
+  setMuted(muted: boolean, expected: CallState): Promise<void>;
+  setDeafened(deafened: boolean, expected: CallState): Promise<void>;
+  leave(expected: CallState): Promise<void>;
+}
+
 export interface YapmodPluginApi {
   /** API contract version. Plugins can check this before using v1 features. */
   readonly apiVersion: 1;
@@ -282,6 +302,8 @@ export interface YapmodPluginApi {
   readonly contextMenus: PluginContextMenus;
   /** Local slash commands in message composers; cleaned up when the plugin stops. */
   readonly commands: PluginCommands;
+  /** Current voice call state and controls. */
+  readonly calls: PluginCalls;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */
