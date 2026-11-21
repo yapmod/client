@@ -1,0 +1,13 @@
+---
+title: One counter for each draft
+description: How composer blocks let a plugin render a view once and keep it in step with the draft.
+date: 2026-11-21
+tags: [Development]
+authors: [hdzilyes]
+---
+
+A counter looks simple until two composers are open. Type an emoji into a field with a four-unit limit and its counter should show **2 / 4**. The empty field beside it should still show **0**. Replace the first field during navigation and its old counter should disappear with it.
+
+The composer block API gives each field its own Solid view. A plugin supplies a render function and reads `composer.length` and `composer.maxLength` inside its JSX. Those reads keep the counter in step with edits. The same view can show a progress meter when the host supplies a positive limit, or just the count when the limit is absent.
+
+Plugins share a row in registration order. If one plugin stops, Solid cleans up its view and the neighboring indicators stay in place. The text formatter used by Character Counter 1.1 continues to work in that row, so authors can adopt JSX when their plugin needs it. [Build a reactive composer block](/docs/development/composer-blocks).

@@ -15,6 +15,7 @@
 ### Added
 
 - **sdk:** register plugin-owned text indicators for message composers (#80).
+- **sdk:** render reactive SolidJS blocks beneath each message composer (#84).
 
 - **docs:** document multi-plugin starter development, catalog publishing and URL imports (#78).
 

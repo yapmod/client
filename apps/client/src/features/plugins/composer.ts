@@ -1,58 +1,91 @@
-import type { ComposerStatus, ComposerStatusState } from '@yapmod/types';
+import type { ComposerStatus, ComposerStatusState, PluginComposer } from '@yapmod/types';
+import { createComponent, createRenderEffect, ErrorBoundary, untrack } from 'solid-js';
+import { createStore } from 'solid-js/store';
+import { render } from 'solid-js/web';
 
 const selector = '.composer textarea, .composer-box textarea, textarea.msg-input';
-type Formatter = (state: ComposerStatusState) => ComposerStatus;
+type Block = Parameters<PluginComposer['registerBlock']>[0];
 
 interface Registration {
   pluginId: string;
-  format: Formatter;
+  block: Block;
+}
+
+interface Slot {
+  host: HTMLElement;
+  unmount?: () => void;
 }
 
 interface Row {
   element: HTMLElement;
-  slots: Map<Registration, HTMLElement>;
-  state?: ComposerStatusState;
+  slots: Map<Registration, Slot>;
+  state: ComposerStatusState;
+  setState: (state: ComposerStatusState) => void;
 }
 
 const registrations = new Set<Registration>();
 const rows = new Map<HTMLTextAreaElement, Row>();
 let stopWatching: (() => void) | undefined;
 
+function measurements(input: HTMLTextAreaElement): ComposerStatusState {
+  return { length: input.value.length, maxLength: input.maxLength < 0 ? null : input.maxLength };
+}
+
+function removeSlot(row: Row, entry: Registration) {
+  const slot = row.slots.get(entry);
+  if (!slot) return;
+  row.slots.delete(entry);
+  try {
+    slot.unmount?.();
+  } catch (error) {
+    console.error(`[yapmod] composer block cleanup failed for ${entry.pluginId}`, error);
+  } finally {
+    slot.host.remove();
+  }
+}
+
+function removeRow(row: Row) {
+  for (const entry of row.slots.keys()) removeSlot(row, entry);
+  row.element.remove();
+}
+
 function update(input: HTMLTextAreaElement, row: Row) {
-  const length = input.value.length;
-  const maxLength = input.maxLength < 0 ? null : input.maxLength;
-  const previous = row.state;
-  const state =
-    previous && previous.length === length && previous.maxLength === maxLength
-      ? previous
-      : Object.freeze({ length, maxLength });
-  const changed = state !== previous;
-  row.state = state;
+  row.setState(measurements(input));
   for (const entry of registrations) {
-    let slot = row.slots.get(entry);
-    if (slot && !changed) continue;
-    if (!slot) {
-      slot = document.createElement('span');
-      row.slots.set(entry, slot);
-      row.element.append(slot);
-    }
-    try {
-      const result = entry.format(state);
-      slot.textContent = typeof result === 'string' ? result : result.text;
-      slot.style.color =
-        typeof result !== 'string' && result.tone === 'warning' ? 'var(--danger, #c44)' : '';
-    } catch (error) {
-      slot.textContent = '';
-      console.error(`[yapmod] composer status failed for ${entry.pluginId}`, error);
-    }
+    if (row.slots.has(entry)) continue;
+    const slot: Slot = { host: document.createElement('div') };
+    row.slots.set(entry, slot);
+    row.element.append(slot.host);
+    // Each plugin owns a separate Solid root and boundary, including reactive updates after mount.
+    slot.unmount = render(
+      () =>
+        createComponent(ErrorBoundary, {
+          fallback: (error: unknown) => {
+            console.error(`[yapmod] composer block failed for ${entry.pluginId}`, error);
+            return null;
+          },
+          get children() {
+            return untrack(() => entry.block(row.state));
+          },
+        }),
+      slot.host,
+    );
+    // A plugin can unregister itself as another composer mounts.
+    if (!row.slots.has(entry)) slot.unmount();
   }
 }
 
 function addComposer(element: Element) {
-  if (!(element instanceof HTMLTextAreaElement) || rows.has(element)) return;
+  if (
+    !(element instanceof HTMLTextAreaElement) ||
+    rows.has(element) ||
+    element.closest('.yp-composer-status')
+  )
+    return;
   const row = document.createElement('div');
   row.className = 'yp-composer-status';
-  rows.set(element, { element: row, slots: new Map() });
+  const [state, setState] = createStore(measurements(element));
+  rows.set(element, { element: row, slots: new Map(), state, setState });
 }
 
 function discover(root: Element | Document) {
@@ -63,7 +96,7 @@ function discover(root: Element | Document) {
 function refresh() {
   for (const [input, row] of rows) {
     if (!input.isConnected || !input.matches(selector)) {
-      row.element.remove();
+      removeRow(row);
       rows.delete(input);
       continue;
     }
@@ -123,25 +156,45 @@ function watch() {
     observer.disconnect();
     events.abort();
     if (frame !== undefined) cancelAnimationFrame(frame);
-    for (const row of rows.values()) row.element.remove();
+    for (const row of rows.values()) removeRow(row);
     rows.clear();
   };
 }
 
-export function registerComposerStatus(pluginId: string, format: Formatter): () => void {
-  const entry = { pluginId, format };
+export function registerComposerBlock(pluginId: string, block: Block): () => void {
+  const entry = { pluginId, block };
   registrations.add(entry);
   stopWatching ??= watch();
   refresh();
   return () => {
     if (!registrations.delete(entry)) return;
-    for (const row of rows.values()) {
-      row.slots.get(entry)?.remove();
-      row.slots.delete(entry);
-    }
+    for (const row of rows.values()) removeSlot(row, entry);
     if (!registrations.size) {
       stopWatching?.();
       stopWatching = undefined;
     }
   };
+}
+
+export function registerComposerStatus(
+  pluginId: string,
+  format: (state: ComposerStatusState) => ComposerStatus,
+): () => void {
+  return registerComposerBlock(pluginId, (state) => {
+    const label = document.createElement('span');
+    createRenderEffect(() => {
+      // Formatters receive the original immutable snapshot and retry after a measurement changes.
+      const snapshot = Object.freeze({ length: state.length, maxLength: state.maxLength });
+      try {
+        const result = untrack(() => format(snapshot));
+        label.textContent = typeof result === 'string' ? result : result.text;
+        label.style.color =
+          typeof result !== 'string' && result.tone === 'warning' ? 'var(--danger, #c44)' : '';
+      } catch (error) {
+        label.textContent = '';
+        console.error(`[yapmod] composer status failed for ${pluginId}`, error);
+      }
+    });
+    return label;
+  });
 }

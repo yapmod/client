@@ -169,6 +169,8 @@ export interface ComposerStatusState {
 export type ComposerStatus = string | { text: string; tone?: 'warning' };
 
 export interface PluginComposer {
+  /** Mount Solid content once per composer. Read the reactive measurements inside JSX. */
+  registerBlock(render: (composer: ComposerStatusState) => JSX.Element): () => void;
   /** Format an indicator for each composer. Unregister early with the returned disposer. */
   registerStatus(format: (state: ComposerStatusState) => ComposerStatus): () => void;
 }

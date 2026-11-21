@@ -1,0 +1,41 @@
+---
+title: Composer blocks
+description: Render reactive, read-only SolidJS content beneath each message composer.
+---
+
+Use a composer block for inline content such as a draft length with a visual meter. Yapmod places blocks beneath the composer in registration order, alongside text indicators added with `registerStatus`.
+
+```ts
+registerBlock(render: (composer: ComposerStatusState) => JSX.Element): () => void
+```
+
+## A counter in TSX
+
+```tsx
+export default function () {
+  return {
+    onLoad() {
+      yapmod.composer.registerBlock((composer) => (
+        <span>
+          {composer.length}
+          {composer.maxLength === null ? ' characters' : ` / ${composer.maxLength}`}
+        </span>
+      ));
+    },
+  };
+}
+```
+
+`length` is the textarea's current length in UTF-16 code units, so `😀` adds two. `maxLength` is the native limit, or `null` for an unlimited composer. A zero limit is valid.
+
+Yapmod calls the render function once for each composer instance. Read the properties inside JSX expressions or Solid accessors so edits update the view. Destructuring `length` in the function parameter takes its value at mount time. Use the shared Solid instance supplied by the builder for effects and components.
+
+## Lifetime and cleanup
+
+Each block has its own Solid owner. Use Solid's `onCleanup` inside the render function for per-composer resources. Yapmod disposes that owner when the input is replaced, the registration is removed or the plugin stops. A successful hot reload mounts the replacement plugin's UI. A rejected candidate's registrations are cleaned up.
+
+The returned function removes this block from every composer and can be called repeatedly. Use it when a plugin setting hides the block while the plugin stays enabled. Plugin unload automatically removes all its registrations.
+
+## Adopting blocks in a text status plugin
+
+A plain-text formatter can continue using [`registerStatus`](/docs/development/plugin-api#composer-status). For a plugin with a richer view, move its presentation into JSX. Check for `typeof yapmod.composer?.registerBlock === 'function'` if you support clients that only provide `registerStatus`. Keep the existing text formatter as the fallback on those clients.

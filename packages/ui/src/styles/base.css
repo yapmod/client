@@ -465,6 +465,12 @@
   font-size: 14px;
 }
 
+.yp-composer-status > div {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+
 .yp-composer-status {
   display: flex;
   flex-wrap: wrap;

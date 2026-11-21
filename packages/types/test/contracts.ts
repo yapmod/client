@@ -101,6 +101,10 @@ type _SectionHasRender = PluginSettingsSection extends { render: () => unknown }
 
 const _sectionAssertions: [_SectionHasId, _SectionHasLabel, _SectionHasRender] = [true, true, true];
 
+export function composerBlockContract(api: YapmodPluginApi): () => void {
+  return api.composer.registerBlock((composer) => String(composer.length));
+}
+
 export function composerStatusContract(api: YapmodPluginApi): () => void {
   return api.composer.registerStatus(({ length, maxLength }) => {
     if (maxLength === null) return String(length);
