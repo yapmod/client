@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/yapmod/client/compare/v1.1.0...v1.2.0) (2026-11-21)
+
+
+### Features
+
+* **sdk:** register icon buttons in the composer toolbar ([9955b2c](https://github.com/yapmod/client/commit/9955b2c07e14c796c5776b8babfe33241ab385e7))
+* **sdk:** register icon buttons in the composer toolbar ([9e07758](https://github.com/yapmod/client/commit/9e0775868b703f3ee9b1e92d4cf53a966081a7f2)), closes [#85](https://github.com/yapmod/client/issues/85)
+* **sdk:** register plugin actions in message context menus ([b3b77d2](https://github.com/yapmod/client/commit/b3b77d2ca0e70d487f71c330fb3624090128ee92))
+* **sdk:** register plugin actions in message context menus ([1fb9cd9](https://github.com/yapmod/client/commit/1fb9cd9fbbec73bb435f2d43ee0b720f0643457b)), closes [#86](https://github.com/yapmod/client/issues/86)
+* **sdk:** render reactive blocks in each composer ([217d77c](https://github.com/yapmod/client/commit/217d77c610a784366d1ae312ff7935677978f113))
+* **sdk:** render reactive blocks in each composer ([c36b497](https://github.com/yapmod/client/commit/c36b49701e83628ab479f167ec9a206ff9d18aba)), closes [#84](https://github.com/yapmod/client/issues/84)
+
 ## v1.1.0
 
 [compare changes](https://github.com/yapmod/client/compare/v1.0.0...v1.1.0)
