@@ -1,0 +1,38 @@
+---
+title: Choose an integration
+description: Find the right place for your feature before writing DOM integration code.
+---
+
+Start with the action a person should be able to take. A small feature usually needs one registration, not a global observer. Yapmod's built-in integration points handle mounting into Yapin and removing the plugin's contribution when it stops.
+
+## Match the API to the task
+
+| What you are building                         | Start here                                                      | Why it fits                                                                |
+| --------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| A count or short hint beneath the draft       | [Composer status](/docs/development/plugin-api#composer-status) | Receives measurements without reading message text.                        |
+| Rich content below the composer               | [Composer blocks](/docs/development/composer-blocks)            | Mounts a Solid view for each composer.                                     |
+| A saved reply or text transformation          | [Composer tools](/docs/development/composer-tools)              | Captures the originating draft and guards against overwriting later edits. |
+| A local slash command                         | [Commands](/docs/development/plugin-api#local-commands)         | Runs an action without sending a chat message.                             |
+| An action for a selected message              | [Context menus](/docs/development/context-menu-actions)         | Receives the message selected when the menu opened.                        |
+| A header action, sidebar entry, or chat panel | [UI locations](/docs/development/ui-locations)                  | Uses managed host locations instead of custom selectors.                   |
+| A saved preference                            | [Settings and storage](/docs/development/settings-and-storage)  | Combines native-looking controls with per-plugin persistence.              |
+| A view that follows the selected conversation | [App context](/docs/development/app-context)                    | Subscribes to selection changes without guessing from URLs.                |
+| A voice call control                          | [Current call](/docs/development/current-call)                  | Reads call state and checks that actions still target that call.           |
+
+## A snapshot is not a live subscription
+
+A composer tool captures the draft when the user activates it. If a dialog stays open while the draft changes, applying the old result can fail. Handle that result and ask the user to activate the tool again; do not search for another textarea and insert there.
+
+App context subscriptions solve a different problem: a view needs to follow navigation over time. A missing selected channel can be a valid empty selection, while `available: false` means Yapmod could not read the state. Design a useful empty or unavailable state rather than treating both as a channel ID.
+
+## Register behavior; let the user trigger it
+
+Register tools and actions in `onLoad`, then perform their work in the callback. For example, register a header action at startup and open its panel in `onSelect`. Opening a modal on every startup would interrupt users whenever they enable the plugin or save during development.
+
+Use a status indicator for passive information, a toast for a short result, and a settings page for persistent choices. Give actions descriptive labels so they remain understandable in narrow layouts and to assistive technology.
+
+## When there is no matching API
+
+Use [DOM observation](/docs/development/reverse-engineering) only for the gap you cannot cover. You become responsible for selectors, idempotent changes, and removal of anything you add. Host internals can change independently of Yapmod.
+
+When supporting older clients, check for the method you need. `apiVersion === 1` does not guarantee every later addition exists. Show a clear upgrade message if a required integration is missing instead of letting a property-access error stop the plugin.

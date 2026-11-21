@@ -3,6 +3,8 @@ title: Composer tools
 description: Add composer actions with captured draft, selection and conversation context.
 ---
 
+A composer tool is an explicit action on the draft: insert a saved reply, transform selected text, or open a dialog. Choose a [status indicator](/docs/development/plugin-api#composer-status) for passive information instead. Tools never send a message; the user remains in control of submission.
+
 Use `yapmod.composer.registerTool` in a plugin’s `onLoad` hook. Yapmod mounts a native button beside the composer toolbar and removes it when the plugin stops. Plugins targeting older clients can check `typeof yapmod.composer?.registerTool === 'function'` before registration.
 
 ```tsx

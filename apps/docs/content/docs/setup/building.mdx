@@ -15,7 +15,7 @@ For a standalone project, invoke the builder directly:
 yapmod build --entry src/index.ts --outfile dist/plugin.js
 ```
 
-Let me break down what happens when you run this command:
+The builder performs these steps:
 
 1. The builder reads your TypeScript source files starting from the entry point you specified
 2. It compiles any JSX syntax and SolidJS components into plain JavaScript
@@ -48,7 +48,7 @@ Once the build succeeds, you will have a `.js` file ready to load. Here is how t
 3. Go to the plugins section
 4. Upload the built file from your `dist` folder
 
-Yapmod will evaluate the file and your plugin will be active immediately. You should see it appear in the list of installed plugins.
+Enter the plugin details and confirm the import, then enable it in the installed list. Disable any running development copy first to avoid duplicate UI. Exercise the feature and check the console for startup errors.
 
 ## What comes next
 

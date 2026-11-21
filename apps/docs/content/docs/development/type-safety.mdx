@@ -1,387 +1,131 @@
 ---
-title: Type Safety
-description: Full TypeScript type safety for Yapmod plugins. Learn about our single source of truth for types, isolated ambient declarations, and automated type contract tests.
+title: Type safety
+description: Configure your editor, describe integrations, and validate values that TypeScript cannot check at runtime.
 ---
 
-If you are writing your plugin in TypeScript, you are in for a treat. The `@yapmod/types` package gives you complete type safety across the entire plugin API. That means your editor will suggest properties as you type, catch mistakes before you run anything, and give you precise types for every method, property, and UI component prop.
+The starter already includes TypeScript configuration. Use this page when setting up an existing project, extracting reusable helpers, or diagnosing a missing type. Types help catch incorrect method names and component props before building; they do not validate persisted data or guarantee that a host integration is available.
 
-Let me show you how it all works.
-
-## How type safety is structured
-
-Think of `@yapmod/types` as having three doors, each leading to something different:
-
-| Entry point                | What you get                                             | How to use it                                                            |
-| -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `@yapmod/types`            | All the main types: plugin API, client runtime, UI props | Import directly: `import type { YapmodPluginApi } from '@yapmod/types'`  |
-| `@yapmod/types/plugin-env` | The `yapmod` global variable declaration                 | Add to the `types` array in your `tsconfig.json` (explained below)       |
-| `@yapmod/types/client-env` | The `globalThis.YapmodClient` declaration                | Add to `types` array if you are building a browser extension or embedder |
-
-Each entry point serves a specific purpose, so you only get what you actually need.
-
-### UI prop types live in the types package
-
-UI component prop types like `ButtonProps` and `SwitchProps` are defined in `@yapmod/types` and imported by the Solid implementation in the workspace. Plugin authors install only `@yapmod/types`; `@yapmod/ui` is provided by the builder and the host at runtime, not as a separate npm dependency.
-
-### Ambient declarations are explicitly opted in
-
-The `yapmod` global declaration lives in `@yapmod/types/plugin-env`, a separate entry point you add to your TypeScript configuration. This keeps the global type out of projects where `yapmod` does not exist at runtime. Only your plugin project gets the `yapmod` global type, and your other projects stay clean.
-
-## Installing the types
-
-Add `@yapmod/types` as a development dependency in your plugin project:
+## Install and configure the declarations
 
 ```bash
-npm install -D @yapmod/types
+pnpm add -D @yapmod/types
 ```
 
-You do not install `@yapmod/ui`: it ships inside the client bundle and is exposed to plugins as `yapmod.ui`. The `@yapmod/types/plugin-env` entry declares the module so `import { Switch } from '@yapmod/ui'` still type-checks.
-
-If you are using the starter repo, this is already done for you.
-
-## Configuring TypeScript
-
-### For plugin development (recommended)
-
-This is the setup most plugin authors will want. Add `@yapmod/types/plugin-env` to the `types` array in your `tsconfig.json`. This tells TypeScript about the `yapmod` global variable, so it is typed everywhere in your code without any imports:
+Add the plugin environment to your existing `tsconfig.json`:
 
 ```json
 {
   "compilerOptions": {
+    "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "types": ["@yapmod/types/plugin-env"]
   }
 }
 ```
 
-### For browser extensions or embedders
+Merge these options with your project's configuration. `plugin-env` declares the builder-provided `yapmod` variable and the `@yapmod/ui` module. You do not install the UI implementation separately: it is supplied by the client.
 
-If you are building a browser extension or embedding Yapmod in another application, you will want the `globalThis.YapmodClient` type instead:
+| Entry point                | Use it for                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| `@yapmod/types`            | Explicit type imports such as `YapmodPluginApi`, `PluginCommand`, and component props. |
+| `@yapmod/types/plugin-env` | Plugin source that uses `yapmod` and `@yapmod/ui`.                                     |
+| `@yapmod/types/client-env` | An extension or embedder that needs `globalThis.YapmodClient`.                         |
 
-```json
-{
-  "compilerOptions": {
-    "types": ["@yapmod/types/client-env"]
-  }
-}
-```
+A declaration makes a name known to TypeScript; it does not create that value at runtime. `yapmod` is available inside built plugin code, not as a browser-console global.
 
-### For importing types directly
+## Type a reusable integration
 
-You do not have to use the `types` array at all. You can simply import the types you need in each file:
+Most inline registration callbacks infer their parameter types. Add explicit types when moving a definition into a separate function or file:
 
-```typescript
-import type { YapmodPluginApi, PluginManifest } from '@yapmod/types';
-```
+```ts
+import type { PluginCommand, YapmodPluginApi } from '@yapmod/types';
 
-This approach gives you full control over which types are available where, without any global declarations.
+function registerGreeting(api: YapmodPluginApi) {
+  const command = {
+    name: 'myplugin-hello',
+    description: 'Show a local greeting',
+    execute({ args, signal }) {
+      if (!signal.aborted) api.ui.showToast(`Hello ${args || 'world'}!`);
+    },
+  } satisfies PluginCommand;
 
-## What you get
-
-Once you have configured TypeScript, the `yapmod` variable is fully typed as `YapmodPluginApi` throughout your plugin. Here is what that looks like in practice:
-
-```typescript
-// Fully typed, no imports needed
-export function onLoad() {
-  yapmod.log("plugin loaded");
-  yapmod.storage.count = (yapmod.storage.count as number) + 1;
-  yapmod.flushStorage();
+  return api.commands.register(command);
 }
 
-export function settings() {
+export default function () {
   return {
-    render: () => (
-      <yapmod.ui.SettingsPage title="My Plugin">
-        <yapmod.ui.Section label="Options">
-          {/* ... */}
-        </yapmod.ui.Section>
-      </yapmod.ui.SettingsPage>
-    ),
-  };
-}
-```
-
-Notice that we did not import anything. The `yapmod` global is already typed, and every property and method you access on it has full autocompletion.
-
-Your editor will suggest:
-
-- **`yapmod.storage`** to read and write reactive per plugin storage
-- **`yapmod.ui.*`** for all UI components including Button, Switch, Input, Select, and more
-- **`yapmod.settings.registerSection()`** to add a section to the settings panel
-- **`yapmod.observe()`** to watch DOM elements for changes
-- **`yapmod.solid`** for access to shared SolidJS signals and control flow helpers
-- **`yapmod.log()`** for console logging with a plugin prefix
-
-## All available types
-
-`@yapmod/types` exports **27 types** in total, organized into categories. You can import any of them individually. Let me walk you through each group.
-
-### Plugin lifecycle types
-
-These types define the core contract between your plugin and the Yapmod runtime. They describe how a plugin identifies itself, how it starts up, and how it interacts with Yapmod while running.
-
-| Type                    | What it is for                                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `YapmodPluginApi`       | The complete API object that every plugin receives. This is the type of the `yapmod` global and the `api` parameter in `start(api)`. |
-| `PluginManifest`        | The metadata object describing your plugin: `name`, `author`, `description`, `version`, and `hash`.                                  |
-| `PluginFunction`        | A function that your plugin exports as one of its lifecycle hooks.                                                                   |
-| `PluginSettings`        | The settings related methods on the plugin API, including `registerSection()`.                                                       |
-| `PluginSettingsSection` | A settings section that your plugin registers, with properties like `id`, `label`, `icon`, and `render`.                             |
-| `PluginModalOptions`    | The options you pass to `ui.openModal`: `title`, `description`, `wide`, `content`, `footer`, and `onClose`.                          |
-| `ToastKind`             | The message kinds for `ui.showToast`: either `'success'` or `'error'`.                                                               |
-
-Here is an example of using these types explicitly:
-
-```typescript
-import type { YapmodPluginApi, PluginManifest, PluginSettingsSection } from '@yapmod/types';
-
-// Type the api parameter explicitly
-export function start(api: YapmodPluginApi) {
-  api.settings.registerSection({
-    id: 'my-section',
-    label: 'My Plugin',
-    icon: 'settings',
-    render: () => <div>Settings content</div>,
-  } satisfies PluginSettingsSection);
-}
-```
-
-The `satisfies` keyword here ensures that the object you are passing matches the `PluginSettingsSection` type, catching any mistakes at compile time.
-
-### UI component prop types
-
-Every UI component provided by `@yapmod/ui` has a matching prop type that you can import. You will use these when you need to type component props, build wrapper components, or validate configuration objects.
-
-| Type            | Component  | What it covers                                                                                                                                  |
-| --------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ButtonProps`   | `Button`   | Button variants (`default`, `primary`, `accent`, `secondary`, `ghost`, `danger`) and sizes (`medium`, `small`).                                 |
-| `SwitchProps`   | `Switch`   | Toggle state properties: `checked`, `defaultChecked`, `onChange`.                                                                               |
-| `InputProps`    | `Input`    | Single line text input: `value`, `defaultValue`, `onChange`.                                                                                    |
-| `TextareaProps` | `Textarea` | Multi line text input: `value`, `defaultValue`, `onChange`.                                                                                     |
-| `SelectProps`   | `Select`   | Dropdown select: `options`, `value`, `defaultValue`, `onChange`, `placeholder`.                                                                 |
-| `SelectOption`  | —          | A single option in a dropdown: `value`, `label`, `disabled`.                                                                                    |
-| `IconProps`     | `Icon`     | SVG icon component: `name`, `size`, `label`, `class`.                                                                                           |
-| `IconName`      | —          | A union of all built in icon names: `'settings'`, `'puzzle'`, `'trash'`, `'palette'`, `'upload'`, `'refresh'`, `'plus'`, `'pencil'`, `'close'`. |
-| `HintProps`     | `Hint`     | Inline hint text. Extends the attributes of a native `<span>` element.                                                                          |
-| `PanelProps`    | `Panel`    | Card style container. Extends the attributes of a native `<div>` element.                                                                       |
-
-**Settings layout prop types:**
-
-| Type                | Component      | What it covers                                                      |
-| ------------------- | -------------- | ------------------------------------------------------------------- |
-| `SettingsPageProps` | `SettingsPage` | The top level settings wrapper: `title`, `description`, `children`. |
-| `SectionProps`      | `Section`      | A grouped block within settings: `label`, `children`, `spacing`.    |
-| `SectionSpacing`    | —              | The spacing variant for Section: `'normal'` or `'large'`.           |
-| `SettingRowProps`   | `SettingRow`   | A single row in settings: `label`, `hint`, `children`.              |
-| `SettingTextProps`  | `SettingText`  | A read only text row: `label`, `hint`, `value`.                     |
-
-Here is how you might use these types in your own code:
-
-```typescript
-import type { SwitchProps, SelectOption } from '@yapmod/types';
-
-// Type a custom wrapper component
-function ToggleSetting(props: SwitchProps & { label: string }) {
-  return (
-    <SettingRow label={props.label}>
-      <Switch {...props} />
-    </SettingRow>
-  );
-}
-
-// Type dropdown options
-const themeOptions: readonly SelectOption[] = [
-  { value: 'default', label: 'Default' },
-  { value: 'nord', label: 'Nord' },
-];
-```
-
-### Shared SolidJS types
-
-Yapmod uses SolidJS for its reactive UI, and all plugins share the same instance of SolidJS. These types describe that shared runtime so you can work with it safely.
-
-| Type          | What it describes                                                                                                            |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `SharedSolid` | The single copy of SolidJS that the builder injects into your plugin. Exposes `solid`, `solidWeb`, and `solidStore` modules. |
-| `PluginUi`    | The complete UI interface: `showToast`, `openModal`, `injectCss`, and all SolidJS components like Button, Switch, and Input. |
-
-```typescript
-import type { SharedSolid } from '@yapmod/types';
-
-// Access shared SolidJS with full types
-const solid: SharedSolid['solid'] = yapmod.solid;
-const { createSignal, createEffect } = solid;
-```
-
-### Client runtime types
-
-These types are used by the Yapmod client itself and by applications that embed Yapmod. You will not typically need them as a plugin author, but they are here for completeness.
-
-| Type           | What it describes                                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------------------------- |
-| `Client`       | The client runtime created by `createClient()`. Manages the lifecycle state and cleanup.                      |
-| `ClientHandle` | The minimal handle exposed on `globalThis.YapmodClient`. Shows version, state, shared SolidJS, and UI access. |
-| `ClientState`  | The lifecycle states of the client: `'ready'` or `'disposed'`.                                                |
-
-## The `start(api)` pattern versus the global `yapmod`
-
-You have two options for accessing the plugin API. Both give you the same type safety and autocompletion.
-
-### Using the global `yapmod` (with plugin-env)
-
-If you have added `@yapmod/types/plugin-env` to your `tsconfig.json` types array, the `yapmod` variable is automatically typed everywhere. You do not need to import anything:
-
-```typescript
-// No import needed, yapmod is a typed global
-export function onLoad() {
-  yapmod.log('loaded');
-}
-```
-
-This is the most concise approach and the one most plugin authors use.
-
-### Using the explicit `start(api)` parameter
-
-Alternatively, you can type the `api` parameter explicitly. This makes the dependency on the plugin API clear at every call site, which some people prefer:
-
-```typescript
-import type { YapmodPluginApi } from '@yapmod/types';
-
-export default function (api: YapmodPluginApi) {
-  return {
-    start(api: YapmodPluginApi) {
-      api.log('Plugin started with explicit typing');
+    onLoad() {
+      registerGreeting(yapmod);
     },
   };
 }
 ```
 
-Both approaches give you identical autocompletion and type checking. Choose the one that feels more natural to you.
+`satisfies` checks the object against the contract while preserving inference. Passing `api` into your own helper makes its dependency explicit. It does not create a new lifecycle convention: the client still calls `onLoad`, not `start(api)`.
+
+## Type component props
+
+Import UI implementations from `@yapmod/ui` and prop types from either its declarations or `@yapmod/types`:
+
+```tsx
+import { SettingRow, Switch } from '@yapmod/ui';
+import type { SwitchProps } from '@yapmod/types';
+
+function ToggleSetting(props: SwitchProps & { label: string }) {
+  return (
+    <SettingRow label={props.label}>
+      <Switch
+        aria-label={props.label}
+        checked={props.checked}
+        onChange={props.onChange}
+        disabled={props.disabled}
+      />
+    </SettingRow>
+  );
+}
+```
+
+Read props inside the JSX so reactive values stay live. See the [UI reference](/docs/development/ui-components) for control-specific props and previews.
 
 ## How builder import rewriting works with types
 
-This is one of the clever parts of the Yapmod build system. When you use `@yapmod/builder`, certain imports are rewritten at build time. Specifically, imports from `solid-js`, `@yapmod/ui`, `solid-js/web`, and `solid-js/store` are replaced with references to the shared runtime instances.
+The builder rewrites imports from `solid-js`, `solid-js/web`, `solid-js/store`, and `@yapmod/ui` to the shared instances on `yapmod`. TypeScript checks the original imports against their declarations; the built file uses the runtime shipped in the client.
 
-`@yapmod/types` declares the `@yapmod/ui` module for your editor; the builder then rewrites those imports to `yapmod.ui`. That is why you never install the UI implementation.
-
-**What you write in your source code:**
-
-```tsx
-import { createSignal } from 'solid-js';
-import { Button, Switch } from '@yapmod/ui';
-```
-
-**What ends up in the bundled file:**
-
-```js
-// Imports are rewritten to use shared instances
-const { createSignal } = yapmod.solid;
-const { Button, Switch } = yapmod.ui;
-```
-
-You might wonder how this preserves type safety. Here is why it works:
-
-1. TypeScript sees your original import statements and resolves types from your local `node_modules`. Your editor gives you autocompletion based on those types.
-2. The builder only replaces imports in the final bundled file, never in your source code.
-3. The shared runtime instances match the types exactly, so what TypeScript sees during compilation is what actually runs in the browser.
-
-You get clean import syntax in your editor, full autocompletion, and no duplicate copies of SolidJS in your bundle.
+This lets you use normal import syntax without bundling a second copy of Solid. A dependency that imports its own Solid runtime is rejected by the builder. See [Core concepts](/docs/development/fundamentals#share-the-runtime) for why sharing matters.
 
 ## Working with typed storage
 
-The `api.storage` object is typed as `Record<string, unknown>`. This means every value you read from storage is `unknown` until you explicitly tell TypeScript what type it is. Here are three patterns we use to work with storage safely.
+Storage values are `unknown`. Validate them before narrowing their type:
 
-### Inline type assertion
-
-For simple values, you can assert the type right where you use it:
-
-```typescript
-// Read with a type guard
-const count = yapmod.storage.count as number | undefined;
-if (count !== undefined) {
-  yapmod.storage.count = count + 1;
-}
+```ts
+const saved = yapmod.storage.count;
+const count = typeof saved === 'number' && Number.isFinite(saved) ? saved : 0;
+yapmod.storage.count = count + 1;
 ```
 
-This works well for quick access to a single value.
+`as number` would only silence the compiler; it would not prevent a string or malformed value from being read. For objects, check that the value is a non-null object, validate each field you need, and migrate older schema versions before use. [Settings and storage](/docs/development/settings-and-storage) shows a complete persistent preference.
 
-### Custom storage interface
+Top-level writes persist automatically. Call `flushStorage()` after nested mutations, or replace the top-level value to also trigger reactive readers.
 
-When your plugin uses storage in a more structured way, define an interface and cast the entire storage object:
+## Narrow result unions
 
-```typescript
-import type { YapmodPluginApi } from '@yapmod/types';
+Some API results describe more than success or failure. For example, a message that is not in Yapin's cache is different from an unavailable integration:
 
-interface MyPluginStorage {
-  count?: number;
-  settings?: {
-    theme: 'default' | 'nord' | 'gruvbox';
-    enabled: boolean;
-  };
-  history?: string[];
-}
-
-export function start(api: YapmodPluginApi) {
-  const storage = api.storage as MyPluginStorage;
-
-  // Now you get autocompletion for known keys
-  storage.settings = storage.settings ?? { theme: 'default', enabled: true };
-  storage.settings.theme = 'nord';
-  api.flushStorage();
-}
-```
-
-With this approach, TypeScript knows about all your storage keys and their shapes. You get autocompletion and type checking for every property.
-
-### Generic storage helper
-
-If you find yourself repeating the same pattern, create a helper function:
-
-```typescript
-function getStorage<T>(api: YapmodPluginApi, key: string, fallback: T): T {
-  const value = api.storage[key];
-  if (value === undefined) {
-    api.storage[key] = fallback;
-    return fallback;
+```ts
+async function describeMessage(messageId: string) {
+  const result = await yapmod.messages.getLoaded(messageId);
+  if (result.status === 'found') {
+    return result.message.text ?? 'No text available';
   }
-  return value as T;
+  return result.status === 'not-loaded' ? 'Message is not loaded' : 'Message access is unavailable';
 }
-
-// Usage
-const theme = getStorage(api, 'theme', 'default');
-const counters = getStorage(api, 'counters', { clicks: 0, views: 0 });
 ```
 
-This helper reads a value from storage, and if it does not exist yet, it sets the fallback value and returns it. The type parameter `T` ensures the return value matches what you expect.
+The `status` check makes `message` available to TypeScript. The request can still reject, so catch failures at the user-facing action boundary. Do not use a cast to skip the unavailable case.
 
-## Automated type contract tests
+## Check before distributing
 
-`@yapmod/types` includes automated type contract tests. They use TypeScript itself to verify that core interfaces like `PluginUi`, `YapmodPluginApi`, and `ClientHandle` keep the structure the runtime implements.
+The starter runs type checking as part of `pnpm build`. If you invoke the builder directly, run `pnpm exec tsc --noEmit` separately: bundling alone does not check types.
 
-If a type drifts or goes out of sync, these tests will catch it. You can run them yourself with:
-
-```bash
-pnpm --filter @yapmod/types test:contracts
-```
-
-## Command types
-
-`PluginCommand`, `PluginCommands` and `CommandContext` are exported from `@yapmod/types`.
-The [commands reference](/docs/development/plugin-api#local-commands) covers registration,
-raw arguments, asynchronous callbacks and automatic cleanup.
-
-```typescript
-import type { PluginCommand } from '@yapmod/types';
-
-const hello: PluginCommand = {
-  name: 'hello',
-  description: 'Show a local greeting',
-  execute({ args, signal }) {
-    if (!signal.aborted) yapmod.ui.showToast(`Hello ${args || 'world'}!`);
-  },
-};
-yapmod.commands.register(hello);
-```
-
-## What comes next
-
-Type safety makes plugin development much smoother. Now that you know how types work in Yapmod, head over to the [plugin API reference](/docs/development/plugin-api) to see every available method, or check out the [UI components](/docs/development/ui-components) guide for a complete look at all the components you can use.
+For contributors changing public contracts, run `pnpm --filter @yapmod/types test:contracts` from the client repository. These checks cover agreement between declarations and implementations; a live Yapin test is still needed for host compatibility.

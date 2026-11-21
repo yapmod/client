@@ -62,8 +62,18 @@ html > body[data-scroll-locked] {
 .dark {
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
+  --color-fd-primary: #aa3863;
+  --color-fd-primary-foreground: #ffffff;
   --color-fd-card: var(--card);
+  --color-fd-card-foreground: var(--foreground);
   --color-fd-popover: var(--popover);
+  --color-fd-popover-foreground: var(--foreground);
+  --color-fd-border: var(--border);
+  --color-fd-secondary: var(--secondary);
+  --color-fd-secondary-foreground: var(--secondary-foreground);
+  --color-fd-accent: color-mix(in srgb, var(--primary) 10%, var(--background));
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-ring: var(--primary);
   --color-fd-muted: var(--muted);
   --color-fd-muted-foreground: var(--muted-foreground);
 }
@@ -104,6 +114,8 @@ html > body[data-scroll-locked] {
 }
 
 .dark {
+  --color-fd-primary: #f08cb3;
+  --color-fd-primary-foreground: #290f1b;
   --background: #19151a;
   --foreground: #faf3f6;
   --card: #241e25;

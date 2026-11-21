@@ -4,7 +4,9 @@ description: Typed header actions, sidebar entries, context menus and optional p
 ---
 
 Plugins can contribute to concrete Yapin locations without managing selectors or DOM observers.
-These APIs are on the plugin's `api.ui`, not the global client UI helpers.
+These APIs are on the plugin's `yapmod.ui`, not the global client UI helpers. In the fragments below, `api` is an alias created with `const api = yapmod` inside `onLoad`.
+
+Use a header action for work tied to the current chat, a sidebar entry for a plugin-wide entry point, and a panel when the user needs to keep the conversation visible while working. Open panels from an action callback rather than on every plugin startup.
 
 ```ts
 const remove = api.ui.registerHeaderAction({

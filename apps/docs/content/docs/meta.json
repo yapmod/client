@@ -1,3 +1,14 @@
 {
-  "pages": ["index", "get-started", "setup", "development", "contributing"]
+  "pages": [
+    "---Use Yapmod---",
+    "index",
+    "get-started",
+    "themes",
+    "troubleshooting",
+    "---Create with Yapmod---",
+    "setup",
+    "development",
+    "---Project---",
+    "contributing"
+  ]
 }

@@ -3,6 +3,8 @@ title: App Context and Navigation
 description: Observe the current selection and navigate with Yapin's native actions.
 ---
 
+Use app context when your plugin needs to follow the selected conversation, such as a notes panel that changes as the user navigates. Use navigation when the user chooses a destination in your UI. Neither API needs DOM selectors or a guessed channel ID from the URL.
+
 `yapmod.context` exposes detached, frozen identity snapshots for the currently selected
 channel (including existing direct/group conversations and threads), server, and local user.
 It does not expose profile objects, messages, participants, or permissions.

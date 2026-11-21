@@ -3,6 +3,8 @@ title: Message context menu actions
 description: Place a plugin action in Yapin’s message menu and read its loaded message data.
 ---
 
+Use a context menu when the action belongs to a particular message, rather than to the conversation as a whole. The selected message ID is captured by the menu; reading the globally active chat would not tell you which message the user chose.
+
 A message’s right-click menu and its **More** button offer the same set of plugin actions. Use `yapmod.contextMenus.registerAction('message', action)` to contribute a labeled item. The client supplies the selected message to your callback each time the menu opens.
 
 ## Open a message details dialog

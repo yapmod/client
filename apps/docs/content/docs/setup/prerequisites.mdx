@@ -1,75 +1,30 @@
 ---
 title: Prerequisites
-description: Install the required tools for Yapmod plugin development.
+description: Check the tools needed by the plugin starter before creating your project.
 ---
 
-Before we start building, you need a few tools on your machine. Let me walk you through installing each one.
+You need Node.js to run the builder, pnpm to install the project dependencies, and Git to clone the starter. You also need a desktop browser with [Yapmod loaded in Yapin](/docs/get-started) to try the result.
 
-## Node.js
-
-Yapmod plugin development requires **Node.js 22** or later. If you do not have it yet, here are the best ways to install it:
-
-- **[nvm](https://github.com/nvm-sh/nvm)** (Node Version Manager). This is the recommended approach because it makes switching between Node versions effortless.
-- **[fnm](https://github.com/Schniz/fnm)** (Fast Node Manager). This works just like nvm but is faster.
-- You can also download Node.js directly from [nodejs.org](https://nodejs.org/).
-
-Once installed, check that everything is working:
+## Check your versions
 
 ```bash
 node --version
-# You should see v22.x.x or higher
-```
-
-If you see a version number that starts with v22 or higher, you are good to go.
-
-## pnpm
-
-We use **pnpm** as our package manager. It is fast and uses less disk space than other options, which is nice when you are working with multiple projects.
-
-The easiest way to install pnpm is through npm:
-
-```bash
-npm install -g pnpm
-```
-
-You can also use [pnpm's official install script](https://pnpm.io/installation) if you prefer.
-
-After installing, verify it works:
-
-```bash
 pnpm --version
-# You should see 12.x.x or higher
+git --version
 ```
 
-## The Yapmod CLI
+Use **Node.js 22 or later** and **pnpm 12**. If Node is missing, install it from [nodejs.org](https://nodejs.org/) or use a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm). Install Git from [git-scm.com](https://git-scm.com/downloads).
 
-The `@yapmod/builder` package gives you the `yapmod` command line tool. This is what you will use to build and develop your plugins. Install it as a development dependency in your plugin project:
+With Node installed, install pnpm if needed:
 
 ```bash
-pnpm add -D @yapmod/builder
+npm install -g pnpm@12
 ```
 
-Once installed, you can run the `yapmod` command using `npx`:
+Open a new terminal if an installed command is not found, then repeat the checks.
 
-```bash
-npx yapmod --help
-```
+## Let the starter install the builder
 
-This will show you all the available commands. If you see help text, the installation worked.
+The starter includes the Yapmod builder and TypeScript setup as project dependencies. You do not need to install the CLI globally or create a separate build configuration. Continue to [Starter repository](/docs/setup/starter-repo), where `pnpm install` installs the tools together.
 
-To save some typing later, you can add scripts to your `package.json`:
-
-```json
-{
-  "scripts": {
-    "build": "yapmod build --entry src/index.ts --outfile dist/plugin.js",
-    "dev": "yapmod dev --entry src/index.ts"
-  }
-}
-```
-
-With these scripts in place, you can simply run `pnpm build` or `pnpm dev` instead of typing out the full command every time.
-
-## What comes next
-
-Now that your tools are ready, let us get a project set up. Head over to [cloning the starter repo](/docs/setup/starter-repo) where we will get a pre configured project ready for you to start building.
+For an existing standalone project, add `@yapmod/builder` as a development dependency and use `pnpm exec yapmod --help` to inspect its commands. See [Building your plugin](/docs/setup/building) for the direct CLI workflow and [Type safety](/docs/development/type-safety) for declarations.

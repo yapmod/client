@@ -3,13 +3,11 @@ title: Plugin API
 description: Reference for the YapmodPluginApi object available to every plugin.
 ---
 
-Every plugin receives a `YapmodPluginApi` object when it starts. This is your gateway to everything Yapmod offers: storage, DOM observation, UI components, settings registration, and more. This page documents every property and method available through that API.
+Use this page to look up method contracts after [building your first plugin](/docs/development/first-plugin). For help choosing between composer tools, settings, context menus, and other integrations, start with [Choose an integration](/docs/development/choosing-an-api).
 
-<Callout type="info">
-  The built in Plugin API is the recommended way to build plugins. You could technically do
-  everything manually by manipulating the DOM yourself, but the API methods are more performant,
-  easier to use, and handle cleanup automatically for you.
-</Callout>
+The builder supplies `yapmod`, the `YapmodPluginApi` for the running plugin. Examples on this page that use the shorter name `api` assume `const api = yapmod` inside your plugin source. Register behavior from `onLoad`; do not paste these fragments into the browser console.
+
+Managed registrations are removed when the plugin stops. Your own timers, listeners, and DOM changes still need [explicit cleanup](/docs/development/how-plugins-work).
 
 <Callout type="idea">
   Every property and method documented here is available as a TypeScript type from `@yapmod/types`.
@@ -101,7 +99,7 @@ A stable identifier for your plugin. This ID is also used as the key for your pl
 
 **Type:** `PluginManifest` (readonly)
 
-The metadata from your plugin's manifest object. This includes `name`, `author`, `description`, `version`, and `hash`.
+The metadata from the remote `plugin.json` or local installation form. This includes `name`, `author`, `description`, `version`, and `hash`.
 
 ### `api.storage`
 
@@ -111,7 +109,8 @@ This is your plugin's reactive storage, backed by a Solid signal. When you assig
 
 ```typescript
 // Top-level assignment persists automatically
-api.storage.count = (api.storage.count as number | undefined) ?? 0 + 1;
+const previous = api.storage.count;
+api.storage.count = typeof previous === 'number' && Number.isFinite(previous) ? previous + 1 : 1;
 
 // Nested mutation requires flushStorage
 const data = api.storage.data as { items: string[] } | undefined;
@@ -388,7 +387,7 @@ export default function () {
 
 Use `api.composer.registerTool(tool)` to place an icon button beside the native composer tools. The activation callback receives measurements from the composer containing the button and a function to focus its input. See [Composer tools](/docs/development/composer-tools) for the full contract and responsive layout.
 
-## What comes next
+## Related references
 
 Now that you know the full API, learn about the different [plugin types](/docs/development/plugin-types) and how user installed plugins differ from client registered plugins.
 

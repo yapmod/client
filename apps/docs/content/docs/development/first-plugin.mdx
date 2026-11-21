@@ -1,0 +1,63 @@
+---
+title: Your first plugin
+description: Build a live draft character counter and verify it inside Yapin.
+---
+
+We will add a small character count beneath each message composer. As you type, the count updates. When you disable the plugin, it disappears. This gives you a complete plugin without managing DOM nodes yourself.
+
+## Before you begin
+
+Complete the [starter setup](/docs/setup/starter-repo), load [Yapmod in Yapin](/docs/get-started), and connect [hot reloading](/docs/setup/hot-reloading). These instructions use the starter's `plugins/starter/index.tsx`. Keep that directory name while following the guide so `pnpm dev starter` continues to target it.
+
+## 1. Replace the starter code
+
+Put this entire example in `plugins/starter/index.tsx`:
+
+```tsx
+export default function () {
+  return {
+    onLoad() {
+      yapmod.composer.registerStatus(({ length, maxLength }) => {
+        if (maxLength === null) return `${length} characters`;
+
+        return {
+          text: `${length} / ${maxLength}`,
+          tone: length >= maxLength ? 'warning' : undefined,
+        };
+      });
+    },
+  };
+}
+```
+
+The exported function creates a new plugin instance. `onLoad` installs its behavior when Yapmod enables it. `registerStatus` asks Yapmod to put a text indicator in each composer and call your formatter with its current measurements.
+
+The `length` value follows the textarea's UTF-16 counting rules: some emoji count as two or more units. `maxLength` is `null` when the input has no native limit. We check that case explicitly so the indicator never displays a meaningless `null` limit.
+
+## 2. See it in Yapin
+
+Save the file with `pnpm dev starter` running and the control page connected. Open a conversation where you can compose a message, then type a few characters. You should see the count change below the input. No message needs to be sent.
+
+If nothing appears, check that the client reports `YapmodClient.state === 'ready'`, hot reload is enabled, and the control page reports a successful build. The [troubleshooting guide](/docs/troubleshooting#development-changes-do-not-appear) walks through the connection.
+
+## 3. Check what happens when the host changes
+
+Switch to another conversation and type there. The counter should follow the available composers. Disable the development plugin in **Yapmod → Plugins**: its indicators should disappear. Enable it again: each composer should have one indicator, without duplicates.
+
+There is no `onUnload` in this example because the registration belongs to the plugin. Yapmod removes it automatically. You only need your own cleanup for resources you create outside the API, such as a browser event listener or timer.
+
+## 4. Make a build you can install
+
+From the starter repository root, run:
+
+```bash
+pnpm build
+```
+
+The starter type-checks the collection and writes this plugin to `dist/starter/plugin.js`. Disable the development instance before installing a local copy so you do not see two counters. In **Plugins → Add Plugin → Local**, upload that built file, enter its details, and add it. Enable the installed plugin to try it.
+
+Upload the generated JavaScript, not `index.tsx`: the browser cannot evaluate TypeScript, JSX, or unresolved package imports as a plugin.
+
+## Next: let the user choose
+
+The counter now works, but its format is fixed. Continue with [Settings and storage](/docs/development/settings-and-storage) to add a switch that remembers whether the user wants to see the limit.

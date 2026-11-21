@@ -14,6 +14,8 @@ pnpm install
 pnpm dev starter
 ```
 
+Connect the control page to Yapin using the [hot reload guide](/docs/setup/hot-reloading). Then follow [Your first plugin](/docs/development/first-plugin) to replace the starter with a working character counter.
+
 Edit `plugins/starter/index.tsx` while the dev server is running. With one plugin, you can also run `pnpm dev`.
 
 ## Add a second plugin
@@ -27,7 +29,7 @@ The starter discovers directories under `plugins/` automatically. Use lowercase 
 
 ## Writing your plugin
 
-The entry point (`plugins/starter/index.tsx`) exports a **default function** that returns an object with lifecycle hooks. The `yapmod` global API is available inside your plugin:
+The entry point (`plugins/starter/index.tsx`) exports a **default function** that returns an object with lifecycle hooks. The builder supplies the plugin-scoped `yapmod` API inside your source:
 
 ```tsx
 import { createSignal } from 'solid-js';

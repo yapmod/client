@@ -1,29 +1,28 @@
 ---
-title: Setup Overview
-description: Get your development environment ready for building Yapmod plugins.
+title: Set up development
+description: Connect a local plugin project to Yapin and establish a working edit–save–test loop.
 ---
 
-This section will walk you through everything you need to set up before building your first Yapmod plugin. By the end, you will have a working development environment and your first plugin ready to go.
+You will work in two places: a local project that builds your plugin, and a Yapin tab running Yapmod. The builder's control page connects the two for development. The client itself does not have a development server.
 
-## What we will cover
+## 1. Prepare the tools
 
-Here is the path we will follow:
+Install **Node.js 22 or later**, **pnpm 12**, and Git. Check them with `node --version`, `pnpm --version`, and `git --version`. The [prerequisites page](/docs/setup/prerequisites) has installation links.
 
-1. **Install prerequisites**. You will need Node.js and pnpm to manage packages and run the build tools.
-2. **Clone the starter repo**. This gives you a project that is already configured with the Yapmod plugin builder, so you can start coding right away.
-3. **Build your plugin**. We will compile your TypeScript and SolidJS code into a single file that Yapmod can load.
-4. **Load it into Yapmod**. Once built, you will upload the plugin file to your Yapmod instance and see it come to life.
-5. **Set up hot reloading**. This lets you see changes instantly as you code, without manually rebuilding or reuploading anything.
-6. **Configure your editor** (optional). A few extensions and settings that make the whole experience smoother.
+## 2. Start from the plugin starter
 
-## Why the builder matters
+[Fork and clone the starter](/docs/setup/starter-repo), install dependencies with `pnpm install`, then run `pnpm dev starter`. Leave that process running while you edit `plugins/starter/index.tsx`.
 
-Yapmod plugins run in the browser as a single JavaScript file. But you will be writing your plugin in TypeScript with SolidJS components and JSX syntax. The builder tool bridges that gap for you. It takes care of:
+## 3. Connect to the app
 
-- Bundling all your TypeScript code into one file that Yapmod understands
-- Compiling JSX so you can write SolidJS components the natural way
-- Making sure the output follows the exact format Yapmod expects
+[Load Yapmod](/docs/get-started) in Yapin. Enable **Yapmod → Settings → Enable hot reload**. Open the control page URL printed by the builder and use **Open Yapin** to establish the connection. Load Yapmod in that newly opened tab if needed. Keep the control page open.
 
-You could technically do all of this manually, but why would you? The starter repo handles every bit of configuration so you can focus on what actually matters: writing your plugin.
+See [Hot reloading](/docs/setup/hot-reloading) for connection details. A build completing in your terminal does not by itself mean a Yapin tab is connected.
 
-Ready to get started? Head over to [Prerequisites](/docs/setup/prerequisites) and we will install the tools you need.
+## 4. Make a visible change
+
+Follow [Your first plugin](/docs/development/first-plugin) to replace the starter with a character counter. Save, open a conversation, and type in the composer. Once you see the count change, the entire development loop is working.
+
+## When you want an installable file
+
+Run `pnpm build` in the starter. The output is `dist/<slug>/plugin.js`, where the slug is the plugin's directory name. [Building your plugin](/docs/setup/building) explains the output and manual installation. [Distribution](/docs/development/distribution) covers publishing the collection.
