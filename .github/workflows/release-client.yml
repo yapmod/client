@@ -3,115 +3,45 @@ name: Release Client
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.0.0)'
+      tag:
+        description: 'Existing release tag (v1.2.0); also used to retry publishing'
         required: true
-        default: 'patch'
-      prerelease:
-        description: 'Create a prerelease?'
-        required: false
-        type: boolean
-        default: false
-      prerelease_type:
-        description: 'Prerelease identifier (e.g., nightly, alpha, beta)'
-        required: false
-        default: 'nightly'
+        type: string
 
 permissions:
   contents: write
 
+concurrency:
+  group: publish-client
+  cancel-in-progress: false
+
 jobs:
-  release:
+  publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
     steps:
+      - name: Validate tag format
+        run: '[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
       - uses: actions/checkout@v4
         with:
+          ref: refs/tags/${{ inputs.tag }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Git user config
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-
+      - name: Verify approved source and version
+        run: node .github/scripts/release.mjs verify client
       - run: pnpm install --frozen-lockfile
-
-      - name: Generate changelog & bump version
-        run: |
-          VERSION_INPUT="${{ github.event.inputs.version }}"
-          PRERELEASE="${{ github.event.inputs.prerelease }}"
-          PRERELEASE_TYPE="${{ github.event.inputs.prerelease_type }}"
-          FLAGS=()
-
-          case "$VERSION_INPUT" in
-            major|minor|patch)
-              if [ "$PRERELEASE" = "true" ]; then
-                FLAGS=("--pre$VERSION_INPUT" "$PRERELEASE_TYPE")
-              else
-                FLAGS=("--$VERSION_INPUT")
-              fi
-              ;;
-            *)
-              if [ "$PRERELEASE" = "true" ]; then
-                FLAGS=(-r "$VERSION_INPUT-$PRERELEASE_TYPE")
-              else
-                FLAGS=(-r "$VERSION_INPUT")
-              fi
-              ;;
-          esac
-
-          # changelogen bumps package.json, writes CHANGELOG.md, commits and
-          # tags the release. --no-github leaves the GitHub release below.
-          pnpm changelogen --release "${FLAGS[@]}" --no-github
-        working-directory: apps/client
-        env:
-          HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create changelog if empty
-        if: ${{ !hashFiles('apps/client/CHANGELOG.md') }}
-        run: |
-          cat > apps/client/CHANGELOG.md << 'CHANGELOG'
-          # Changelog
-
-          All notable changes to this project will be documented in this file.
-          CHANGELOG
-
-      - name: Read new version
-        id: version
-        run: |
-          VERSION=$(node -p "require('./apps/client/package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Extract release notes
-        run: |
-          # Only the section for the version that was just tagged, not the
-          # whole changelog history.
-          awk '/^## / { if (seen) exit; seen = 1 } seen' apps/client/CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
-          test -s "$RUNNER_TEMP/release-notes.md"
-          cat "$RUNNER_TEMP/release-notes.md"
-
-      - name: Build client
-        run: pnpm build
-
-      - name: Push commit & tag
-        run: |
-          git push origin HEAD:main --tags
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
-          body_path: ${{ runner.temp }}/release-notes.md
-          files: apps/client/dist/yapmod-client.js
-          prerelease: ${{ github.event.inputs.prerelease }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm build
+      - name: Attach client bundle
+        run: node .github/scripts/release.mjs upload client
+      - name: Publish GitHub release
+        run: node .github/scripts/release.mjs finalize client

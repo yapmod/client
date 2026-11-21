@@ -1,5 +1,5 @@
 {
   "title": "Contributing",
   "icon": "Code",
-  "pages": ["index", "ui-components"]
+  "pages": ["index", "ui-components", "releases"]
 }

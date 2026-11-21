@@ -1,94 +1,57 @@
 name: Publish @yapmod/types to npm
 
-# The filename of this workflow is part of the npm Trusted Publisher
-# configuration for @yapmod/types. Renaming or moving it breaks OIDC
-# authentication and npm answers the publish with a 404. Keep the name even if
-# the workflow is restructured.
-
+# Preserve this filename: npm trusted publishing is bound to the workflow name.
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version bump type (major/minor/patch) or exact version (e.g., 1.1.0)'
+      tag:
+        description: 'Existing release tag (types-v1.4.0); also used to retry publishing'
         required: true
-        default: 'patch'
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: publish-types
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write # Required for npm Trusted Publisher (OIDC)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
     steps:
+      - name: Validate tag format
+        run: '[[ "$RELEASE_TAG" =~ ^types-v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
       - uses: actions/checkout@v4
         with:
+          ref: refs/tags/${{ inputs.tag }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Git user config
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
-
-      - run: npm install -g npm@latest
-
+      - name: Verify approved source and version
+        run: node .github/scripts/release.mjs verify types
       - run: pnpm install --frozen-lockfile
-
-      - name: Build @yapmod/types
-        run: pnpm --filter @yapmod/types build
-
-      - name: Typecheck
-        run: pnpm --filter @yapmod/types typecheck
-
-      - name: Bump version & changelog
-        working-directory: packages/types
-        env:
-          HUSKY: 0
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          TARGET_VERSION="${{ github.event.inputs.version }}"
-
-          # Re-runs of a publish that already bumped but failed at the registry
-          # must not bump the version a second time.
-          if [ "$CURRENT_VERSION" = "$TARGET_VERSION" ]; then
-            echo "Version is already $CURRENT_VERSION, skipping bump."
-            exit 0
-          fi
-
-          case "$TARGET_VERSION" in
-            major|minor|patch)
-              pnpm changelogen --bump "$TARGET_VERSION"
-              ;;
-            *)
-              npm version "$TARGET_VERSION" --no-git-tag-version
-              ;;
-          esac
-
-          echo "Publishing $(node -p "require('./package.json').version")"
-
-      - name: Commit & push changes
-        run: |
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "Nothing to commit."
-            exit 0
-          fi
-          git add .
-          git commit -m "chore(types): bump version for npm publish [skip ci]"
-          git push origin HEAD:main
-        env:
-          HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm --filter @yapmod/types build
+      - name: Check npm for this version
+        id: registry
+        run: node .github/scripts/release.mjs npm-status types
       - name: Publish to npm
+        if: steps.registry.outputs.publish == 'true'
         working-directory: packages/types
         run: |
           unset NODE_AUTH_TOKEN
           npm publish --provenance --access public
+      - name: Publish GitHub release
+        run: node .github/scripts/release.mjs finalize types
