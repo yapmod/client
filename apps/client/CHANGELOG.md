@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.0](https://github.com/yapmod/client/compare/v1.2.0...v1.3.0) (2026-11-21)
+
+
+### Features
+
+* add collections to the plugin manager ([#102](https://github.com/yapmod/client/issues/102)) ([39e4e5a](https://github.com/yapmod/client/commit/39e4e5ab81ba1aa33d7106fed286e910599798f2))
+* add typed plugin UI extension locations ([#110](https://github.com/yapmod/client/issues/110)) ([a3bcb03](https://github.com/yapmod/client/commit/a3bcb034827f2ed89c323910a13f57cf038fff8f))
+* expose app context and native navigation to plugins ([#107](https://github.com/yapmod/client/issues/107)) ([8728e3f](https://github.com/yapmod/client/commit/8728e3f24781dc185087fa26bffb1dd9622a6c81))
+* expose captured composer draft and conversation context ([#108](https://github.com/yapmod/client/issues/108)) ([a565476](https://github.com/yapmod/client/commit/a565476aa20e771f16ecf91d79269c107012a20d))
+* expose current call controls to plugins ([#106](https://github.com/yapmod/client/issues/106)) ([93ee27a](https://github.com/yapmod/client/commit/93ee27a66b258976042aa0b32d863e1bb607a326))
+* expose typed loaded message snapshots to plugins ([#109](https://github.com/yapmod/client/issues/109)) ([4f90e21](https://github.com/yapmod/client/commit/4f90e21862527ed77ff399690f97fa1159c8e56f))
+* **plugins:** add local slash command API ([878d503](https://github.com/yapmod/client/commit/878d5036c6785203cf3a4289a1c9ddf952033be2))
+* **plugins:** add local slash command API ([f6bf3db](https://github.com/yapmod/client/commit/f6bf3dbf96468d2479ff16218a158814f075c0d8)), closes [#98](https://github.com/yapmod/client/issues/98)
+* **plugins:** make updates transactional with restore and pinning ([#104](https://github.com/yapmod/client/issues/104)) ([0801d6e](https://github.com/yapmod/client/commit/0801d6e3130e4deb3e3d6b801bc62dd62f809c59))
+* **plugins:** support registered custom icons ([#101](https://github.com/yapmod/client/issues/101)) ([8b8c0f5](https://github.com/yapmod/client/commit/8b8c0f5ded9ccfb64ef3e4e1231f5af5de678460))
+* **sdk:** expose composer text insertion ([#105](https://github.com/yapmod/client/issues/105)) ([2244548](https://github.com/yapmod/client/commit/2244548f6e4ad10f4d4e61ee9b4f224073d30c0a))
+
 ## [Unreleased]
 
 ### Added
