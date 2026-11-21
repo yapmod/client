@@ -1,0 +1,151 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Message context menu action regression</title>
+<section class="chat">
+  <div class="messages">
+    <article class="msg" data-message-id="a"><span class="msg-body">First message</span></article>
+    <article class="msg" data-message-id="b">
+      <span class="msg-body">Second message</span>
+      <span class="msg-actions"><button aria-label="More">More</button></span>
+    </article>
+  </div>
+</section>
+<output>Running</output>
+<script type="module">
+  import client from '../src/index';
+  import { applyDevUpdate } from '../src/features/dev/apply';
+  import { removePlugin } from '../src/features/plugins/runtime';
+
+  const chat = document.querySelector('.chat');
+  const [first, second] = chat.querySelectorAll('.msg');
+  const more = second.querySelector('button');
+  const output = document.querySelector('output');
+  const menu = document.createElement('div');
+  menu.className = 'ctx-menu';
+  menu.setAttribute('role', 'menu');
+  menu.innerHTML = '<button role="menuitem">Reply</button>';
+  const calls = [];
+  const check = (condition, message) => {
+    if (!condition) throw Error(message);
+  };
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const buttons = () => [...menu.querySelectorAll('.yp-message-action')];
+  const labels = () =>
+    buttons()
+      .map((b) => b.textContent)
+      .join('/');
+  function openNative(event) {
+    event.preventDefault();
+    chat.append(menu);
+  }
+  chat.addEventListener('contextmenu', openNative);
+  more.addEventListener('click', openNative);
+  document.addEventListener('pointerdown', (event) => {
+    if (!menu.contains(event.target)) menu.remove();
+  });
+  async function rightClick(row) {
+    row
+      .querySelector('.msg-body')
+      .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    await settle();
+  }
+  let available = true;
+  let remove;
+  const devId = 'dev:menu-test';
+  const send = (code) =>
+    applyDevUpdate({ id: devId, name: 'Menu test', author: 'Test', description: '', code });
+  try {
+    client.registerClientPlugin({
+      id: 'client:menu-test',
+      manifest: { name: 'Menu test' },
+      setup(api) {
+        remove = api.contextMenus.registerAction('message', {
+          id: 'test',
+          label: 'Record',
+          icon: 'settings',
+          visible: () => available,
+          onSelect: ({ messageId }) => calls.push(messageId),
+        });
+        return {};
+      },
+    });
+    const plugin = (label) => `(api) => {
+      api.contextMenus.registerAction('message', {
+        id: 'test', label: '${label}', visible: c => c.messageId === 'b',
+        onSelect() { throw Error('Intentional menu failure'); }
+      }); return {};
+    }`;
+    check((await send(plugin('Second'))).ok, 'Dev plugin did not start');
+    await rightClick(first);
+    check(labels() === 'Record', 'Wrong visible actions on message A');
+    const old = buttons()[0];
+    more.click();
+    await settle();
+    check(
+      labels() === 'Record/Second' && !!buttons()[0].querySelector('svg'),
+      'More failed on message B',
+    );
+    old.click();
+    check(!calls.length, 'Recycled menu used a stale action');
+    available = false;
+    buttons()[0].click();
+    check(!calls.length, 'Activation did not recheck visibility');
+    chat.append(document.createElement('i'));
+    await settle();
+    check(labels() === 'Second', 'Hidden action left an item');
+    available = true;
+    chat.append(document.createElement('i'));
+    await settle();
+    check(labels() === 'Record/Second', 'Reappearing action changed registration order');
+    buttons()[0].click();
+    check(
+      calls.join() === 'b' && !menu.isConnected && document.activeElement === more,
+      'Activation/dismiss/focus failed',
+    );
+    await rightClick(first);
+    buttons()[0].click();
+    check(calls.join() === 'b,a', 'Pointer action did not follow the selected message');
+    await rightClick(second);
+    const stale = buttons()[0];
+    second.dataset.messageId = 'recycled';
+    stale.click();
+    await settle();
+    check(
+      calls.join() === 'b,a' && buttons().length === 0,
+      'Recycled row retained the wrong action',
+    );
+    second.dataset.messageId = 'b';
+    await rightClick(second);
+    check((await send(plugin('Updated'))).ok, 'Dev reload failed');
+    await settle();
+    check(labels() === 'Record/Updated', 'Hot reload left stale items');
+    buttons()[1].click();
+    check(!!document.querySelector('.toast-error'), 'Thrown action was not isolated');
+    await rightClick(second);
+    buttons()[0].focus();
+    buttons()[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    check(!menu.isConnected, 'Escape did not dismiss the menu');
+    await rightClick(second);
+    remove();
+    remove();
+    check(labels() === 'Updated', 'Early disposal removed the wrong action');
+    chat.remove();
+    await settle();
+    check(buttons().length === 0, 'Detached chat retained plugin UI');
+    document.body.prepend(chat);
+    await rightClick(second);
+    removePlugin(devId);
+    check(
+      buttons().length === 0 && menu.querySelector('[role=menuitem]')?.textContent === 'Reply',
+      'Unload damaged the native menu',
+    );
+    output.textContent = 'Passed';
+  } catch (error) {
+    output.textContent = 'Failed: ' + error.message;
+    throw error;
+  } finally {
+    client.dispose();
+  }
+</script>

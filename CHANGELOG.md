@@ -14,6 +14,8 @@
 
 ### Added
 
+- **sdk:** add plugin actions to message context menus opened by right-click or More (#86).
+
 - **sdk:** register plugin-owned text indicators for message composers (#80).
 - **sdk:** render reactive SolidJS blocks beneath each message composer (#84).
 

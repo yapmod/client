@@ -1,0 +1,48 @@
+---
+title: Message context menu actions
+description: Place a plugin action in Yapin’s message menu and use its selected message ID.
+---
+
+A message’s right-click menu and its **More** button offer the same set of plugin actions. Use `yapmod.contextMenus.registerAction('message', action)` to contribute a labeled item. The client supplies the selected message to your callback each time the menu opens.
+
+## Open a message details dialog
+
+```tsx
+export default function () {
+  return {
+    onLoad() {
+      yapmod.contextMenus.registerAction('message', {
+        id: 'message-details',
+        label: 'Message details',
+        icon: 'settings',
+        onSelect: ({ messageId }) => {
+          yapmod.ui.openModal({
+            title: 'Message details',
+            content: () => <code>{messageId}</code>,
+          });
+        },
+      });
+    },
+  };
+}
+```
+
+`message` is the supported target kind. Its read-only `messageId` is the ID on the message row when the menu opened. Yapmod checks that the original row still belongs to the current chat and carries the same ID before dispatching your action.
+
+## Action options
+
+| Option              | Meaning                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| `id`                | Stable, nonempty identifier unique within the running plugin. Two plugins can use the same ID. |
+| `label`             | Visible text and accessible name of the menu item.                                             |
+| `icon`              | Optional built-in `IconName` rendered alongside the label.                                     |
+| `visible(context)`  | Optional synchronous predicate. Return `true` to show the item for this message.               |
+| `onSelect(context)` | Called once for the selected message. Accepts a synchronous or asynchronous callback.          |
+
+Keep visibility checks inexpensive and free of side effects. For example, `visible: ({ messageId }) => savedIds.has(messageId)` shows an action only for messages in your saved set. Yapmod checks visibility again on activation.
+
+## Ordering and cleanup
+
+Plugin actions follow the native items in registration order. The host menu provides keyboard navigation. A plugin callback can open a Solid dialog after the menu closes.
+
+The returned function removes the action early, including from an open menu. Yapmod unregisters actions automatically when a plugin stops and discards registrations from a failed setup. On older clients, check for `yapmod.contextMenus?.registerAction` before registering an optional feature.

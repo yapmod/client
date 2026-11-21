@@ -133,6 +133,25 @@ export interface PluginSettingsSection {
   render: () => JSX.Element;
 }
 
+/** The message selected when its Yapin menu opened. */
+export interface MessageMenuContext {
+  readonly messageId: string;
+}
+
+export interface MessageMenuAction {
+  /** Unique within this plugin. */
+  id: string;
+  label: string;
+  icon?: IconName;
+  /** Checked when showing and selecting the action. */
+  visible?: (context: MessageMenuContext) => boolean;
+  onSelect: (context: MessageMenuContext) => void | Promise<void>;
+}
+
+export interface PluginContextMenus {
+  registerAction(target: 'message', action: MessageMenuAction): () => void;
+}
+
 /** The settings hooks on the plugin API. */
 export interface PluginSettings {
   /**
@@ -217,6 +236,8 @@ export interface YapmodPluginApi {
    * that stops the observer; it also runs when the plugin stops.
    */
   observe(selector: string, onFound: (element: Element) => void): () => void;
+  /** Actions in Yapin’s message context menu. */
+  readonly contextMenus: PluginContextMenus;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */

@@ -12,6 +12,7 @@
     "plugin-api",
     "composer-blocks",
     "type-safety",
+    "context-menu-actions",
     "ui-components",
     "composer-tools",
     "plugin-types",
