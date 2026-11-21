@@ -1,6 +1,6 @@
 ---
 title: Message context menu actions
-description: Place a plugin action in Yapin’s message menu and use its selected message ID.
+description: Place a plugin action in Yapin’s message menu and read its loaded message data.
 ---
 
 A message’s right-click menu and its **More** button offer the same set of plugin actions. Use `yapmod.contextMenus.registerAction('message', action)` to contribute a labeled item. The client supplies the selected message to your callback each time the menu opens.
@@ -15,10 +15,20 @@ export default function () {
         id: 'message-details',
         label: 'Message details',
         icon: 'settings',
-        onSelect: ({ messageId }) => {
+        onSelect: async ({ messageId }) => {
+          const result = await yapmod.messages.getLoaded(messageId);
+          if (result.status !== 'found') {
+            yapmod.ui.showToast(
+              result.status === 'not-loaded'
+                ? 'This message is no longer loaded.'
+                : 'Message access is unavailable.',
+              'error',
+            );
+            return;
+          }
           yapmod.ui.openModal({
             title: 'Message details',
-            content: () => <code>{messageId}</code>,
+            content: () => <p>{result.message.text ?? 'Text unavailable'}</p>,
           });
         },
       });
@@ -46,3 +56,26 @@ Keep visibility checks inexpensive and free of side effects. For example, `visib
 Plugin actions follow the native items in registration order. The host menu provides keyboard navigation. A plugin callback can open a Solid dialog after the menu closes.
 
 The returned function removes the action early, including from an open menu. Yapmod unregisters actions automatically when a plugin stops and discards registrations from a failed setup. On older clients, check for `yapmod.contextMenus?.registerAction` before registering an optional feature.
+
+## Read loaded message data
+
+`await yapmod.messages.getLoaded(messageId)` reads only Yapin's existing message cache,
+including its extra-message cache. It never requests history or changes a message.
+
+- `found` includes a detached, frozen `message` snapshot. `id` is always present.
+  Validated `text`, `authorId`, `channelId` and `createdAt` are optional. Empty text
+  remains an empty string. `createdAt` preserves the host timestamp and precision.
+- `not-loaded` means the ID was not in the current cache. It does **not** establish
+  that a message was deleted, does not exist, or cannot be accessed.
+- `unavailable` means host discovery/access failed or the returned record could not
+  be identified. Try again later; do not treat this as a cache miss.
+
+`attachments` is undefined when unknown, empty when the host reports no attachment,
+and otherwise contains the host's single attachment with a storage `path` and optional
+`name`, byte `size`, pixel `width` and `height`. A path is not a resolved download URL.
+No URLs, profiles, channel details or missing metadata are fetched or inferred.
+Malformed optional fields are omitted. Snapshots do not update after edits; read again.
+
+Invalid/empty IDs and reads after the plugin stops reject. A pending read also rejects
+if the plugin stops during discovery. On older clients, check `yapmod.messages?.getLoaded`
+before using this optional capability. Keep asynchronous reads in `onSelect`, not `visible`.

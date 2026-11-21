@@ -391,3 +391,12 @@ Use `api.composer.registerTool(tool)` to place an icon button beside the native 
 ## What comes next
 
 Now that you know the full API, learn about the different [plugin types](/docs/development/plugin-types) and how user installed plugins differ from client registered plugins.
+
+## Loaded messages
+
+`api.messages.getLoaded(messageId)` returns a `LoadedMessageResult`: `found` with a
+validated, detached `LoadedMessage`, `not-loaded` for a cache miss, or `unavailable`
+for host discovery/access failure. It reads only already-loaded messages and never
+fetches history. A cache miss does not imply deletion. See
+[Message context menu actions](/docs/development/context-menu-actions#read-loaded-message-data)
+for optional fields, attachment metadata, lifetime behavior and an asynchronous menu example.

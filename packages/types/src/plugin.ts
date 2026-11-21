@@ -146,6 +146,41 @@ export interface PluginSettingsSection {
   render: () => JSX.Element;
 }
 
+/** Detached attachment metadata. Path is the host storage path, not a URL. */
+export interface MessageAttachment {
+  readonly path: string;
+  readonly name?: string;
+  /** Byte count and pixel dimensions, when available. */
+  readonly size?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+/** Only validated fields present in the loaded host record are exposed. */
+export interface LoadedMessage {
+  readonly id: string;
+  readonly text?: string;
+  readonly authorId?: string;
+  readonly channelId?: string;
+  /** Host timestamp string, with its original precision and timezone. */
+  readonly createdAt?: string;
+  /** Undefined means unknown; an empty array means the host reports no attachment. */
+  readonly attachments?: readonly MessageAttachment[];
+}
+
+export type LoadedMessageResult =
+  | { readonly status: 'found'; readonly message: LoadedMessage }
+  | { readonly status: 'not-loaded' }
+  | { readonly status: 'unavailable' };
+
+export interface PluginMessages {
+  /** Reads the host cache only. A cache miss does not mean deleted or nonexistent.
+   * Unavailable means discovery, host access or record validation failed.
+   * Invalid IDs and calls after plugin disposal reject.
+   */
+  getLoaded(messageId: string): Promise<LoadedMessageResult>;
+}
+
 /** The message selected when its Yapin menu opened. */
 export interface MessageMenuContext {
   readonly messageId: string;
@@ -304,6 +339,8 @@ export interface YapmodPluginApi {
   readonly commands: PluginCommands;
   /** Current voice call state and controls. */
   readonly calls: PluginCalls;
+  /** Detached reads of messages already loaded by Yapin; never fetches history. */
+  readonly messages: PluginMessages;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi;
   /** Sections in the Yapmod settings group. */
