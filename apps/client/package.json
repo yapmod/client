@@ -8,7 +8,8 @@
     "demo": "vite --config demo/vite.config.ts",
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test:insertion": "node --test test/insertion.test.mjs"
+    "test:insertion": "node --test test/insertion.test.mjs",
+    "test:calls": "node --test test/calls.test.mjs"
   },
   "dependencies": {
     "@yapmod/core": "workspace:*",
