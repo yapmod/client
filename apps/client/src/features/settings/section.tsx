@@ -2,6 +2,7 @@ import { Hint, Section, SettingRow, SettingsPage, Switch } from '@yapmod/ui';
 import { devStatus } from '../dev/status';
 import { stopDevPlugins } from '../dev/apply';
 import { PluginsPage } from '../plugins/section';
+import { CollectionsPage } from '../collections/section';
 import { ThemesPage } from '../themes/section';
 import {
   developerFeatures,
@@ -14,7 +15,7 @@ import type { SettingsGroup } from './install';
 /**
  * The Yapmod group shown in Yapin's settings navigation.
  *
- * The group holds "Settings", "Plugins" and "Themes". Each panel is rendered
+ * The group holds "Settings", "Plugins", "Collections" and "Themes". Each panel is rendered
  * in the light DOM next to Yapin's native panel and built from the DSL
  * components in `@yapmod/ui` (`SettingsPage`, `Section`, `SettingRow`, etc.)
  * which reproduce Yapin's own settings primitives.
@@ -73,6 +74,12 @@ export const yapmodGroup: SettingsGroup = {
       label: 'Plugins',
       icon: 'puzzle',
       render: () => <PluginsPage />,
+    },
+    {
+      id: 'collections',
+      label: 'Collections',
+      icon: 'puzzle',
+      render: () => <CollectionsPage />,
     },
     {
       id: 'themes',

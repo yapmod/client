@@ -26,6 +26,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: node --test .github/scripts/release.test.mjs
+      - run: node --test apps/client/test/collections.test.mjs
       - run: pnpm build
       - run: pnpm --filter @yapmod/builder build
       - run: pnpm --filter @yapmod/types build

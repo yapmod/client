@@ -25,6 +25,40 @@ The import URL points to a public GitHub Raw folder such as `https://raw.githubu
 
 Choose **Download JavaScript** in the catalog. In **Plugins → Add Plugin**, turn on **Local plugin**, choose **Upload JS**, enter the plugin details and select **Add**.
 
+## Share a collection
+
+A collection is a JSON index that lists plugins together inside Yapmod. Host an `index.json` (or another JSON filename) on a host Yapin allows, such as `raw.githubusercontent.com`, and share its direct URL.
+
+In **Yapmod → Collections**, paste the index URL and select **Add Collection**. You can search collections and their plugins, install individual entries, and use **Refresh** to fetch a new listing. Collections are cached in this browser, so reopening Yapin does not require downloading them again. A failed refresh keeps the previous listing. Removing a collection keeps its installed plugins.
+
+Adding a collection only downloads metadata. **Install** fetches the selected plugin's `plugin.json` and `plugin.js` through the normal plugin manager. The plugin starts disabled with automatic updates off; enable it or change its update preference in **Plugins**. Plugins already installed from the same source are marked **Installed**, including when they appear in several collections.
+
+### Index format (version 1)
+
+```json
+{
+  "schemaVersion": 1,
+  "name": "My plugins",
+  "description": "A collection of small Yapin improvements.",
+  "plugins": [
+    {
+      "name": "Weather",
+      "author": "Your name",
+      "description": "Show the current weather.",
+      "url": "./weather/"
+    },
+    {
+      "name": "Another plugin",
+      "url": "https://raw.githubusercontent.com/OWNER/OTHER-REPO/plugin-dist/example/"
+    }
+  ]
+}
+```
+
+`schemaVersion`, the collection `name`, and the `plugins` array are required. Each plugin requires a `name` and `url`; descriptions and authors are optional. An empty array is allowed. Plugin URLs must use HTTP(S), either directly or relative to the index's final URL after redirects. They point at folders containing `plugin.json` and `plugin.js`; URLs to either of those files also work. Duplicate plugin folders and malformed entries reject the index rather than replacing a saved listing with incomplete data.
+
+The index's names and descriptions are for browsing. Installed plugin metadata comes from its own `plugin.json`. Publish the index alongside your built plugin folders (for example, on `plugin-dist`) so `./weather/` resolves correctly. The starter's HTML catalog alone is not a collection index; publish this JSON file explicitly.
+
 ## Security considerations
 
 <Callout type="error">
