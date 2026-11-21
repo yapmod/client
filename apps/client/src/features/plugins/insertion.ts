@@ -1,3 +1,4 @@
+import { composerChannelId } from './composer-context';
 import type { ComposerInsertResult, ComposerToolContext } from '@yapmod/types';
 
 /** One tracker per tool watcher; contexts cannot outlive its registrations. */
@@ -41,6 +42,7 @@ export function trackComposerTargets() {
       }
       const route = globalThis.location.href;
       const revision = navigation;
+      const channelId = composerChannelId(input);
       const draft = input.value;
       const start = input.selectionStart;
       const end = input.selectionEnd;
@@ -51,6 +53,7 @@ export function trackComposerTargets() {
           registered() &&
           revision === navigation &&
           route === globalThis.location.href &&
+          composerChannelId(input) === channelId &&
           input.isConnected &&
           box.isConnected &&
           box.querySelector('textarea') === input &&
@@ -61,36 +64,39 @@ export function trackComposerTargets() {
           )
         );
       };
+      function replaceText(text: string, from: number, to: number): ComposerInsertResult {
+        if (!valid()) return { ok: false, reason: 'stale-target' };
+        if (input.value !== draft) return { ok: false, reason: 'draft-changed' };
+        if (input.disabled || input.readOnly) return { ok: false, reason: 'not-editable' };
+        if (typeof text !== 'string') throw new TypeError('Composer replacement expects a string.');
+        // Textareas normalize line endings; measure the value React will receive.
+        const normalized = text.replace(/\r\n?/g, '\n');
+        const value = draft.slice(0, from) + normalized + draft.slice(to);
+        if (input.maxLength >= 0 && value.length > input.maxLength) {
+          return { ok: false, reason: 'max-length' };
+        }
+        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+        if (!setter) return { ok: false, reason: 'not-editable' };
+        // Bypass React's instance value tracker so its onChange sees a real change.
+        setter.call(input, value);
+        input.setSelectionRange(from + normalized.length, from + normalized.length);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return { ok: true };
+      }
       const context: ComposerToolContext = {
+        draft,
+        selection: Object.freeze({ start, end }),
+        channelId,
         length: draft.length,
         maxLength: input.maxLength < 0 ? null : input.maxLength,
         focus() {
           if (valid()) input.focus({ preventScroll: true });
         },
-        insertText(text): ComposerInsertResult {
-          if (!valid()) return { ok: false, reason: 'stale-target' };
-          if (input.value !== draft) return { ok: false, reason: 'draft-changed' };
-          if (input.disabled || input.readOnly) return { ok: false, reason: 'not-editable' };
-          if (typeof text !== 'string') throw new TypeError('insertText expects a string.');
-          // Textareas normalize line endings; measure the value React will receive.
-          const normalized = text.replace(/\r\n?/g, '\n');
-          const value = draft.slice(0, start) + normalized + draft.slice(end);
-          if (input.maxLength >= 0 && value.length > input.maxLength) {
-            return { ok: false, reason: 'max-length' };
-          }
-          const setter = Object.getOwnPropertyDescriptor(
-            HTMLTextAreaElement.prototype,
-            'value',
-          )?.set;
-          if (!setter) return { ok: false, reason: 'not-editable' };
-          // Bypass React's instance value tracker so its onChange sees a real change.
-          setter.call(input, value);
-          input.setSelectionRange(start + normalized.length, start + normalized.length);
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          return { ok: true };
-        },
+        insertText: (text) => replaceText(text, start, end),
+        replaceSelection: (text) => replaceText(text, start, end),
+        replaceDraft: (text) => replaceText(text, 0, draft.length),
       };
-      return context;
+      return Object.freeze(context);
     },
     dispose() {
       active = false;
