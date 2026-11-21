@@ -6,6 +6,8 @@ Version headings follow the Yapmod client releases. SDK package versions are ide
 
 ### Added
 
+- `commands.register({ name, description, execute })` adds local slash commands with native composer suggestions, asynchronous callbacks and automatic plugin cleanup (#98).
+
 - `composer.registerBlock(render)` mounts a reactive SolidJS view beneath each composer. Each draft has its own length and limit, and existing `registerStatus` plugins remain compatible. [#87](https://github.com/yapmod/client/pull/87)
 - `composer.registerTool(tool)` adds a labeled icon button to the composer toolbar. Tools move into a picker on narrow layouts and receive the state of the composer that opened them. [#88](https://github.com/yapmod/client/pull/88)
 - `contextMenus.registerAction('message', action)` adds actions to a message’s right-click and **More** menus. Selecting an action passes the message ID, and stale selections are ignored. [#89](https://github.com/yapmod/client/pull/89)

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Plugins can register local slash commands with native suggestions, guarded submission and automatic cleanup (#98).
+
 ## [1.2.0](https://github.com/yapmod/client/compare/v1.1.0...v1.2.0) (2026-11-21)
 
 
@@ -120,3 +126,5 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Semantic-release-bot <semantic-release-bot@martynus.net>
+
+[Unreleased]: https://github.com/yapmod/client/compare/v1.2.0...HEAD

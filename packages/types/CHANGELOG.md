@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Export `PluginCommand`, `PluginCommands` and `CommandContext` for the `yapmod.commands.register` API (#98).
+
 ## [1.3.0](https://github.com/yapmod/client/compare/types-v1.2.0...types-v1.3.0) (2026-11-21)
 
 
@@ -39,3 +45,5 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Hdzilyes ([@ilyeshdz](http://github.com/ilyeshdz))
+
+[Unreleased]: https://github.com/yapmod/client/compare/types-v1.3.0...HEAD
