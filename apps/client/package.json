@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:insertion": "node --test test/insertion.test.mjs",
     "test:locations": "node --test test/locations.test.mjs",
+    "test:messages": "node --test test/messages.test.mjs",
+    "test:context": "node --test test/context.test.mjs",
     "test:calls": "node --test test/calls.test.mjs"
   },
   "dependencies": {

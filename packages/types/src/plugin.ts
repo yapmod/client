@@ -181,6 +181,41 @@ export interface PluginSettingsSection {
   render: () => JSX.Element;
 }
 
+/** Detached attachment metadata. Path is the host storage path, not a URL. */
+export interface MessageAttachment {
+  readonly path: string;
+  readonly name?: string;
+  /** Byte count and pixel dimensions, when available. */
+  readonly size?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+/** Only validated fields present in the loaded host record are exposed. */
+export interface LoadedMessage {
+  readonly id: string;
+  readonly text?: string;
+  readonly authorId?: string;
+  readonly channelId?: string;
+  /** Host timestamp string, with its original precision and timezone. */
+  readonly createdAt?: string;
+  /** Undefined means unknown; an empty array means the host reports no attachment. */
+  readonly attachments?: readonly MessageAttachment[];
+}
+
+export type LoadedMessageResult =
+  | { readonly status: 'found'; readonly message: LoadedMessage }
+  | { readonly status: 'not-loaded' }
+  | { readonly status: 'unavailable' };
+
+export interface PluginMessages {
+  /** Reads the host cache only. A cache miss does not mean deleted or nonexistent.
+   * Unavailable means discovery, host access or record validation failed.
+   * Invalid IDs and calls after plugin disposal reject.
+   */
+  getLoaded(messageId: string): Promise<LoadedMessageResult>;
+}
+
 /** The message selected when its Yapin menu opened. */
 export interface MessageMenuContext {
   readonly messageId: string;
@@ -252,6 +287,16 @@ export type ComposerInsertResult =
 
 /** A snapshot of the composer where the user activated a tool. */
 export interface ComposerToolContext extends ComposerStatusState {
+  /** Immutable activation snapshot, never a live draft reader. */
+  readonly draft: string;
+  /** UTF-16 offsets, matching textarea selection and String.slice. */
+  readonly selection: { readonly start: number; readonly end: number };
+  /** Yapin conversation ID (also used for DMs/groups); null when unverified. */
+  readonly channelId: string | null;
+  /** Replace the captured selection using the same guards as insertText. */
+  replaceSelection(text: string): ComposerInsertResult;
+  /** Replace the entire captured draft using the same guards as insertText. */
+  replaceDraft(text: string): ComposerInsertResult;
   /** Return keyboard focus to this input while it remains mounted. */
   focus(): void;
   /** Replace the captured selection, preserving surrounding text. Never sends a message.
@@ -282,6 +327,8 @@ export interface PluginComposer {
 /** The API object every started plugin receives, community or client-registered. */
 /** Arguments are raw text after the command name, trimmed at both ends. */
 export interface CommandContext {
+  /** Captured Yapin conversation ID (including DMs/groups); null when unverified. */
+  readonly channelId: string | null;
   readonly args: string;
   /** Aborted when the command is unregistered or the plugin stops. */
   readonly signal: AbortSignal;
@@ -320,6 +367,38 @@ export interface PluginCalls {
   leave(expected: CallState): Promise<void>;
 }
 
+/** Detached identity of a selected host entity. No host objects are exposed. */
+export interface AppContextIdentity {
+  readonly id: string;
+}
+
+/** Null is a known empty selection; unavailable is never represented as null. */
+export type AppContextState =
+  | { readonly available: false }
+  | {
+      readonly available: true;
+      /** Includes existing direct/group conversations and threads. */
+      readonly channel: AppContextIdentity | null;
+      readonly server: AppContextIdentity | null;
+      readonly user: AppContextIdentity | null;
+    };
+
+export interface PluginContext {
+  /** Rejects if the host runtime/store cannot be discovered. */
+  getCurrent(): Promise<AppContextState>;
+  /** Emits immediately and on changes, including unavailable state. Lifecycle-owned. */
+  subscribe(listener: (context: AppContextState) => void): Promise<() => void>;
+}
+
+export interface PluginNavigation {
+  /** Opens an existing loaded channel/conversation using Yapin's native action. */
+  openChannel(id: string): Promise<void>;
+  /** Opens a loaded server and lets Yapin choose its channel or lobby. */
+  openServer(id: string): Promise<void>;
+  /** Opens the direct-messages area without creating a conversation. */
+  openDirectMessages(): Promise<void>;
+}
+
 export interface YapmodPluginApi {
   /** API contract version. Plugins can check this before using v1 features. */
   readonly apiVersion: 1;
@@ -349,6 +428,10 @@ export interface YapmodPluginApi {
   readonly commands: PluginCommands;
   /** Current voice call state and controls. */
   readonly calls: PluginCalls;
+  /** Detached reads of messages already loaded by Yapin; never fetches history. */
+  readonly messages: PluginMessages;
+  readonly context: PluginContext;
+  readonly navigation: PluginNavigation;
   /** Toasts, modals, stylesheets and Solid components. */
   readonly ui: PluginUi & PluginUiExtensions;
   /** Sections in the Yapmod settings group. */
