@@ -45,6 +45,16 @@ const _pluginUiAssertions: [
 /* YapmodPluginApi: verify required members                            */
 /* ------------------------------------------------------------------ */
 
+export function messageMenuContract(api: YapmodPluginApi): () => void {
+  return api.contextMenus.registerAction('message', {
+    id: 'details',
+    label: 'Details',
+    icon: 'settings',
+    visible: ({ messageId }) => messageId.length > 0,
+    onSelect: ({ messageId }) => api.log(messageId),
+  });
+}
+
 type _ApiHasId = YapmodPluginApi extends { readonly id: string } ? true : false;
 type _ApiHasStorage = YapmodPluginApi extends { readonly storage: Record<string, unknown> }
   ? true

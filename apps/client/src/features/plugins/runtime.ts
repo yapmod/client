@@ -27,6 +27,7 @@ import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './ma
 import { observeElements } from './observe';
 import { fetchRemotePlugin } from './remote';
 import { PluginScope } from './scope';
+import { registerMessageAction } from './menus';
 import { createPluginStorage } from './storage';
 import {
   addClientPlugin,
@@ -133,6 +134,12 @@ function createPluginApi(
     },
     observe(selector, onFound) {
       return disposers.install(() => observeElements(selector, onFound));
+    },
+    contextMenus: {
+      registerAction(target, action) {
+        if (target !== 'message') throw new TypeError('Unsupported context menu target.');
+        return disposers.installUi(() => registerMessageAction(id, action));
+      },
     },
     ui: {
       showToast: showToast,
