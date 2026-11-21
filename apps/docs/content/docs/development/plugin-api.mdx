@@ -15,8 +15,67 @@ Every plugin receives a `YapmodPluginApi` object when it starts. This is your ga
   Every property and method documented here is available as a TypeScript type from `@yapmod/types`.
   Install the package and add it to your `tsconfig.json` to get full autocompletion in your editor.
   See the [Type Safety](/docs/development/type-safety) page for setup instructions and a complete
-  list of all 27 exportable types.
+  list of exported types.
 </Callout>
+
+## Local commands
+
+### `api.commands.register(command)`
+
+Register a local slash command with a name, description and callback. For example, typing
+`/hello Ada` and pressing **Enter** or **Send** displays a greeting only on your screen:
+
+```typescript
+const unregister = yapmod.commands.register({
+  name: 'hello',
+  description: 'Show a local greeting',
+  execute({ args }) {
+    yapmod.ui.showToast(`Hello ${args || 'world'}!`);
+  },
+});
+
+// Optional: remove it early. Plugin shutdown also removes it automatically.
+// unregister();
+```
+
+The callback receives a `CommandContext`:
+
+| Property | Type          | Meaning                                                                                                                                         |
+| -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `args`   | `string`      | Everything after the command name, trimmed at both ends. Quotes and internal whitespace are preserved; there is no shell-style argument parser. |
+| `signal` | `AbortSignal` | Aborted when the registration is removed or its plugin stops. Pass it to cancellable async work.                                                |
+
+Callbacks can return `void` or `Promise<void>`. Each registration runs at most one callback at a
+time. A second attempt while it is busy leaves the new draft intact and shows a notice.
+A successful dispatch clears the draft before invoking the callback. Callback failures are logged
+and shown as an error toast; the command is never sent as a message, and the cleared draft is not
+restored. Disposal aborts the signal but cannot forcibly stop a callback that ignores it.
+
+**Names and conflicts:** use 1–32 lowercase ASCII letters, digits, underscores or hyphens,
+without the leading `/`. Invocation is case-insensitive. Descriptions must contain 1–200
+characters. Invalid definitions and duplicate plugin command names throw synchronously.
+`timestamp` is reserved by Yapin. Choose a distinctive prefix such as `myplugin-hello`.
+If a native slash command has the same name in a channel, the local suggestion is omitted and
+submission is blocked with an explanation. Unregister the local command or disable its plugin
+to use the native command. Other native commands and ordinary messages retain their behavior.
+
+**Composer behavior:** suggestions use Yapin's native command menu. **Tab** completes a
+suggestion; an exact command runs with **Enter** or **Send**. **Shift+Enter** inserts a newline.
+Other modified Enter combinations do not submit local commands, and IME composition does not
+execute them. Locked composers and drafts with attachments are rejected without clearing the draft.
+Commands belong to the plugin, so they remain available when switching channels and are removed
+on disable, reload or client disposal. Calling the returned disposer more than once is safe.
+
+<Callout type="warn">
+  Native suggestions currently depend on Yapin's internal composer props. A host update can break
+  that integration. If the composer cannot be recognized or its draft cannot be updated, Yapmod
+  blocks submission of registered commands and keeps the draft instead of sending it. Suggestions
+  refresh on subsequent composer interaction; an already-open menu may briefly show a removed entry.
+  Once a command has been unregistered, its name is no longer intercepted.
+</Callout>
+
+For older clients, check `yapmod.commands` before registering. `apiVersion` remains `1` because
+this is an additive API; the version alone does not identify which optional additions are present.
 
 ## Properties
 

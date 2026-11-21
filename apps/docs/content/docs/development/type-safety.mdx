@@ -363,6 +363,25 @@ If a type drifts or goes out of sync, these tests will catch it. You can run the
 pnpm --filter @yapmod/types test:contracts
 ```
 
+## Command types
+
+`PluginCommand`, `PluginCommands` and `CommandContext` are exported from `@yapmod/types`.
+The [commands reference](/docs/development/plugin-api#local-commands) covers registration,
+raw arguments, asynchronous callbacks and automatic cleanup.
+
+```typescript
+import type { PluginCommand } from '@yapmod/types';
+
+const hello: PluginCommand = {
+  name: 'hello',
+  description: 'Show a local greeting',
+  execute({ args, signal }) {
+    if (!signal.aborted) yapmod.ui.showToast(`Hello ${args || 'world'}!`);
+  },
+};
+yapmod.commands.register(hello);
+```
+
 ## What comes next
 
 Type safety makes plugin development much smoother. Now that you know how types work in Yapmod, head over to the [plugin API reference](/docs/development/plugin-api) to see every available method, or check out the [UI components](/docs/development/ui-components) guide for a complete look at all the components you can use.
