@@ -21,7 +21,7 @@ import { openContentModal, openModal } from '../../lib/modal';
 import { sharedSolid } from '../../lib/solid';
 import { showToast } from '../../lib/toast';
 import { registerSettingsSection } from '../settings/install';
-import { registerComposerStatus } from './composer';
+import { registerComposerBlock, registerComposerStatus } from './composer';
 import { evaluatePluginSource } from './eval';
 import { isRecord, localPluginId, normalizeManifest, remotePluginId } from './manifest';
 import { observeElements } from './observe';
@@ -161,6 +161,11 @@ function createPluginApi(
       Divider,
     },
     composer: {
+      registerBlock(render) {
+        if (typeof render !== 'function')
+          throw new TypeError('registerBlock expects a render function.');
+        return disposers.installUi(() => registerComposerBlock(id, render));
+      },
       registerStatus(format) {
         if (typeof format !== 'function')
           throw new TypeError('registerStatus expects a formatter.');
