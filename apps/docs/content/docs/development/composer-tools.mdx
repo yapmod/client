@@ -46,3 +46,28 @@ Wide composers show tools in registration order. A narrow composer groups them u
 ## Cleanup
 
 Registration returns an early disposer. Calling the disposer after replacing the same ID leaves the replacement active. Unloading or hot reloading a plugin cleans up its tools automatically. When Yapin replaces a composer, Yapmod moves the available actions to the new instance.
+
+## Insert text into the originating draft
+
+`context.insertText(text)` replaces the selection captured when the tool was activated. With a collapsed selection, it inserts at that caret. Text before and after the selection is preserved; the caret ends after the inserted text. Moving the selection while a plugin dialog is open does not change the insertion position. The operation updates Yapin’s React draft state and never submits or sends a message. It does not steal focus; call `context.focus()` when closing your dialog.
+
+```ts
+const result = context.insertText(savedReply);
+if (!result.ok) {
+  const messages = {
+    'draft-changed': 'Your draft changed. Open the reply tool again.',
+    'stale-target': 'This composer is no longer active. Open the reply tool again.',
+    'max-length': 'This reply would exceed the message length limit.',
+    'not-editable': 'This composer cannot be edited right now.',
+  };
+  yapmod.ui.showToast(messages[result.reason], 'error');
+} else {
+  context.focus();
+}
+```
+
+A changed draft is rejected rather than overwritten or silently appended to. Activate the tool again to capture the new draft and selection. After a successful insertion changes the draft, the old context also rejects subsequent insertions. Length checks use the current native `maxlength`, in UTF-16 code units, after normalizing CRLF and CR line endings to LF; oversized text is never truncated. Disabled and read-only inputs reject insertion.
+
+Contexts expire when their tool is removed or replaced, the client is disposed, the input or an ancestor is removed or moved, or navigation occurs (including a switch away and back). They never fall back to another textarea. `focus()` also does nothing for a stale context. Navigation invalidation is conservative: even a history update on the same page requires a fresh activation.
+
+For clients predating this API, check `typeof context.insertText === 'function'` and show an upgrade message if it is unavailable.

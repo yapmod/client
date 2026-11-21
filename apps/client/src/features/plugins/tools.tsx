@@ -5,6 +5,7 @@ import { render } from 'solid-js/web';
 import { openModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
 import css from './tools.css?inline';
+import { trackComposerTargets } from './insertion';
 
 interface Entry {
   pluginId: string;
@@ -14,6 +15,7 @@ interface Entry {
 const [entries, setEntries] = createSignal<Entry[]>([]);
 const mounts = new Map<HTMLElement, { host: HTMLElement; dispose(): void }>();
 let stopWatching: (() => void) | undefined;
+let targets: ReturnType<typeof trackComposerTargets> | undefined;
 
 function ToolIcon(props: { entry: Entry }) {
   const icon = props.entry.tool.icon;
@@ -27,13 +29,12 @@ function ToolIcon(props: { entry: Entry }) {
 
 async function activate(entry: Entry, box: HTMLElement) {
   const input = box.querySelector('textarea');
-  if (!input?.isConnected || !entries().includes(entry)) return;
+  if (!input?.isConnected || !entries().includes(entry) || !targets) return;
   try {
-    await entry.tool.onActivate({
-      length: input.value.length,
-      maxLength: input.maxLength < 0 ? null : input.maxLength,
-      focus: () => input.focus({ preventScroll: true }),
-    });
+    const mount = mounts.get(box);
+    await entry.tool.onActivate(
+      targets.capture(input, box, () => entries().includes(entry) && mounts.get(box) === mount),
+    );
   } catch (error) {
     console.error(`[yapmod] composer tool failed: ${entry.pluginId}/${entry.tool.id}`, error);
     showToast(`${entry.tool.label} could not run.`, 'error');
@@ -132,6 +133,7 @@ function syncBox(box: HTMLElement) {
 }
 
 function watch() {
+  targets = trackComposerTargets();
   const style = appendStyle(css);
   for (const box of document.querySelectorAll<HTMLElement>('.composer-box')) syncBox(box);
   const observer = new MutationObserver((records) => {
@@ -155,6 +157,8 @@ function watch() {
   });
   observer.observe(document.documentElement, { subtree: true, childList: true });
   return () => {
+    targets?.dispose();
+    targets = undefined;
     observer.disconnect();
     for (const { host, dispose } of mounts.values()) {
       dispose();
