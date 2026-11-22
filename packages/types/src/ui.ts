@@ -148,3 +148,23 @@ export type TextareaProps = Omit<JSX.IntrinsicElements['textarea'], 'value' | 'o
   defaultValue?: string;
   onChange?: (value: string) => void;
 };
+
+export interface TabsProps<Value extends string = string> {
+  variant?: 'underline' | 'pills';
+  label: string;
+  value: Value;
+  options: readonly { value: Value; label: JSX.Element; disabled?: boolean }[];
+  disabled?: boolean;
+  onChange: (value: Value) => void;
+  children: JSX.Element;
+}
+
+export type BadgeProps = JSX.IntrinsicElements['span'] & {
+  variant?: 'default' | 'mention';
+};
+
+export type IconButtonProps = JSX.IntrinsicElements['button'] & {
+  'aria-label': string;
+  active?: boolean;
+  variant?: 'default' | 'danger';
+};

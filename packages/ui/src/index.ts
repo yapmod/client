@@ -14,7 +14,7 @@ export { Section } from './components/Section';
 export { SettingRow } from './components/SettingRow';
 export { SettingText } from './components/SettingText';
 export { Divider } from './components/Divider';
-export { Tabs, type TabsProps } from './components/Tabs';
+export { Tabs } from './components/Tabs';
 
 export type {
   IconName,
@@ -24,6 +24,9 @@ export type {
   RegisteredIcon,
   IconProps,
   ButtonProps,
+  BadgeProps,
+  IconButtonProps,
+  TabsProps,
   HintProps,
   PanelProps,
   SwitchProps,
@@ -40,3 +43,6 @@ export type {
 } from '@yapmod/types';
 
 export { createIconRegistry, isIconSource } from './registry';
+
+export { Badge } from './components/Badge';
+export { IconButton } from './components/IconButton';

@@ -1,6 +1,16 @@
 import { createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
-import { Input, Select, Switch, injectStyles } from '@yapmod/ui';
+import {
+  Badge,
+  Button,
+  Icon,
+  IconButton,
+  Tabs,
+  Input,
+  Select,
+  Switch,
+  injectStyles,
+} from '@yapmod/ui';
 
 injectStyles();
 
@@ -77,6 +87,9 @@ function applyTheme(name: ThemeName) {
 }
 
 function Demo() {
+  const [tab, setTab] = createSignal('online');
+  const [tabStyle, setTabStyle] = createSignal<'underline' | 'pills'>('underline');
+  const [pinned, setPinned] = createSignal(false);
   const [theme, setTheme] = createSignal<ThemeName>('dark');
   const [notifications, setNotifications] = createSignal(true);
   const [sounds, setSounds] = createSignal(false);
@@ -115,6 +128,49 @@ function Demo() {
             {theme() === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </header>
+
+        <section style={{ 'margin-bottom': '24px' }}>
+          <Button
+            variant="secondary"
+            onClick={() => setTabStyle(tabStyle() === 'underline' ? 'pills' : 'underline')}
+          >
+            Tab style: {tabStyle()}
+          </Button>
+          <Tabs
+            label="Friends"
+            variant={tabStyle()}
+            value={tab()}
+            onChange={setTab}
+            options={[
+              { value: 'online', label: 'Online' },
+              { value: 'all', label: 'All friends' },
+              {
+                value: 'pending',
+                label: (
+                  <>
+                    Pending <Badge>3</Badge>
+                  </>
+                ),
+              },
+              { value: 'blocked', label: 'Unavailable', disabled: true },
+            ]}
+          >
+            <p>Selected: {tab()}</p>
+            <IconButton
+              aria-label="Pin view"
+              active={pinned()}
+              onClick={() => setPinned(!pinned())}
+            >
+              <Icon name="plus" />
+            </IconButton>
+            <IconButton aria-label="Delete" variant="danger" disabled>
+              <Icon name="trash" />
+            </IconButton>
+            <Badge variant="mention" aria-label="2 mentions">
+              2
+            </Badge>
+          </Tabs>
+        </section>
 
         <section class="ss2-card" style={{ 'margin-bottom': '20px' }}>
           <div

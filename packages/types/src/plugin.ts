@@ -15,6 +15,9 @@ import type {
   RegisteredIcon,
   IconProps,
   ButtonProps,
+  BadgeProps,
+  IconButtonProps,
+  TabsProps,
   HintProps,
   PanelProps,
   SwitchProps,
@@ -38,6 +41,9 @@ export type {
   RegisteredIcon,
   IconProps,
   ButtonProps,
+  BadgeProps,
+  IconButtonProps,
+  TabsProps,
   HintProps,
   PanelProps,
   SwitchProps,
@@ -143,6 +149,9 @@ export interface PluginUi {
   injectCss(css: string): () => void;
   /** A button styled like Yapin's `.btn`. */
   Button: Component<ButtonProps>;
+  Badge: Component<BadgeProps>;
+  IconButton: Component<IconButtonProps>;
+  Tabs: <Value extends string>(props: TabsProps<Value>) => JSX.Element;
   /** Inline hint text in Yapin's `.hint` style. */
   Hint: Component<HintProps>;
   /** A card-like container in Yapmod's `yp-` style. */
