@@ -606,3 +606,91 @@
     flex-wrap: wrap;
   }
 }
+
+/* Yapin's friends tabs, notification badge, and icon button (November 2026). */
+.yp-tabs--pills {
+  align-items: center;
+  gap: 6px;
+  border: 0;
+}
+.yp-tabs--pills button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  margin: 0;
+  border: 0;
+  border-radius: var(--yp-row-radius);
+  font-size: inherit;
+}
+.yp-tabs--pills button.on {
+  background: var(--yp-bg-active);
+}
+.yp-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--yp-row-radius);
+  background: transparent;
+  color: var(--yp-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.yp-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.yp-icon-btn--active {
+  color: var(--yp-accent);
+}
+.yp-icon-btn--danger {
+  color: var(--yp-danger);
+}
+.yp-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.yp-icon-btn:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+.yp-tabs button,
+.yp-icon-btn {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--yp-press-ms) linear,
+    color var(--yp-press-ms) linear;
+}
+@media (hover: hover) {
+  .yp-tabs button:hover:not(:disabled):not(.on),
+  .yp-icon-btn:hover:not(:disabled) {
+    background: var(--hover-bg, var(--yp-bg-hover));
+  }
+}
+.yp-tabs button:active:not(:disabled),
+.yp-icon-btn:active:not(:disabled) {
+  background: var(--press-bg, var(--yp-bg-active));
+}
+.yp-badge {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--yp-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.yp-badge--mention {
+  background: #faa61a;
+}
