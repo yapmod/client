@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Export `TabsProps`, `BadgeProps`, and `IconButtonProps`, with typed `Tabs`, `Badge`, and `IconButton` components available through the plugin UI API and `@yapmod/ui` declarations. `Tabs` preserves the string type of its values for typed selection callbacks. [#117](https://github.com/yapmod/client/pull/117)
+
 ## [1.4.0](https://github.com/yapmod/client/compare/types-v1.3.0...types-v1.4.0) (2026-11-21)
 
 
@@ -14,12 +20,6 @@
 * **plugins:** add local slash command API ([f6bf3db](https://github.com/yapmod/client/commit/f6bf3dbf96468d2479ff16218a158814f075c0d8)), closes [#98](https://github.com/yapmod/client/issues/98)
 * **plugins:** support registered custom icons ([#101](https://github.com/yapmod/client/issues/101)) ([8b8c0f5](https://github.com/yapmod/client/commit/8b8c0f5ded9ccfb64ef3e4e1231f5af5de678460))
 * **sdk:** expose composer text insertion ([#105](https://github.com/yapmod/client/issues/105)) ([2244548](https://github.com/yapmod/client/commit/2244548f6e4ad10f4d4e61ee9b4f224073d30c0a))
-
-## [Unreleased]
-
-### Added
-
-- Export `PluginCommand`, `PluginCommands` and `CommandContext` for the `yapmod.commands.register` API (#98).
 
 ## [1.3.0](https://github.com/yapmod/client/compare/types-v1.2.0...types-v1.3.0) (2026-11-21)
 
@@ -60,5 +60,3 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Hdzilyes ([@ilyeshdz](http://github.com/ilyeshdz))
-
-[Unreleased]: https://github.com/yapmod/client/compare/types-v1.3.0...HEAD

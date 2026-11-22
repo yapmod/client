@@ -20,34 +20,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
-        id: release
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-      # GITHUB_TOKEN-created PRs/tags do not trigger other workflows. Explicit
-      # dispatches do, and keep npm OIDC in the existing trusted workflow files.
-      - name: Validate release PRs and dispatch publishing
-        uses: actions/github-script@v8
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Use Release Please's Node strategy with hand-written changelog notes.
+      # Explicit dispatches keep checks and npm OIDC working with GITHUB_TOKEN.
+      - run: node .github/scripts/release-please.mjs
         env:
-          RELEASE_PRS: ${{ steps.release.outputs.prs || '[]' }}
-          CLIENT_TAG: ${{ steps.release.outputs.tag_name }}
-          BUILDER_TAG: ${{ steps.release.outputs['packages/builder--tag_name'] }}
-          TYPES_TAG: ${{ steps.release.outputs['packages/types--tag_name'] }}
-        with:
-          script: |
-            const dispatch = (workflow_id, ref, inputs = {}) =>
-              github.rest.actions.createWorkflowDispatch({
-                ...context.repo, workflow_id, ref, inputs,
-              });
-            for (const pr of JSON.parse(process.env.RELEASE_PRS)) {
-              await dispatch('checks.yml', pr.headBranchName);
-            }
-            for (const [workflow, tag] of [
-              ['release-client.yml', process.env.CLIENT_TAG],
-              ['publish-npm.yml', process.env.BUILDER_TAG],
-              ['publish-types-npm.yml', process.env.TYPES_TAG],
-            ]) {
-              if (tag) await dispatch(workflow, 'main', { tag });
-            }
+          GH_TOKEN: ${{ github.token }}
