@@ -147,10 +147,7 @@ export function PluginsPage() {
   });
 
   return (
-    <SettingsPage
-      title="Plugins"
-      description="Install plugins from a URL, local code, or a collection. Everything is stored in this browser."
-    >
+    <SettingsPage title="Plugins" description="Manage your plugins and collections.">
       <div class="row-gap" style={{ 'margin-bottom': '14px' }}>
         <Input
           type="search"
@@ -170,7 +167,13 @@ export function PluginsPage() {
         <div
           style={{ display: 'flex', 'flex-direction': 'column', gap: '10px', 'margin-top': '12px' }}
         >
-          <For each={plugins()}>{(plugin) => <PluginCard plugin={plugin} />}</For>
+          <For each={plugins().map((plugin) => plugin.id)}>
+            {(id) => (
+              <Show when={pluginState().plugins.find((plugin) => plugin.id === id)}>
+                {(plugin) => <PluginCard plugin={plugin()} />}
+              </Show>
+            )}
+          </For>
         </div>
       </Show>
       <For each={visibleCollections()}>

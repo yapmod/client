@@ -14,6 +14,7 @@ export { Section } from './components/Section';
 export { SettingRow } from './components/SettingRow';
 export { SettingText } from './components/SettingText';
 export { Divider } from './components/Divider';
+export { Tabs, type TabsProps } from './components/Tabs';
 
 export type {
   IconName,

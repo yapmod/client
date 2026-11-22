@@ -481,3 +481,128 @@
   font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
+
+:where(.yp-tabs) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--yp-border);
+}
+
+:where(.yp-tabs) button {
+  padding: 8px 12px;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--yp-row-radius) var(--yp-row-radius) 0 0;
+  background: transparent;
+  color: var(--yp-text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+:where(.yp-tabs) button:hover,
+:where(.yp-tabs) button.on {
+  color: var(--yp-text);
+}
+
+:where(.yp-tabs) button.on {
+  border-bottom-color: var(--yp-accent);
+}
+
+.yp-tabs button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.yp-tabs button:focus-visible,
+.yp-collection-toggle:focus-visible,
+.yp-plugin-version > summary:focus-visible {
+  outline: 2px solid var(--yp-accent);
+  outline-offset: 2px;
+}
+
+.yp-collection {
+  margin-top: 14px;
+}
+
+.yp-collection .hint,
+.yp-plugin-card .hint {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.yp-card-head .ss2-card-title {
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
+}
+
+.yp-collection-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--yp-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.yp-collection-chevron {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--yp-text-muted);
+}
+
+.yp-collection-chevron--open {
+  transform: rotate(90deg);
+}
+
+.yp-collection-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--yp-border);
+}
+
+.yp-collection-item:last-child {
+  padding-bottom: 0;
+}
+
+.yp-plugin-version {
+  color: var(--yp-text-muted);
+  font-size: 13px;
+}
+
+.yp-plugin-version > summary {
+  width: fit-content;
+  max-width: 100%;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.yp-plugin-version > summary:hover {
+  color: var(--yp-text);
+}
+
+.yp-version-label {
+  margin-inline-start: 12px;
+}
+
+.yp-plugin-version > .yp-btn {
+  margin-top: 10px;
+}
+
+@media (max-width: 560px) {
+  .yp-card-head {
+    flex-wrap: wrap;
+  }
+}
