@@ -1,5 +1,7 @@
 # Changelog
 
+Historical release notes. New client entries belong in the root [CHANGELOG.md](../../CHANGELOG.md).
+
 ## [1.3.0](https://github.com/yapmod/client/compare/v1.2.0...v1.3.0) (2026-11-21)
 
 
@@ -16,12 +18,6 @@
 * **plugins:** make updates transactional with restore and pinning ([#104](https://github.com/yapmod/client/issues/104)) ([0801d6e](https://github.com/yapmod/client/commit/0801d6e3130e4deb3e3d6b801bc62dd62f809c59))
 * **plugins:** support registered custom icons ([#101](https://github.com/yapmod/client/issues/101)) ([8b8c0f5](https://github.com/yapmod/client/commit/8b8c0f5ded9ccfb64ef3e4e1231f5af5de678460))
 * **sdk:** expose composer text insertion ([#105](https://github.com/yapmod/client/issues/105)) ([2244548](https://github.com/yapmod/client/commit/2244548f6e4ad10f4d4e61ee9b4f224073d30c0a))
-
-## [Unreleased]
-
-### Added
-
-- Plugins can register local slash commands with native suggestions, guarded submission and automatic cleanup (#98).
 
 ## [1.2.0](https://github.com/yapmod/client/compare/v1.1.0...v1.2.0) (2026-11-21)
 
@@ -143,5 +139,3 @@
 - Ilyes Hernandez ([@ilyeshdz](http://github.com/ilyeshdz))
 - GitHub Actions ([@Github-Action-Bot](http://github.com/Github-Action-Bot))
 - Semantic-release-bot <semantic-release-bot@martynus.net>
-
-[Unreleased]: https://github.com/yapmod/client/compare/v1.2.0...HEAD

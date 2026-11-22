@@ -7,12 +7,36 @@ description: Review a release PR, merge it, and publish approved client and npm 
 
 [Release Please](https://github.com/googleapis/release-please) maintains one release PR as changes land on `main`. Conventional Commits determine the next versions: `fix:` produces a patch, `feat:` a minor, and a breaking change marked with `!` or `BREAKING CHANGE:` a major.
 
-1. Squash-merge feature and fix PRs with a Conventional Commit title. There is no extra changeset file to maintain. Squashing avoids duplicate release-note entries from merge commits and their constituent commits.
-2. Review the generated release PR's versions and changelogs. Wait for **Checks / check** to pass.
-3. Merge the release PR when ready to ship.
-4. Release Please creates tags and draft GitHub releases, then dispatches the publishing workflows. The client release becomes public only after its bundle is attached; npm releases become public after publishing succeeds.
+1. Write release notes in the same PR as your product change, under `## [Unreleased]` in the appropriate changelog. Use a Conventional Commit PR title to select the version bump.
+2. Squash-merge the PR. Release Please refreshes the single rolling release PR with the accumulated hand-written notes and version bumps.
+3. Review the release PR's versions and notes. Wait for **Checks / check** to pass, then merge it when ready to ship.
+4. Release Please creates tags and draft GitHub releases, then dispatches publishing. The client release becomes public only after its bundle is attached; npm releases become public after publishing succeeds.
 
-Merging ordinary feature PRs only updates the release proposal. Merging the release PR authorizes publishing. The migration itself does not publish a version.
+Merging ordinary PRs only updates the release proposal. Merging the release PR authorizes publishing.
+
+## Writing changelog entries
+
+| Change                     | Changelog to edit                                    |
+| -------------------------- | ---------------------------------------------------- |
+| Client, core, or shared UI | `CHANGELOG.md`                                       |
+| Builder                    | `packages/builder/CHANGELOG.md`                      |
+| Public SDK/types           | `packages/types/CHANGELOG.md` **and** `CHANGELOG.md` |
+
+Describe the result for users rather than repeating a commit title. Group concise bullets under `### Added`, `### Changed`, `### Fixed`, or `### Removed`. Include migration instructions for breaking changes and inline links when useful. For example:
+
+```md
+## [Unreleased]
+
+### Fixed
+
+- Failed plugin saves now preserve your editor draft and keep the current plugin running.
+```
+
+**Checks** requires a changed, nonempty Unreleased section for each affected component when files under its `src/` directory change. Documentation, tests outside `src/`, and tooling-only PRs do not require notes. Add notes for user-visible build or dependency changes too, even though the source-path check cannot detect their impact. An empty Unreleased section does not produce a release for that component.
+
+Automation moves the authored section beneath a version/date heading and leaves an empty Unreleased section for the next batch. It never derives note text from commits. The date is the proposal date in Europe/Paris. Leave version bumps and headings to the release PR.
+
+Correct notes in an ordinary PR against `main`; edits made directly on the release branch will be replaced on refresh. GitHub release notes are read from the versioned changelog at the release PR's merge commit, not its editable description. Keep inline links in entries so they also work in standalone release notes and announcements.
 
 ## What gets released
 
@@ -28,11 +52,11 @@ The private root package mirrors the client version so Release Please can track 
 
 The client keeps the `yapmod-client.js` asset and `vX.Y.Z` tag format. Only client releases are marked **Latest**, so existing `/releases/latest/download/yapmod-client.js` URLs continue to work. Builder and types GitHub releases are never marked Latest.
 
-`apps/client/CHANGELOG.md` and each npm package's `CHANGELOG.md` are generated release histories. These three files are excluded from Oxfmt so its Markdown preferences do not conflict with Release Please's output. The root `CHANGELOG.md` remains the curated website changelog; update it in feature PRs as appropriate.
+The root `CHANGELOG.md` is the canonical client release history. `apps/client/CHANGELOG.md` is a historical archive from the old generator. Package histories retain their existing released entries; all new notes are hand-written.
 
 ## Repository setup
 
-Enable **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The workflows use the built-in `GITHUB_TOKEN`; no personal access token is needed. If branch protection is enabled, require **check** before merging.
+Enable **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The release workflow runs a pinned Release Please library with the local `manual-node` strategy in `.github/scripts/manual-changelog.mjs`. It retains Release Please's manifest, rolling branch, labels, version selection, and release lifecycle. The workflows use the built-in `GITHUB_TOKEN`; no personal access token is needed. If branch protection is enabled, require **check** before merging.
 
 GitHub normally suppresses workflow events caused by `GITHUB_TOKEN`. The Release Please workflow explicitly dispatches **Checks** on the release PR branch, and explicitly dispatches publishing on `main` with the exact release tag. Publishing checks out that tag, verifies that its commit belongs to `main`, and checks that the package version matches the release manifest. No publishing workflow commits or pushes version changes.
 
@@ -40,7 +64,7 @@ Keep the existing npm trusted publishers configured for `yapmod/client` and thei
 
 ## Yapin release announcements
 
-**Announce release on Yapin** sends a Markdown message with the component, version, changelog, and GitHub release link. It sends no embeds. Release Please's commit hashes are removed for readability; PR links and scoped change descriptions remain. Long changelogs are shortened at complete lines to fit a 2,000-character message, with a link to the full release.
+**Announce release on Yapin** sends a Markdown message with the component, version, changelog, and GitHub release link. It sends no embeds. The published hand-written notes are used directly; legacy commit hashes are still removed for readability. Long changelogs are shortened at complete lines to fit a 2,000-character message, with a link to the full release.
 
 Set the repository Actions secret `YAPIN_RELEASE_WEBHOOK_URL` to the destination webhook URL. Keep webhook credentials out of the repository. Set the repository Actions variable `YAPIN_RELEASE_ROLE_ID` to the Yapmod role ID. The message pings only that role; user and everyone mentions are disabled. Missing or malformed role IDs fail delivery rather than silently dropping the ping.
 

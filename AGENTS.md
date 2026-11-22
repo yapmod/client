@@ -57,3 +57,16 @@ Client workspace dependencies expose TypeScript source. Import them by package n
 - The displayed client version comes from `apps/client/package.json`.
 
 Further documentation lives in `apps/docs/content/docs/`.
+
+## Release notes
+
+Write user-facing notes in the same PR as each product source change, under
+`## [Unreleased]` in the root `CHANGELOG.md` for client/core/UI changes,
+`packages/builder/CHANGELOG.md` for builder changes, and both the root and
+`packages/types/CHANGELOG.md` for SDK changes. Use `### Added`, `### Changed`,
+`### Fixed`, or `### Removed` with concise bullets explaining the user impact.
+Use inline links. Docs, tests, and tooling-only changes do not require release notes.
+Keep Conventional Commit PR titles for version selection. Do not bump versions or
+move Unreleased entries yourself: the rolling release PR handles that. Edit notes
+through ordinary PRs against main; direct edits to the release branch are replaced
+when it refreshes. See the releases guide for the publishing and retry process.
