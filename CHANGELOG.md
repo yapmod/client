@@ -4,6 +4,8 @@ Version headings follow the Yapmod client releases. SDK package versions are ide
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-11-22
+
 ### Added
 
 - Plugin authors can use shared `Tabs`, `Badge`, and `IconButton` components to match Yapin’s controls, including keyboard navigation for tabs. [#117](https://github.com/yapmod/client/pull/117)
