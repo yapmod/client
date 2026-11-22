@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-11-22
+
 ### Added
 
 - Export `TabsProps`, `BadgeProps`, and `IconButtonProps`, with typed `Tabs`, `Badge`, and `IconButton` components available through the plugin UI API and `@yapmod/ui` declarations. `Tabs` preserves the string type of its values for typed selection callbacks. [#117](https://github.com/yapmod/client/pull/117)
