@@ -1,5 +1,5 @@
 import { Button, Icon, Switch } from '@yapmod/ui';
-import { Show } from 'solid-js';
+import { Show, createSignal } from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
 import { openPluginEditor } from './editor';
@@ -15,10 +15,13 @@ import {
 import { isDevPluginId } from '../dev/apply';
 import type { StoredPlugin } from './types';
 
-export function PluginCard(props: { plugin: StoredPlugin }) {
+export function PluginCard(props: { plugin: StoredPlugin; embedded?: boolean }) {
   const plugin = () => props.plugin;
+  const [busy, setBusy] = createSignal(false);
 
   async function update(): Promise<void> {
+    if (busy()) return;
+    setBusy(true);
     const current = plugin();
 
     try {
@@ -34,6 +37,25 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
     } catch (error) {
       console.error('[yapmod] could not update plugin', error);
       showToast(error instanceof Error ? error.message : 'Could not update plugin.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function restore(): Promise<void> {
+    if (busy()) return;
+    setBusy(true);
+    try {
+      const result = await restorePlugin(plugin().id);
+      showToast(
+        result === 'updated' ? 'Previous version restored and pinned.' : `Restore ${result}.`,
+        result === 'updated' ? 'success' : 'error',
+      );
+    } catch (error) {
+      console.error('[yapmod] could not restore plugin', error);
+      showToast(error instanceof Error ? error.message : 'Could not restore plugin.', 'error');
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -57,11 +79,17 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
   }
 
   return (
-    <section class="ss2-card">
-      <div style={{ display: 'flex', 'align-items': 'flex-start', gap: '12px' }}>
-        <div style={{ flex: '1 1 0', 'min-width': '0' }}>
+    <section
+      classList={{
+        'yp-plugin-card': true,
+        'ss2-card': !props.embedded,
+        'yp-collection-item': props.embedded,
+      }}
+    >
+      <div class="ss2-card-head yp-card-head">
+        <div class="ss2-card-text">
           <div
-            class="toggle-label"
+            class="ss2-card-title"
             style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
           >
             <span>{plugin().manifest.name}</span>
@@ -109,6 +137,7 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
               class="icon-btn"
               title="Update plugin"
               aria-label={`Update ${plugin().manifest.name}`}
+              disabled={busy()}
               onClick={() => void update()}
             >
               <Icon name="refresh" size={16} />
@@ -120,6 +149,7 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
             class="icon-btn"
             title="Edit plugin"
             aria-label={`Edit ${plugin().manifest.name}`}
+            disabled={busy()}
             onClick={() => openPluginEditor(plugin().id)}
           >
             <Icon name="pencil" size={16} />
@@ -130,6 +160,7 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
             class="icon-btn muted"
             title="Delete plugin"
             aria-label={`Delete ${plugin().manifest.name}`}
+            disabled={busy()}
             onClick={() => void remove()}
           >
             <Icon name="trash" size={16} />
@@ -137,6 +168,7 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
 
           <Switch
             checked={plugin().on}
+            disabled={busy()}
             aria-label={`Enable ${plugin().manifest.name}`}
             onChange={(enabled) => {
               setPluginEnabled(plugin().id, enabled);
@@ -146,41 +178,51 @@ export function PluginCard(props: { plugin: StoredPlugin }) {
       </div>
 
       <div class="hint">{plugin().manifest.description}</div>
-      <Show when={!plugin().local}>
-        <label class="toggle-label">
-          <Switch
-            checked={plugin().pinned === true}
-            aria-label={`Pin ${plugin().manifest.name} version`}
-            onChange={(pinned) => {
-              try {
-                setPluginPinned(plugin().id, pinned);
-              } catch (error) {
-                showToast(
-                  error instanceof Error ? error.message : 'Could not pin version.',
-                  'error',
-                );
-              }
-            }}
-          />
-          Pin current version {plugin().manifest.version}
-        </label>
-        <div class="hint">
-          Pinned versions skip automatic updates. Manual updates remain available. Disabled plugins
-          are never updated automatically.
-        </div>
-      </Show>
-      <Show when={plugin().previous}>
-        <Button
-          onClick={async () => {
-            const result = await restorePlugin(plugin().id);
-            showToast(
-              result === 'updated' ? 'Previous version restored and pinned.' : `Restore ${result}.`,
-              result === 'updated' ? 'success' : 'error',
-            );
-          }}
-        >
-          Restore previous version
-        </Button>
+      <Show
+        when={!plugin().local || plugin().previous}
+        fallback={<span class="hint">v{plugin().manifest.version}</span>}
+      >
+        <details class="yp-plugin-version">
+          <summary>
+            v{plugin().manifest.version}
+            <Show when={plugin().pinned}> · Pinned</Show>
+            <span class="yp-version-label">Version options</span>
+          </summary>
+          <Show when={!plugin().local}>
+            <label class="toggle-row">
+              <div class="ss2-card-text">
+                <div class="toggle-label">Pin this version</div>
+                <div class="hint">Pause automatic updates. You can still update manually.</div>
+              </div>
+              <Switch
+                checked={plugin().pinned === true}
+                disabled={busy()}
+                aria-label={`Pin ${plugin().manifest.name} version`}
+                onChange={(pinned) => {
+                  try {
+                    setPluginPinned(plugin().id, pinned);
+                  } catch (error) {
+                    console.error('[yapmod] could not pin plugin version', error);
+                    showToast(
+                      error instanceof Error ? error.message : 'Could not pin version.',
+                      'error',
+                    );
+                  }
+                }}
+              />
+            </label>
+          </Show>
+          <Show when={plugin().previous}>
+            <Button
+              size="small"
+              variant="secondary"
+              disabled={busy()}
+              onClick={() => void restore()}
+            >
+              Restore v{plugin().previous?.manifest.version}
+            </Button>
+          </Show>
+        </details>
       </Show>
     </section>
   );
