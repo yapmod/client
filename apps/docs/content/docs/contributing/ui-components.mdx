@@ -191,3 +191,58 @@ injectStyles();
 ```
 
 Components use `yp-` prefixed class names only. Colors, hover states, and focus rings come from the bundled CSS. The CSS prefers host theme CSS variables like `--bg-side`, `--text`, and `--accent`, with `--yp-*` fallbacks for when those are not available.
+
+## Tabs, badges, and icon buttons
+
+These Solid components are available from `@yapmod/ui`, `yapmod.ui`, and
+`YapmodClient.ui`. They use Yapin's theme variables with standalone fallbacks.
+
+```tsx
+import { createSignal } from 'solid-js';
+import { Tabs, Badge, IconButton, Icon } from '@yapmod/ui';
+
+function Friends() {
+  const [tab, setTab] = createSignal('online');
+  return (
+    <Tabs
+      label="Friends"
+      variant="pills"
+      value={tab()}
+      onChange={setTab}
+      options={[
+        { value: 'online', label: 'Online' },
+        {
+          value: 'pending',
+          label: (
+            <>
+              Pending <Badge>3</Badge>
+            </>
+          ),
+        },
+        { value: 'blocked', label: 'Unavailable', disabled: true },
+      ]}
+    >
+      <p>Selected: {tab()}</p>
+      <IconButton aria-label="Refresh friends" onClick={() => console.log('Refresh')}>
+        <Icon name="refresh" />
+      </IconButton>
+    </Tabs>
+  );
+}
+```
+
+`Tabs` is controlled: supply a unique value for each option, keep `value` set to
+an enabled option, and render the selected content in `children`. The default
+`underline` variant matches Yapin's developer tabs; `pills` matches its friends
+tabs. Left/Right arrows (including RTL), Home, and End select and focus enabled
+tabs. `disabled` disables the whole tab list; individual options also accept it.
+Labels accept Solid JSX, including badges. The panel is linked to the selected tab.
+
+`Badge` renders Yapin's compact red notification count. Use `variant="mention"`
+for the amber mention style. Supply an `aria-label` when the count needs context.
+
+`IconButton` matches Yapin's 34px toolbar buttons with 20px icons. An `aria-label`
+is required. `active` adds accent color and `aria-pressed` for toggle buttons;
+`variant="danger"` adds the danger color. Native button props such as `disabled`
+and `onClick`, plus `class` and `classList`, are supported. It defaults to
+`type="button"` so it does not submit surrounding forms.

@@ -2,6 +2,9 @@ import { createClient } from '@yapmod/core';
 import type { ClientHandle, PluginUi } from '@yapmod/types';
 import {
   createIconRegistry,
+  Badge,
+  IconButton,
+  Tabs,
   Button,
   Divider,
   Hint,
@@ -101,6 +104,9 @@ function bootstrap(): YapmodClientHandle {
         if (publicStyles.delete(style)) style.remove();
       };
     },
+    Badge,
+    IconButton,
+    Tabs,
     Button,
     Hint,
     Panel,

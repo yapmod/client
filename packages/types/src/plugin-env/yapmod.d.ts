@@ -32,6 +32,14 @@ declare const yapmod: import('../plugin').YapmodPluginApi;
  * names with a top-level `import`.
  */
 declare module '@yapmod/ui' {
+  export type TabsProps<Value extends string = string> = import('../ui').TabsProps<Value>;
+  export type BadgeProps = import('../ui').BadgeProps;
+  export type IconButtonProps = import('../ui').IconButtonProps;
+  export function Tabs<Value extends string>(
+    props: TabsProps<Value>,
+  ): import('solid-js').JSX.Element;
+  export const Badge: import('solid-js').Component<BadgeProps>;
+  export const IconButton: import('solid-js').Component<IconButtonProps>;
   export type ButtonProps = import('../ui').ButtonProps;
   export type DividerProps = import('../ui').DividerProps;
   export type HintProps = import('../ui').HintProps;

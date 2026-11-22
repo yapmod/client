@@ -8,6 +8,9 @@ import type {
 import {
   createIconRegistry,
   isIconSource,
+  Badge,
+  IconButton,
+  Tabs,
   Button,
   Divider,
   Hint,
@@ -216,6 +219,9 @@ function createPluginApi(
           return () => removeStyle(styleId);
         });
       },
+      Badge,
+      IconButton,
+      Tabs,
       Button,
       Hint,
       Panel,
