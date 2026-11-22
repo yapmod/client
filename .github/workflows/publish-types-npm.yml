@@ -21,6 +21,8 @@ jobs:
   publish:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.finalize.outputs.published }}
     env:
       GH_TOKEN: ${{ github.token }}
       RELEASE_TAG: ${{ inputs.tag }}
@@ -54,4 +56,15 @@ jobs:
           unset NODE_AUTH_TOKEN
           npm publish --provenance --access public
       - name: Publish GitHub release
+        id: finalize
         run: node .github/scripts/release.mjs finalize types
+
+  # GITHUB_TOKEN publication does not emit a workflow-triggering release event.
+  announce:
+    needs: publish
+    if: needs.publish.outputs.published == 'true'
+    uses: ./.github/workflows/announce-release.yml
+    with:
+      tag: ${{ inputs.tag }}
+    secrets:
+      YAPIN_RELEASE_WEBHOOK_URL: ${{ secrets.YAPIN_RELEASE_WEBHOOK_URL }}

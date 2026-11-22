@@ -38,6 +38,16 @@ GitHub normally suppresses workflow events caused by `GITHUB_TOKEN`. The Release
 
 Keep the existing npm trusted publishers configured for `yapmod/client` and their respective `publish-npm.yml` and `publish-types-npm.yml` filenames. Renaming these files requires changing the npm trusted publisher configuration too. Node 24 supplies a recent npm with OIDC support, and publishing includes provenance.
 
+## Yapin release announcements
+
+**Announce release on Yapin** sends a Markdown message with the component, version, changelog, and GitHub release link. It sends no embeds. Release Please's commit hashes are removed for readability; PR links and scoped change descriptions remain. Long changelogs are shortened at complete lines to fit a 2,000-character message, with a link to the full release.
+
+Set the repository Actions secret `YAPIN_RELEASE_WEBHOOK_URL` to the destination webhook URL. Keep webhook credentials out of the repository. Set the repository Actions variable `YAPIN_RELEASE_ROLE_ID` to the Yapmod role ID. The message pings only that role; user and everyone mentions are disabled. Missing or malformed role IDs fail delivery rather than silently dropping the ping.
+
+Each publishing workflow calls the announcement workflow after it makes a draft public, because releases published using `GITHUB_TOKEN` do not trigger `release` workflows. Releases published manually are covered by `release: published`. Retrying a publisher for an already-public release skips the announcement.
+
+If delivery fails, rerun the failed announcement job. To explicitly resend an announcement, run **Announce release on Yapin** from `main` with the published tag. A resend posts another message; after a timeout, check the channel first because the original request may have succeeded. Delivery failures do not roll back a published release.
+
 ## Retry a failed release
 
 In GitHub Actions, run the relevant publishing workflow **from `main`**, entering the existing tag. For example:

@@ -91,6 +91,7 @@ async function main(command, component) {
     }
   } else if (command === 'finalize') {
     const release = readRelease(tag);
+    appendFileSync(process.env.GITHUB_OUTPUT, 'published=false\n');
     if (!release.isDraft) return;
     let latest = false;
     if (component === 'client') {
@@ -101,6 +102,7 @@ async function main(command, component) {
       }
     }
     run('gh', ['release', 'edit', tag, '--draft=false', `--latest=${latest}`]);
+    appendFileSync(process.env.GITHUB_OUTPUT, 'published=true\n');
   } else {
     throw new Error(`Unknown release command: ${command}`);
   }
