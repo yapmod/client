@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const products = {
+  client: { name: 'Yapmod Client & SDK', repository: 'yapmod/client' },
   desktop: { name: 'Yapmod Desktop', repository: 'yapmod/desktop' },
   extension: { name: 'Yapmod Extension', repository: 'yapmod/web' },
 } as const;

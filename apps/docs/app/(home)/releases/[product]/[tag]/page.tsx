@@ -11,7 +11,10 @@ type Props = PageProps<'/releases/[product]/[tag]'>;
 
 async function readParams(params: Props['params']) {
   const { product, tag } = await params;
-  if ((product !== 'desktop' && product !== 'extension') || !/^[\w-][\w.+-]{0,127}$/.test(tag)) {
+  if (
+    (product !== 'client' && product !== 'desktop' && product !== 'extension') ||
+    !/^[\w-][\w.+-]{0,127}$/.test(tag)
+  ) {
     notFound();
   }
   return { product, tag } as const;
@@ -73,8 +76,9 @@ export default async function ReleasePage({ params }: Props) {
         </p>
       )}
       <footer className="flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
-        <Link className="home-link" href={`/${product}`}>
-          Download {name} <ArrowRight size={15} aria-hidden="true" />
+        <Link className="home-link" href={product === 'client' ? '/docs' : `/${product}`}>
+          {product === 'client' ? 'Getting started' : `Download ${name}`}{' '}
+          <ArrowRight size={15} aria-hidden="true" />
         </Link>
         <a href={github} className="home-link text-muted-foreground">
           View on GitHub <ArrowUpRight size={15} aria-hidden="true" />

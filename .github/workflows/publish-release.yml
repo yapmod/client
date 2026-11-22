@@ -1,0 +1,52 @@
+name: Publish release batch
+
+on:
+  workflow_dispatch:
+    inputs:
+      client:
+        description: 'Client tag (leave empty if unchanged)'
+        type: string
+      builder:
+        description: 'Builder tag (leave empty if unchanged)'
+        type: string
+      types:
+        description: 'Types tag (leave empty if unchanged)'
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: publish-release-batch
+  cancel-in-progress: false
+
+jobs:
+  client:
+    if: github.ref == 'refs/heads/main' && inputs.client != ''
+    uses: ./.github/workflows/release-client.yml
+    with:
+      tag: ${{ inputs.client }}
+  builder:
+    if: github.ref == 'refs/heads/main' && inputs.builder != ''
+    uses: ./.github/workflows/publish-npm.yml
+    with:
+      tag: ${{ inputs.builder }}
+  types:
+    if: github.ref == 'refs/heads/main' && inputs.types != ''
+    uses: ./.github/workflows/publish-types-npm.yml
+    with:
+      tag: ${{ inputs.types }}
+  announce:
+    needs: [client, builder, types]
+    if: >-
+      always() && !cancelled() &&
+      (needs.client.result == 'success' || needs.client.result == 'skipped') &&
+      (needs.builder.result == 'success' || needs.builder.result == 'skipped') &&
+      (needs.types.result == 'success' || needs.types.result == 'skipped') &&
+      (needs.client.outputs.published == 'true' || needs.builder.outputs.published == 'true' || needs.types.outputs.published == 'true')
+    uses: ./.github/workflows/announce-release.yml
+    with:
+      tags: ${{ format('{0} {1} {2}', inputs.client, inputs.builder, inputs.types) }}
+    secrets:
+      YAPIN_RELEASE_WEBHOOK_URL: ${{ secrets.YAPIN_RELEASE_WEBHOOK_URL }}

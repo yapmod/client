@@ -58,23 +58,33 @@ The root `CHANGELOG.md` is the canonical client release history. `apps/client/CH
 
 Enable **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The release workflow runs a pinned Release Please library with the local `manual-node` strategy in `.github/scripts/manual-changelog.mjs`. It retains Release Please's manifest, rolling branch, labels, version selection, and release lifecycle. The workflows use the built-in `GITHUB_TOKEN`; no personal access token is needed. If branch protection is enabled, require **check** before merging.
 
-GitHub normally suppresses workflow events caused by `GITHUB_TOKEN`. The Release Please workflow explicitly dispatches **Checks** on the release PR branch, and explicitly dispatches publishing on `main` with the exact release tag. Publishing checks out that tag, verifies that its commit belongs to `main`, and checks that the package version matches the release manifest. No publishing workflow commits or pushes version changes.
+GitHub normally suppresses workflow events caused by `GITHUB_TOKEN`. The Release Please workflow explicitly dispatches **Checks** on the release PR branch, and explicitly dispatches **Publish release batch** on `main` with the exact tags from the merged proposal. The batch calls the existing component publishing workflows. Publishing checks out that tag, verifies that its commit belongs to `main`, and checks that the package version matches the release manifest. No publishing workflow commits or pushes version changes.
 
 Keep the existing npm trusted publishers configured for `yapmod/client` and their respective `publish-npm.yml` and `publish-types-npm.yml` filenames. Renaming these files requires changing the npm trusted publisher configuration too. Node 24 supplies a recent npm with OIDC support, and publishing includes provenance.
 
 ## Yapin release announcements
 
-**Announce release on Yapin** sends a Markdown message with the component, version, changelog, and GitHub release link. It sends no embeds. The published hand-written notes are used directly; legacy commit hashes are still removed for readability. Long changelogs are shortened at complete lines to fit a 2,000-character message, with a link to the full release.
+**Announce release on Yapin** sends one compact embed for the entire release batch, with a banner and a short excerpt for each changed component. Each section links to its complete release notes on `yapmod.vercel.app/releases/client/<tag>`. The full-notes button opens the site’s Client & SDK release history for combined batches, or the specific release page for a single component. Unchanged components are omitted. At most two buttons remain: the version-specific client download (when included) and full release notes. A single role mention accompanies the embed. Excerpts use the published hand-written notes with category headings and legacy commit hashes removed, and stop at complete lines within 650 characters per component. Duplicate version fields, author labels, footers, and timestamps are omitted. The complete embed stays below Yapin’s 6,000-character limit.
+
+Each announcement generates a 1200 × 480 PNG using the existing Yapmod logo, pink accent, and locally installed Geist fonts. The script uses the docs app’s image renderer and needs no image-generation service or API key. Because Yapin webhooks do not accept file attachments and GitHub release-download URLs fail through its image proxy, the workflow stores banners on the dedicated `release-banners` orphan branch. It uses a commit-pinned `raw.githubusercontent.com` URL that serves the PNG directly. Generated files stay out of `main`, and older announcements retain their original images. The announcement workflow needs `contents: write`; a concurrent asset-branch update fails safely and can be retried.
+
+To render a banner locally, pass a JSON array of GitHub release objects (including `tag_name`) and an output path:
+
+```bash
+node apps/docs/scripts/release-banner.mjs releases.json banner.png
+```
 
 Set the repository Actions secret `YAPIN_RELEASE_WEBHOOK_URL` to the destination webhook URL. Keep webhook credentials out of the repository. Set the repository Actions variable `YAPIN_RELEASE_ROLE_ID` to the Yapmod role ID. The message pings only that role; user and everyone mentions are disabled. Missing or malformed role IDs fail delivery rather than silently dropping the ping.
 
-Each publishing workflow calls the announcement workflow after it makes a draft public, because releases published using `GITHUB_TOKEN` do not trigger `release` workflows. Releases published manually are covered by `release: published`. Retrying a publisher for an already-public release skips the announcement.
+**Publish release batch** waits for all requested component publishers to succeed before calling the announcement workflow once. A failed or cancelled publisher prevents the announcement. A batch retry includes all requested components in the message, including those already published by the earlier attempt. If every component was already public, publishing skips the announcement. Individual publishing workflows and manual GitHub publication do not send messages automatically; use the announcement workflow with all desired tags for those cases.
 
-If delivery fails, rerun the failed announcement job. To explicitly resend an announcement, run **Announce release on Yapin** from `main` with the published tag. A resend posts another message; after a timeout, check the channel first because the original request may have succeeded. Delivery failures do not roll back a published release.
+If delivery fails, rerun the failed announcement job. To explicitly resend an announcement, run **Announce release on Yapin** from `main` with space-separated published `tags` (for example, `v1.3.0 builder-v1.4.0 types-v1.3.0`). A new manual run posts another message. Retries within the same Actions run reuse its nonce, so Yapin deduplicates them for ten minutes. After that window, check the channel before retrying because the original request may have succeeded. Delivery failures do not roll back a published release.
 
 ## Retry a failed release
 
-In GitHub Actions, run the relevant publishing workflow **from `main`**, entering the existing tag. For example:
+For a failed batch, rerun its failed jobs, or run **Publish release batch** from `main` with the same `client`, `builder`, and `types` tags (leave unchanged components empty). This preserves the combined announcement after all publishers succeed. If only the announcement failed, rerun that failed job.
+
+For individual publishing repairs without an automatic announcement, run the relevant publishing workflow **from `main`**, entering the existing tag. For example:
 
 ```bash
 gh workflow run release-client.yml --ref main -f tag=v1.2.0
@@ -82,7 +92,7 @@ gh workflow run publish-npm.yml --ref main -f tag=builder-v1.4.0
 gh workflow run publish-types-npm.yml --ref main -f tag=types-v1.3.0
 ```
 
-Use the actual tag from the failed release, not necessarily the examples above. This also recovers a failed dispatch after Release Please created its drafts. Re-running Release Please alone does not redispatch already-created releases.
+Use the actual tag from the failed release, not necessarily the examples above. A batch dispatch with all the proposal’s tags also recovers a failed dispatch after Release Please created its drafts. Re-running Release Please alone does not redispatch already-created releases.
 
 Retries build from the existing tag and never bump a version. Already-published npm versions and existing client assets are skipped; a draft can then be finalized. Registry errors fail the run rather than being mistaken for missing versions. An older client retry does not replace a newer Latest release, and an unpublished older npm version is rejected if publishing it would move npm's `latest` tag backward.
 

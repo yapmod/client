@@ -1,5 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+
+const siteReleases = 'https://yapmod.vercel.app/releases';
+const notesUrl = (release) => `${siteReleases}/client/${encodeURIComponent(release.tag_name)}`;
 
 const headings = {
   Features: '✨ New features',
@@ -21,10 +25,7 @@ export function formatChangelog(body) {
   );
 }
 
-export function releaseMessage(release, roleId) {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roleId || '')) {
-    throw new Error('Missing or invalid YAPIN_RELEASE_ROLE_ID variable');
-  }
+function releaseEmbed(release, limit, combined) {
   if (release.draft) throw new Error('Cannot announce a draft release');
   const tag = release.tag_name;
   if (typeof tag !== 'string' || !tag || tag.length > 100 || /[\r\n]/.test(tag)) {
@@ -38,14 +39,17 @@ export function releaseMessage(release, roleId) {
       ? 'Yapmod Types'
       : 'Yapmod';
   const version = tag.replace(/^(builder|types)-/, '');
-  const title = `## 🚀 ${component} ${version} is here!${release.prerelease ? ' (pre-release)' : ''}`;
-  const subject = component === 'Yapmod' ? 'the client' : component;
-  const intro = `${title}\n\nHey <@&${roleId}>, here’s what’s new in ${subject}.\n\n`;
-  const linkLabel = component === 'Yapmod' ? 'Read the release & download' : 'Read the release';
-  const footer = `\n\n→ [${linkLabel}](${url.href})`;
-  const overflow = '\n\n*More changes in the full release below.*';
-  const notes = formatChangelog(release.body) || 'Release notes are available on GitHub.';
-  const budget = 2000 - intro.length - footer.length;
+  const title = `${component} ${version}${release.prerelease ? ' (pre-release)' : ''}`;
+  const intro = combined
+    ? `**[${component} ${version}${release.prerelease ? ' (pre-release)' : ''}](${notesUrl(release)})**\n\n`
+    : '';
+  const overflow = '\n\n*See full release notes for more.*';
+  const notes =
+    formatChangelog(release.body)
+      .replace(/^#{1,6} .+\n*/gm, '')
+      .trim() || 'Release notes are available on the website.';
+  const budget = limit - intro.length;
+  if (budget < overflow.length) throw new Error('Release links exceed embed size limit');
   let changelog = notes;
   if (notes.length > budget) {
     // Never cut in the middle of a link or a bullet; keep room for the release link.
@@ -63,21 +67,78 @@ export function releaseMessage(release, roleId) {
     if (fence !== -1) lines.splice(fence);
     changelog = lines.join('\n').trimEnd() + overflow;
   }
+  return { title, description: intro + changelog, url: notesUrl(release), color: 0xdd5a8c };
+}
+
+const component = (release) =>
+  release.tag_name?.startsWith('builder-') ? 1 : release.tag_name?.startsWith('types-') ? 2 : 0;
+
+const button = (label, url) => ({ type: 2, style: 5, label, url });
+
+export function releaseMessage(input, roleId, bannerUrl) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roleId || '')) {
+    throw new Error('Missing or invalid YAPIN_RELEASE_ROLE_ID variable');
+  }
+  const releases = Array.isArray(input) ? input : [input];
+  if (!releases.length || releases.length > 3) throw new Error('Expected one to three releases');
+  if (new Set(releases.map(component)).size !== releases.length) {
+    throw new Error('Expected only one release per component');
+  }
+  const ordered = [0, 1, 2].flatMap((index) =>
+    releases.filter((item) => component(item) === index),
+  );
+  const combined = ordered.length > 1;
+  const limit = 650;
+  const embeds = ordered.map((release) => releaseEmbed(release, limit, combined));
+  const embed = combined
+    ? {
+        title: 'Yapmod updates',
+        description: embeds.map((section) => section.description).join('\n\n'),
+        color: 0xdd5a8c,
+      }
+    : embeds[0];
+  if (bannerUrl) {
+    const image = new URL(bannerUrl);
+    if (image.protocol !== 'https:') throw new Error('Expected an HTTPS banner URL');
+    embed.image = { url: image.href };
+  }
+  const buttons = [];
+  const clientRelease = ordered.find((item) => component(item) === 0);
+  if (clientRelease) {
+    const download = new URL(clientRelease.html_url);
+    download.pathname =
+      download.pathname.replace('/releases/tag/', '/releases/download/') + '/yapmod-client.js';
+    buttons.push(button('Download client', download.href));
+  }
+  buttons.push(
+    button('Full release notes', combined ? `${siteReleases}#client` : notesUrl(ordered[0])),
+  );
   return {
     username: 'Yapmod Releases',
-    content: intro + changelog + footer,
+    content: `Hey <@&${roleId}>!`,
+    embeds: [embed],
+    components: [{ type: 1, components: buttons }],
     allowed_mentions: { parse: [], roles: [roleId] },
   };
 }
 
-export async function sendAnnouncement(release, webhookUrl, roleId, request = fetch) {
+export async function sendAnnouncement(
+  release,
+  webhookUrl,
+  roleId,
+  request = fetch,
+  bannerUrl,
+  nonce = randomUUID(),
+) {
   if (!webhookUrl) throw new Error('Missing YAPIN_RELEASE_WEBHOOK_URL secret');
   const url = new URL(webhookUrl);
   if (url.origin !== 'https://www.yapin.gg' || !url.pathname.startsWith('/api/webhooks/')) {
     throw new Error('Expected a Yapin webhook URL');
   }
   url.searchParams.set('wait', 'true');
-  const payload = releaseMessage(release, roleId);
+  const payload = releaseMessage(release, roleId, bannerUrl);
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(nonce)) throw new Error('Invalid announcement nonce');
+  payload.nonce = nonce;
   let response;
   try {
     response = await request(url, {
@@ -91,7 +152,9 @@ export async function sendAnnouncement(release, webhookUrl, roleId, request = fe
     throw new Error('Yapin webhook request failed; check delivery before retrying');
   }
   if (!response.ok) throw new Error(`Yapin webhook returned HTTP ${response.status}`);
-  console.log(`Announced ${release.tag_name} on Yapin`);
+  console.log(
+    `Announced ${(Array.isArray(release) ? release : [release]).map((item) => item.tag_name).join(', ')} on Yapin`,
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -99,5 +162,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     JSON.parse(readFileSync(process.argv[2], 'utf8')),
     process.env.YAPIN_RELEASE_WEBHOOK_URL,
     process.env.YAPIN_RELEASE_ROLE_ID,
+    fetch,
+    process.env.YAPIN_RELEASE_BANNER_URL,
+    process.env.YAPIN_RELEASE_NONCE,
   );
 }

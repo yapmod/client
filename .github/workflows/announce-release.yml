@@ -1,11 +1,9 @@
 name: Announce release on Yapin
 
 on:
-  release:
-    types: [published]
   workflow_call:
     inputs:
-      tag:
+      tags:
         required: true
         type: string
     secrets:
@@ -13,16 +11,16 @@ on:
         required: true
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Published release tag to announce (resends the message)'
+      tags:
+        description: 'Space-separated published tags to combine (resends the message)'
         required: true
         type: string
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: announce-release-${{ inputs.tag || github.event.release.tag_name }}
+  group: announce-release-${{ inputs.tags }}
   cancel-in-progress: false
 
 jobs:
@@ -32,17 +30,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @yapmod/docs...
       - name: Read published release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
-        run: |
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$(node -p 'encodeURIComponent(process.env.RELEASE_TAG)')" > "$RUNNER_TEMP/yapmod-release.json"
-      - name: Send Markdown announcement
+          RELEASE_TAGS: ${{ inputs.tags }}
+        run: node .github/scripts/read-announcement-releases.mjs "$RUNNER_TEMP/yapmod-release.json"
+      - name: Generate and host release banner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/scripts/publish-release-banner.mjs "$RUNNER_TEMP/yapmod-release.json" "$RUNNER_TEMP/yapmod-release-banner.png"
+      - name: Send embed announcement
         env:
           YAPIN_RELEASE_WEBHOOK_URL: ${{ secrets.YAPIN_RELEASE_WEBHOOK_URL }}
+          YAPIN_RELEASE_NONCE: yapmod-${{ github.run_id }}
           YAPIN_RELEASE_ROLE_ID: ${{ vars.YAPIN_RELEASE_ROLE_ID }}
         run: node .github/scripts/announce-release.mjs "$RUNNER_TEMP/yapmod-release.json"

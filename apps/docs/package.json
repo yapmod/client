@@ -11,7 +11,6 @@
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "@fuma-translate/react": "^1.0.2",
-    "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "fumadocs-core": "16.19.1",
     "fumadocs-mdx": "15.6.2",

@@ -1,6 +1,14 @@
 name: Release Client
 
 on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+    outputs:
+      published:
+        value: ${{ jobs.publish.outputs.published }}
   workflow_dispatch:
     inputs:
       tag:
@@ -48,13 +56,3 @@ jobs:
       - name: Publish GitHub release
         id: finalize
         run: node .github/scripts/release.mjs finalize client
-
-  # GITHUB_TOKEN publication does not emit a workflow-triggering release event.
-  announce:
-    needs: publish
-    if: needs.publish.outputs.published == 'true'
-    uses: ./.github/workflows/announce-release.yml
-    with:
-      tag: ${{ inputs.tag }}
-    secrets:
-      YAPIN_RELEASE_WEBHOOK_URL: ${{ secrets.YAPIN_RELEASE_WEBHOOK_URL }}

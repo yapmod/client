@@ -13,7 +13,7 @@ import '../home.css';
 
 export const metadata: Metadata = {
   title: 'Yapmod release notes',
-  description: 'Read the release history for Yapmod Desktop and Yapmod Extension.',
+  description: 'Read the release history for Yapmod Client, SDK, Desktop and Extension.',
 };
 
 function pageNumber(value: string | string[] | undefined) {
@@ -23,12 +23,17 @@ function pageNumber(value: string | string[] | undefined) {
 
 export default async function ReleasesPage({ searchParams }: PageProps<'/releases'>) {
   const query = await searchParams;
-  const pages = { desktop: pageNumber(query.desktop), extension: pageNumber(query.extension) };
-  const [desktop, extension] = await Promise.all([
+  const pages = {
+    client: pageNumber(query.client),
+    desktop: pageNumber(query.desktop),
+    extension: pageNumber(query.extension),
+  };
+  const [client, desktop, extension] = await Promise.all([
+    getReleaseHistory('client', pages.client),
     getReleaseHistory('desktop', pages.desktop),
     getReleaseHistory('extension', pages.extension),
   ]);
-  const histories = { desktop, extension };
+  const histories = { client, desktop, extension };
   function pageLink(product: Product, page: number) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries({ ...pages, [product]: page })) {
@@ -43,10 +48,10 @@ export default async function ReleasesPage({ searchParams }: PageProps<'/release
         Release notes
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
-        What changed in each release of Yapmod Desktop and Yapmod Extension.
+        What changed in each release of Yapmod Client, SDK, Desktop and Extension.
       </p>
       <div className="mt-10 grid items-start gap-8 md:grid-cols-2">
-        {(['desktop', 'extension'] as const).map((product) => {
+        {(['client', 'desktop', 'extension'] as const).map((product) => {
           const history = histories[product];
           const Icon = product === 'desktop' ? Monitor : Puzzle;
           return (

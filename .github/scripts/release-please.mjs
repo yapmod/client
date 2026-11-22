@@ -8,14 +8,19 @@ const github = await GitHub.create({ owner, repo, token: process.env.GH_TOKEN })
 const manifest = await Manifest.fromManifest(github, 'main');
 const dispatch = (workflow, ref, inputs = []) =>
   execFileSync('gh', ['workflow', 'run', workflow, '--ref', ref, ...inputs], { stdio: 'inherit' });
-const workflows = {
-  '.': 'release-client.yml',
-  'packages/builder': 'publish-npm.yml',
-  'packages/types': 'publish-types-npm.yml',
+const components = {
+  '.': 'client',
+  'packages/builder': 'builder',
+  'packages/types': 'types',
 };
-// Publish merged proposals before looking for the next batch of changes.
-for (const release of await manifest.createReleases()) {
-  if (release) dispatch(workflows[release.path], 'main', ['-f', `tag=${release.tagName}`]);
+// Publish the whole merged proposal before sending its single announcement.
+const releases = (await manifest.createReleases()).filter(Boolean);
+if (releases.length) {
+  dispatch(
+    'publish-release.yml',
+    'main',
+    releases.flatMap((release) => ['-f', `${components[release.path]}=${release.tagName}`]),
+  );
 }
 for (const pr of await manifest.createPullRequests()) {
   if (pr) dispatch('checks.yml', pr.headBranchName);

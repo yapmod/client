@@ -227,9 +227,6 @@ importers:
       '@fuma-translate/react':
         specifier: ^1.0.2
         version: 1.0.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       cn:
         specifier: ^0.5.2
         version: 0.5.2
