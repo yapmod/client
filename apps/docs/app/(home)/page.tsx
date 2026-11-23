@@ -5,6 +5,7 @@ import {
   Palette,
   Puzzle,
   SlidersHorizontal,
+  Smartphone,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -58,7 +59,7 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
               Yapmod is a free, open-source client mod for Yapin. Use themes and plugins to change
-              the interface in your browser or on your desktop.
+              the interface in your browser, on your desktop, or on your phone.
             </p>
             <div className="mt-7 flex justify-center flex-wrap gap-3">
               <Link href="/desktop" className="home-action home-primary">
@@ -66,6 +67,9 @@ export default function HomePage() {
               </Link>
               <Link href="/extension" className="home-action home-secondary">
                 <Puzzle size={16} aria-hidden="true" /> Download Extension
+              </Link>
+              <Link href="/mobile" className="home-action home-secondary">
+                <Smartphone size={16} aria-hidden="true" /> Download Mobile
               </Link>
             </div>
             <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2">
