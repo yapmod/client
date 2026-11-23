@@ -5,6 +5,7 @@
   <p>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v3-blue" alt="GPL v3 license" /></a>
     <a href="https://github.com/yapmod/client/releases/latest"><img src="https://img.shields.io/github/v/release/yapmod/client" alt="Latest client release" /></a>
+    <a href="https://github.com/yapmod/client/releases"><img src="https://img.shields.io/github/downloads/yapmod/client/total" alt="Total release asset downloads" /></a>
   </p>
 </div>
 
