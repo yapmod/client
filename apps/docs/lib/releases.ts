@@ -4,6 +4,7 @@ export const products = {
   client: { name: 'Yapmod Client & SDK', repository: 'yapmod/client' },
   desktop: { name: 'Yapmod Desktop', repository: 'yapmod/desktop' },
   extension: { name: 'Yapmod Extension', repository: 'yapmod/web' },
+  mobile: { name: 'Yapmod Mobile', repository: 'yapmod/mobile' },
 } as const;
 export type Product = keyof typeof products;
 

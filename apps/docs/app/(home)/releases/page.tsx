@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronLeft, ChevronRight, Monitor, Puzzle } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Monitor, Puzzle, Smartphone } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
@@ -13,7 +13,7 @@ import '../home.css';
 
 export const metadata: Metadata = {
   title: 'Yapmod release notes',
-  description: 'Read the release history for Yapmod Client, SDK, Desktop and Extension.',
+  description: 'Read the release history for Yapmod Client, SDK, Desktop, Extension and Mobile.',
 };
 
 function pageNumber(value: string | string[] | undefined) {
@@ -27,13 +27,15 @@ export default async function ReleasesPage({ searchParams }: PageProps<'/release
     client: pageNumber(query.client),
     desktop: pageNumber(query.desktop),
     extension: pageNumber(query.extension),
+    mobile: pageNumber(query.mobile),
   };
-  const [client, desktop, extension] = await Promise.all([
+  const [client, desktop, extension, mobile] = await Promise.all([
     getReleaseHistory('client', pages.client),
     getReleaseHistory('desktop', pages.desktop),
     getReleaseHistory('extension', pages.extension),
+    getReleaseHistory('mobile', pages.mobile),
   ]);
-  const histories = { client, desktop, extension };
+  const histories = { client, desktop, extension, mobile };
   function pageLink(product: Product, page: number) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries({ ...pages, [product]: page })) {
@@ -48,12 +50,14 @@ export default async function ReleasesPage({ searchParams }: PageProps<'/release
         Release notes
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
-        What changed in each release of Yapmod Client, SDK, Desktop and Extension.
+        What changed in each release of Yapmod Client, SDK, Desktop, Extension and Mobile.
       </p>
       <div className="mt-10 grid items-start gap-8 md:grid-cols-2">
-        {(['client', 'desktop', 'extension'] as const).map((product) => {
+        {(['client', 'desktop', 'extension', 'mobile'] as const).map((product) => {
           const history = histories[product];
-          const Icon = product === 'desktop' ? Monitor : Puzzle;
+          const Icon = { desktop: Monitor, client: Puzzle, extension: Puzzle, mobile: Smartphone }[
+            product
+          ];
           return (
             <section key={product} id={product} className="download-card scroll-mt-20">
               <Icon className="feature-icon mb-3" size={23} aria-hidden="true" />

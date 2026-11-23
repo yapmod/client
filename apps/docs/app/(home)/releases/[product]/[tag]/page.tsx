@@ -12,7 +12,10 @@ type Props = PageProps<'/releases/[product]/[tag]'>;
 async function readParams(params: Props['params']) {
   const { product, tag } = await params;
   if (
-    (product !== 'client' && product !== 'desktop' && product !== 'extension') ||
+    (product !== 'client' &&
+      product !== 'desktop' &&
+      product !== 'extension' &&
+      product !== 'mobile') ||
     !/^[\w-][\w.+-]{0,127}$/.test(tag)
   ) {
     notFound();
