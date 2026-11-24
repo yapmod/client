@@ -5,6 +5,7 @@ export { Icon } from './components/Icon';
 export { Button } from './components/Button';
 export { Hint } from './components/Hint';
 export { Panel } from './components/Panel';
+export { Slider } from './components/Slider';
 export { Input } from './components/Input';
 export { Textarea } from './components/Textarea';
 export { Switch } from './components/Switch';
@@ -31,6 +32,7 @@ export type {
   PanelProps,
   SwitchProps,
   InputProps,
+  SliderProps,
   TextareaProps,
   SelectOption,
   SelectProps,

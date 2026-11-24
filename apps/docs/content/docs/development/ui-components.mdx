@@ -88,6 +88,29 @@ import { Switch } from '@yapmod/ui';
 | `onChange`       | `(checked: boolean) => void` | Called when toggled               |
 | `aria-label`     | `string`                     | Accessible label                  |
 
+### Slider
+
+Use `Slider` for numeric settings. It uses Yapin’s Appearance slider layout: a label, a keyboard-accessible range input, and a live readout.
+
+```tsx
+import { Slider } from '@yapmod/ui';
+import { createSignal } from 'solid-js';
+
+function VolumeSetting() {
+  const [volume, setVolume] = createSignal(75);
+  return (
+    <Slider
+      label="Volume"
+      value={volume()}
+      onChange={setVolume}
+      formatValue={(value) => `${value}%`}
+    />
+  );
+}
+```
+
+Use `min`, `max`, and `step` to set the range (defaults: 0, 100, and 1). Pass `defaultValue` instead of `value` for uncontrolled use; it defaults to the minimum. `onChange` receives a number during adjustment. `formatValue` supplies both the visible and accessible readout. Set `disabled` to prevent adjustment or `id` to override the generated input ID.
+
 ### Input
 
 A single line text field that matches Yapin's `.input` style.

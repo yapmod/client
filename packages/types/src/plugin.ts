@@ -22,6 +22,7 @@ import type {
   PanelProps,
   SwitchProps,
   InputProps,
+  SliderProps,
   TextareaProps,
   SelectOption,
   SelectProps,
@@ -48,6 +49,7 @@ export type {
   PanelProps,
   SwitchProps,
   InputProps,
+  SliderProps,
   TextareaProps,
   SelectOption,
   SelectProps,
@@ -160,6 +162,7 @@ export interface PluginUi {
   Icon: Component<IconProps>;
   /** A toggle switch matching Yapin's `.switch` style. */
   Switch: Component<SwitchProps>;
+  Slider: Component<SliderProps>;
   /** A single-line text field matching Yapin's `.input` style. */
   Input: Component<InputProps>;
   /** A multi-line text field matching Yapin's `textarea.input` style. */
