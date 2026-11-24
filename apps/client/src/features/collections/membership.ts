@@ -1,6 +1,6 @@
 import type { StoredPlugin } from '../plugins/types';
 import { remotePluginId } from '../plugins/manifest';
-import type { Collection, CollectionPlugin } from './manifest';
+import type { Collection, CollectionInfo, CollectionPlugin } from './manifest';
 
 /** Source identity keeps edited local plugins out of remote collection groups. */
 export function findCollectionPlugin(
@@ -29,7 +29,7 @@ export function collectionPluginMatches(
     .includes(search.trim().toLowerCase());
 }
 
-export function collectionNameMatches(collection: Collection, search: string): boolean {
+export function collectionNameMatches(collection: CollectionInfo, search: string): boolean {
   return `${collection.name}\n${collection.description}`
     .toLowerCase()
     .includes(search.trim().toLowerCase());

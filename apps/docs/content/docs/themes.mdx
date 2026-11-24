@@ -29,6 +29,12 @@ In **Yapmod → Themes → Add Theme → Upload CSS**, select the file and confi
 
 Disable other themes while testing. When multiple stylesheets change the same property, CSS specificity and source order determine the result, which can hide the effect of your edit.
 
+## Import or publish a collection
+
+Open **Themes → Add Theme → Collection**, paste the [starter collection index](https://raw.githubusercontent.com/yapmod/theme-starter/theme-dist/index.json), and choose **Add Collection**. Expand the collection to install individual themes. Each starts disabled and has its own enable switch. Refresh the collection to see new entries. Removing it keeps your installed themes.
+
+Use the [theme starter template](https://github.com/yapmod/theme-starter) to publish your own collection. Each CSS file in its `themes/` directory gets a listing and a stable URL. The generated JSON index uses `schemaVersion: 1`, a collection `name`, and a `themes` array. Each entry has a `name` and a stylesheet `url` relative to the index or an absolute HTTP(S) URL. Both the index and stylesheets must be on a host Yapin permits.
+
 ## Extend the palette carefully
 
 | Token                                    | What it controls                      |

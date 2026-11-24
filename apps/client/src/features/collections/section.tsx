@@ -1,5 +1,13 @@
 import { Button, Icon } from '@yapmod/ui';
-import { For, Show, createEffect, createMemo, createSignal, createUniqueId } from 'solid-js';
+import {
+  For,
+  Show,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  type JSX,
+} from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
 import { PluginCard } from '../plugins/card';
@@ -11,7 +19,7 @@ import {
 } from './membership';
 import { addRemotePlugin } from '../plugins/runtime';
 import { pluginState } from '../plugins/store';
-import type { Collection, CollectionPlugin } from './manifest';
+import type { Collection, CollectionInfo, CollectionPlugin } from './manifest';
 import { refreshCollection, removeCollection } from './store';
 
 function reportError(error: unknown): void {
@@ -77,9 +85,6 @@ export function CollectionCard(props: {
   search: string;
   initiallyExpanded?: boolean;
 }) {
-  const [busy, setBusy] = createSignal(false);
-  const [expanded, setExpanded] = createSignal(props.initiallyExpanded ?? false);
-  const contentId = createUniqueId();
   const matches = createMemo(() =>
     props.collection.plugins.filter(
       (entry) =>
@@ -90,6 +95,36 @@ export function CollectionCard(props: {
   const installedCount = () =>
     props.collection.plugins.filter((entry) => findCollectionPlugin(entry, pluginState().plugins))
       .length;
+  return (
+    <CollectionGroup
+      collection={props.collection}
+      search={props.search}
+      initiallyExpanded={props.initiallyExpanded}
+      kind="plugins"
+      count={props.collection.plugins.length}
+      installed={installedCount()}
+      refresh={refreshCollection}
+      remove={removeCollection}
+    >
+      <For each={matches()}>{(plugin) => <CollectionPluginCard plugin={plugin} />}</For>
+    </CollectionGroup>
+  );
+}
+
+export function CollectionGroup(props: {
+  collection: CollectionInfo;
+  search: string;
+  initiallyExpanded?: boolean;
+  kind: 'plugins' | 'themes';
+  count: number;
+  installed: number;
+  refresh: (url: string) => Promise<void>;
+  remove: (url: string) => void;
+  children: JSX.Element;
+}) {
+  const [busy, setBusy] = createSignal(false);
+  const [expanded, setExpanded] = createSignal(props.initiallyExpanded ?? false);
+  const contentId = createUniqueId();
   createEffect(() => {
     if (props.search.trim()) setExpanded(true);
   });
@@ -98,7 +133,7 @@ export function CollectionCard(props: {
     if (busy()) return;
     setBusy(true);
     try {
-      await refreshCollection(props.collection.url);
+      await props.refresh(props.collection.url);
       showToast('Collection refreshed.', 'success');
     } catch (error) {
       reportError(error);
@@ -112,14 +147,14 @@ export function CollectionCard(props: {
     if (
       !(await openConfirmModal({
         title: 'Remove collection',
-        body: `Remove ${collection.name}? Installed plugins will be kept.`,
+        body: `Remove ${collection.name}? Installed ${props.kind} will be kept.`,
         confirmText: 'Remove',
         danger: true,
       }))
     )
       return;
     try {
-      removeCollection(collection.url);
+      props.remove(collection.url);
       showToast('Collection removed.');
     } catch (error) {
       reportError(error);
@@ -156,7 +191,7 @@ export function CollectionCard(props: {
           <span class="ss2-card-text">
             <span class="ss2-card-title">{props.collection.name}</span>
             <span class="ss2-card-hint">
-              {props.collection.plugins.length} plugins · {installedCount()} installed
+              {props.count} {props.kind} · {props.installed} installed
             </span>
           </span>
         </button>
@@ -189,12 +224,10 @@ export function CollectionCard(props: {
       <div id={contentId} hidden={!expanded()}>
         <Show when={expanded()}>
           <Show
-            when={props.collection.plugins.length > 0}
-            fallback={<p class="hint">This collection has no plugins yet.</p>}
+            when={props.count > 0}
+            fallback={<p class="hint">This collection has no {props.kind} yet.</p>}
           >
-            <div class="yp-collection-list">
-              <For each={matches()}>{(plugin) => <CollectionPluginCard plugin={plugin} />}</For>
-            </div>
+            <div class="yp-collection-list">{props.children}</div>
           </Show>
         </Show>
       </div>

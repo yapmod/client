@@ -1,3 +1,7 @@
+import { CollectionGroup } from '../collections/section';
+import { collectionNameMatches } from '../collections/membership';
+import { themeCatalogs } from '../collections/store';
+import type { CollectionEntry, ThemeCollection } from '../collections/manifest';
 import { Button, Icon, Input, SettingsPage, Switch } from '@yapmod/ui';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { openConfirmModal } from '../../lib/modal';
@@ -6,6 +10,7 @@ import { openThemeEditor } from './editor';
 import { safeHttpUrl } from './metadata';
 import { onlineModeLabel, onlineThemeName, parseOnlineTheme, type OnlineThemeMode } from './online';
 import {
+  addOnlineTheme,
   removeLocalTheme,
   removeOnlineTheme,
   setLocalThemeEnabled,
@@ -185,6 +190,58 @@ function OnlineThemeCard(props: {
   );
 }
 
+function matchingThemes(collection: ThemeCollection, search: string) {
+  if (collectionNameMatches(collection, search)) return collection.themes;
+  const term = search.trim().toLowerCase();
+  return collection.themes.filter((entry) =>
+    [entry.name, entry.author, entry.description, entry.url].some((field) =>
+      field.toLowerCase().includes(term),
+    ),
+  );
+}
+
+function CollectionThemeCard(props: { entry: CollectionEntry }) {
+  const installed = () => themeState().online.includes(props.entry.url);
+  return (
+    <Show
+      when={installed()}
+      fallback={
+        <section class="ss2-card yp-collection-item">
+          <div class="ss2-card-head">
+            <div class="ss2-card-text">
+              <div class="toggle-label">{props.entry.name}</div>
+              <Show when={props.entry.author}>
+                <div class="hint">by {props.entry.author}</div>
+              </Show>
+              <Show when={props.entry.description}>
+                <div class="hint">{props.entry.description}</div>
+              </Show>
+            </div>
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={() => {
+                addOnlineTheme(props.entry.url, false);
+                showToast('Theme installed. Enable it when you are ready.', 'success');
+              }}
+            >
+              Install
+            </Button>
+          </div>
+        </section>
+      }
+    >
+      <OnlineThemeCard
+        line={props.entry.url}
+        url={props.entry.url}
+        name={props.entry.name}
+        mode="always"
+        enabled={themeState().enabledOnline.includes(props.entry.url)}
+      />
+    </Show>
+  );
+}
+
 /**
  * The Themes page.
  *
@@ -195,6 +252,24 @@ function OnlineThemeCard(props: {
  */
 export function ThemesPage() {
   const [search, setSearch] = createSignal('');
+
+  const grouped = createMemo(
+    () =>
+      new Set(
+        themeCatalogs
+          .collections()
+          .flatMap((collection) => collection.themes.map((entry) => entry.url)),
+      ),
+  );
+  const visibleCollections = createMemo(() =>
+    themeCatalogs
+      .collections()
+      .filter(
+        (collection) =>
+          collectionNameMatches(collection, search()) ||
+          matchingThemes(collection, search()).length > 0,
+      ),
+  );
 
   const items = createMemo<ThemeItem[]>(() => {
     const state = themeState();
@@ -208,19 +283,21 @@ export function ThemesPage() {
       enabled: localEnabled.has(theme.fileName),
     }));
 
-    const online: ThemeItem[] = state.online.map((line) => {
-      const parsed = parseOnlineTheme(line);
+    const online: ThemeItem[] = state.online
+      .filter((line) => !grouped().has(line))
+      .map((line) => {
+        const parsed = parseOnlineTheme(line);
 
-      return {
-        kind: 'online',
-        key: `online:${line}`,
-        line,
-        url: parsed.url,
-        mode: parsed.mode,
-        name: onlineThemeName(parsed.url),
-        enabled: onlineEnabled.has(line),
-      };
-    });
+        return {
+          kind: 'online',
+          key: `online:${line}`,
+          line,
+          url: parsed.url,
+          mode: parsed.mode,
+          name: onlineThemeName(parsed.url),
+          enabled: onlineEnabled.has(line),
+        };
+      });
 
     // `toSorted` is newer than the client's configured lib target.
     // oxlint-disable-next-line unicorn/no-array-sort
@@ -239,7 +316,7 @@ export function ThemesPage() {
   return (
     <SettingsPage
       title="Themes"
-      description="Install CSS themes from a file or a direct link. Themes are stored in this browser and applied to Yapin."
+      description="Install CSS themes from files, direct links, or collections. Themes are stored in this browser and applied to Yapin."
     >
       <div class="row-gap" style={{ 'margin-bottom': '14px' }}>
         <Input
@@ -257,7 +334,7 @@ export function ThemesPage() {
       </div>
 
       <Show
-        when={items().length > 0}
+        when={items().length > 0 || themeCatalogs.collections().length > 0}
         fallback={
           <p class="hint" style={{ 'margin-top': '12px' }}>
             No themes installed yet.
@@ -265,10 +342,10 @@ export function ThemesPage() {
         }
       >
         <Show
-          when={visible().length > 0}
+          when={visible().length > 0 || visibleCollections().length > 0}
           fallback={
             <p class="hint" style={{ 'margin-top': '12px' }}>
-              No themes match your search.
+              No themes or collections match your search.
             </p>
           }
         >
@@ -294,6 +371,26 @@ export function ThemesPage() {
                   />
                 )
               }
+            </For>
+            <For each={visibleCollections()}>
+              {(collection) => (
+                <CollectionGroup
+                  collection={collection}
+                  search={search()}
+                  kind="themes"
+                  count={collection.themes.length}
+                  installed={
+                    collection.themes.filter((entry) => themeState().online.includes(entry.url))
+                      .length
+                  }
+                  refresh={themeCatalogs.refreshCollection}
+                  remove={themeCatalogs.removeCollection}
+                >
+                  <For each={matchingThemes(collection, search())}>
+                    {(entry) => <CollectionThemeCard entry={entry} />}
+                  </For>
+                </CollectionGroup>
+              )}
             </For>
           </div>
         </Show>

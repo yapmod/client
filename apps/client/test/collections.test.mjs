@@ -130,6 +130,39 @@ test('collection indexes validate, persist atomically, and keep installations in
   assert.equal(collections().length, 1);
   assert.deepEqual(requests, [source, source], 'adding only fetches index metadata');
 
+  const { themeCatalogs } = await server.ssrLoadModule('/src/features/collections/store.ts');
+  const { addOnlineTheme, themeState } = await server.ssrLoadModule(
+    '/src/features/themes/store.ts',
+  );
+  await assert.rejects(themeCatalogs.addCollection(source), /themes array/);
+  const themes = [
+    { name: 'Rose', url: './rose.theme.css' },
+    { name: 'Ocean', url: './ocean.theme.css' },
+  ];
+  reply = () => Response.json({ schemaVersion: 1, name: 'Palettes', themes });
+  requests = [];
+  await themeCatalogs.addCollection(source);
+  assert.deepEqual(requests, [source]);
+  assert.deepEqual(themeState().online, []);
+  const catalog = themeCatalogs.collections()[0];
+  assert.deepEqual(
+    catalog.themes.map((entry) => entry.url),
+    ['https://example.com/plugins/rose.theme.css', 'https://example.com/plugins/ocean.theme.css'],
+  );
+  for (const entry of catalog.themes) addOnlineTheme(entry.url, false);
+  assert.deepEqual(themeState().enabledOnline, []);
+  reply = () =>
+    Response.json({ schemaVersion: 1, name: 'Invalid', themes: [...themes, themes[0]] });
+  await assert.rejects(themeCatalogs.refreshCollection(source), /duplicates/);
+  assert.equal(themeCatalogs.collections()[0], catalog);
+  themeCatalogs.removeCollection(source);
+  assert.equal(themeState().online.length, 2);
+  assert.equal(
+    collections().length,
+    1,
+    'theme subscriptions are independent from plugin subscriptions',
+  );
+
   const { addRemotePlugin } = await server.ssrLoadModule('/src/features/plugins/runtime.ts');
   const { pluginState } = await server.ssrLoadModule('/src/features/plugins/store.ts');
   reply = (url) =>

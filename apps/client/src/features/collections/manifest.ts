@@ -1,19 +1,26 @@
 import { safeHttpUrl } from '../../lib/url';
 import { isRecord, normalizeRemoteSource, readString, remotePluginId } from '../plugins/manifest';
 
-export interface CollectionPlugin {
+export interface CollectionEntry {
   name: string;
   description: string;
   author: string;
   url: string;
 }
 
-export interface Collection {
+export interface CollectionInfo {
   schemaVersion: 1;
   url: string;
   name: string;
   description: string;
-  plugins: CollectionPlugin[];
+}
+
+export type CollectionPlugin = CollectionEntry;
+export interface Collection extends CollectionInfo {
+  plugins: CollectionEntry[];
+}
+export interface ThemeCollection extends CollectionInfo {
+  themes: CollectionEntry[];
 }
 
 export function collectionUrl(value: string): string {
@@ -26,16 +33,18 @@ export function collectionUrl(value: string): string {
 }
 
 /** Validate the whole index before replacing a saved collection. Never execute its contents. */
-export function parseCollection(value: unknown, source: string): Collection {
+function parseIndex(value: unknown, source: string, kind: 'plugins' | 'themes') {
   const url = collectionUrl(source);
-  if (!isRecord(value) || value.schemaVersion !== 1 || !Array.isArray(value.plugins)) {
-    throw new Error('Expected a collection with schemaVersion: 1 and a plugins array.');
+  if (!isRecord(value) || value.schemaVersion !== 1) {
+    throw new Error('Expected a collection with schemaVersion: 1.');
   }
+  const list = value[kind];
+  if (!Array.isArray(list)) throw new Error(`Expected a collection with a ${kind} array.`);
   const name = readString(value.name)?.trim();
   if (!name) throw new Error('The collection must have a name.');
   const ids = new Set<string>();
-  const plugins = value.plugins.map((entry, index): CollectionPlugin => {
-    const label = `Plugin ${index + 1}`;
+  const entries = list.map((entry, index): CollectionEntry => {
+    const label = `${kind === 'themes' ? 'Theme' : 'Plugin'} ${index + 1}`;
     if (!isRecord(entry) || !readString(entry.name)?.trim() || !readString(entry.url)?.trim()) {
       throw new Error(`${label} must have a name and URL.`);
     }
@@ -45,10 +54,10 @@ export function parseCollection(value: unknown, source: string): Collection {
     } catch {
       throw new Error(`${label} has an invalid http(s) URL.`);
     }
-    const src = normalizeRemoteSource(resolved);
+    const src = kind === 'themes' ? resolved : normalizeRemoteSource(resolved);
     if (!src) throw new Error(`${label} has an invalid plugin URL.`);
-    const id = remotePluginId(src);
-    if (ids.has(id)) throw new Error(`${label} duplicates another plugin URL.`);
+    const id = kind === 'themes' ? src : remotePluginId(src);
+    if (ids.has(id)) throw new Error(`${label} duplicates another entry URL.`);
     ids.add(id);
     return {
       name: String(entry.name).trim(),
@@ -58,10 +67,20 @@ export function parseCollection(value: unknown, source: string): Collection {
     };
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     url,
     name,
     description: readString(value.description)?.trim() ?? '',
-    plugins,
+    entries,
   };
+}
+
+export function parseCollection(value: unknown, source: string): Collection {
+  const { entries, ...info } = parseIndex(value, source, 'plugins');
+  return { ...info, plugins: entries };
+}
+
+export function parseThemeCollection(value: unknown, source: string): ThemeCollection {
+  const { entries, ...info } = parseIndex(value, source, 'themes');
+  return { ...info, themes: entries };
 }
