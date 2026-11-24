@@ -6,9 +6,13 @@ import { hasPluginSettings, setPluginEnabled, showPluginSettings } from './runti
 import { clientPlugins, clientPluginEnabled, pluginState } from './store';
 import { PluginCard } from './card';
 import { CollectionCard } from '../collections/section';
-import { collections } from '../collections/store';
+import { addCollection, collections } from '../collections/store';
 import { collectionMatches, findCollectionPlugin } from '../collections/membership';
+import { showToast } from '../../lib/toast';
 import type { ClientPlugin } from './types';
+
+const OFFICIAL_COLLECTION_URL =
+  'https://raw.githubusercontent.com/yapmod/official-collection/plugin-dist/index.json';
 
 /**
  * A card for a client-registered plugin.
@@ -103,6 +107,25 @@ function ClientPluginCard(props: { definition: ClientPlugin }) {
 export function PluginsPage() {
   const [search, setSearch] = createSignal('');
 
+  const [addingOfficial, setAddingOfficial] = createSignal(false);
+
+  async function addOfficialCollection(): Promise<void> {
+    if (addingOfficial()) return;
+    setAddingOfficial(true);
+    try {
+      await addCollection(OFFICIAL_COLLECTION_URL);
+      showToast('Official collection added.', 'success');
+    } catch (error) {
+      console.error('[yapmod] could not add official collection', error);
+      showToast(
+        error instanceof Error ? error.message : 'Could not add official collection.',
+        'error',
+      );
+    } finally {
+      setAddingOfficial(false);
+    }
+  }
+
   const plugins = createMemo(() => {
     const term = search().trim().toLowerCase();
     const installed = pluginState()
@@ -177,14 +200,27 @@ export function PluginsPage() {
         </div>
       </Show>
       <For each={visibleCollections()}>
-        {(collection) => <CollectionCard collection={collection} search={search()} />}
+        {(collection) => (
+          <CollectionCard
+            collection={collection}
+            search={search()}
+            initiallyExpanded={addingOfficial() && collection.url === OFFICIAL_COLLECTION_URL}
+          />
+        )}
       </For>
       <Show when={plugins().length === 0 && visibleCollections().length === 0}>
-        <p class="hint" style={{ 'margin-top': '12px' }}>
-          {search().trim()
-            ? 'No plugins or collections match your search.'
-            : 'No plugins or collections yet. Select Add Plugin to get started.'}
-        </p>
+        <Show
+          when={!search().trim()}
+          fallback={<p class="hint">No plugins or collections match your search.</p>}
+        >
+          <section class="ss2-card">
+            <div class="ss2-card-title">Official Yapmod Collection</div>
+            <p class="hint">Add the collection to browse plugins maintained by Yapmod.</p>
+            <Button disabled={addingOfficial()} onClick={() => void addOfficialCollection()}>
+              {addingOfficial() ? 'Adding collection...' : 'Add official collection'}
+            </Button>
+          </section>
+        </Show>
       </Show>
 
       <Show when={showClientPlugins()}>

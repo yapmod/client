@@ -72,9 +72,13 @@ function CollectionPluginCard(props: { plugin: CollectionPlugin }) {
   );
 }
 
-export function CollectionCard(props: { collection: Collection; search: string }) {
+export function CollectionCard(props: {
+  collection: Collection;
+  search: string;
+  initiallyExpanded?: boolean;
+}) {
   const [busy, setBusy] = createSignal(false);
-  const [expanded, setExpanded] = createSignal(false);
+  const [expanded, setExpanded] = createSignal(props.initiallyExpanded ?? false);
   const contentId = createUniqueId();
   const matches = createMemo(() =>
     props.collection.plugins.filter(
