@@ -52,6 +52,7 @@ export type {
   IconProps,
   SwitchProps,
   InputProps,
+  SliderProps,
   TextareaProps,
   SelectOption,
   SelectProps,

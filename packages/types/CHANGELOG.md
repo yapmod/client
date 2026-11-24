@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Export `SliderProps` and declare `Slider` on the plugin UI API and `@yapmod/ui`.
+
 ## [1.5.0] — 2026-11-22
 
 ### Added
