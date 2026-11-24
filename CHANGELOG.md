@@ -6,6 +6,8 @@ Version headings follow the Yapmod client releases. SDK package versions are ide
 
 ### Added
 
+- Plugins can use the shared [Slider](apps/docs/content/docs/development/ui-components.mdx#slider) for labeled numeric settings with a live value readout.
+
 - Add the [Official Yapmod Collection](https://github.com/yapmod/official-collection) directly from an empty Plugins page.
 
 ## [1.4.0] — 2026-11-22

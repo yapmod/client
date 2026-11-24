@@ -55,6 +55,16 @@ export function messageMenuContract(api: YapmodPluginApi): () => void {
   });
 }
 
+export function sliderContract(ui: PluginUi, change: (value: number) => void) {
+  return ui.Slider({
+    label: 'Opacity',
+    min: 50,
+    defaultValue: 85,
+    formatValue: (value) => `${value.toFixed()}%`,
+    onChange: change,
+  });
+}
+
 type _ApiHasId = YapmodPluginApi extends { readonly id: string } ? true : false;
 type _ApiHasStorage = YapmodPluginApi extends { readonly storage: Record<string, unknown> }
   ? true

@@ -70,6 +70,19 @@ export type IconProps = {
   class?: string;
 };
 
+export interface SliderProps {
+  label: string;
+  id?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  value?: number;
+  defaultValue?: number;
+  disabled?: boolean;
+  formatValue?: (value: number) => string;
+  onChange?: (value: number) => void;
+}
+
 /** Props for the `Input` component. */
 export type InputProps = Omit<JSX.IntrinsicElements['input'], 'value' | 'onChange'> & {
   value?: string;

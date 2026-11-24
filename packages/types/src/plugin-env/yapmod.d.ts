@@ -48,6 +48,8 @@ declare module '@yapmod/ui' {
   export type IconDefinition = import('../ui').IconDefinition;
   export type RegisteredIcon = import('../ui').RegisteredIcon;
   export type IconProps = import('../ui').IconProps;
+  export type SliderProps = import('../ui').SliderProps;
+  export const Slider: import('solid-js').Component<SliderProps>;
   export type InputProps = import('../ui').InputProps;
   export type PanelProps = import('../ui').PanelProps;
   export type SectionSpacing = import('../ui').SectionSpacing;
