@@ -1,4 +1,5 @@
-import { Button, Icon, Input, Select, Switch, Textarea } from '@yapmod/ui';
+import { themeCatalogs } from '../collections/store';
+import { Button, Icon, Input, Select, Tabs, Textarea } from '@yapmod/ui';
 import { Show, createSignal, type Accessor, type Setter } from 'solid-js';
 import { openModal } from '../../lib/modal';
 import { showToast } from '../../lib/toast';
@@ -13,9 +14,14 @@ const THEME_MODES = [
   { value: 'dark', label: 'Dark theme' },
 ];
 
+type ThemeSource = 'local' | 'online' | 'collection';
+
 interface ThemeEditorState {
-  online: Accessor<boolean>;
-  setOnline: Setter<boolean>;
+  source: Accessor<ThemeSource>;
+  setSource: Setter<ThemeSource>;
+  collectionUrl: Accessor<string>;
+  setCollectionUrl: Setter<string>;
+  busy: Accessor<boolean>;
   url: Accessor<string>;
   setUrl: Setter<string>;
   mode: Accessor<OnlineThemeMode>;
@@ -47,7 +53,9 @@ function fileNameFromName(name: string): string {
 }
 
 function createEditorState(): ThemeEditorState {
-  const [online, setOnline] = createSignal(false);
+  const [source, setSource] = createSignal<ThemeSource>('local');
+  const [collectionUrl, setCollectionUrl] = createSignal('');
+  const [busy, setBusy] = createSignal(false);
   const [url, setUrl] = createSignal('');
   const [mode, setMode] = createSignal<OnlineThemeMode>('always');
   const [name, setName] = createSignal('');
@@ -59,10 +67,14 @@ function createEditorState(): ThemeEditorState {
   let fileInput: HTMLInputElement | undefined;
   let uploadedFileName = '';
 
-  const canSubmit = () => (online() ? Boolean(url().trim()) : Boolean(css().trim()));
+  const canSubmit = () => {
+    if (busy()) return false;
+    if (source() === 'collection') return Boolean(collectionUrl().trim());
+    return Boolean((source() === 'online' ? url() : css()).trim());
+  };
 
-  function fillMetadata(source: string, fileName: string): void {
-    const theme = createLocalTheme(fileName, source);
+  function fillMetadata(content: string, fileName: string): void {
+    const theme = createLocalTheme(fileName, content);
 
     if (!name().trim()) setName(theme.name);
     if (!author().trim()) setAuthor(theme.author);
@@ -70,10 +82,10 @@ function createEditorState(): ThemeEditorState {
   }
 
   function syncMetadata(): void {
-    const source = css().trim();
-    if (!source) return;
+    const content = css().trim();
+    if (!content) return;
 
-    fillMetadata(source, uploadedFileName || fileNameFromName(name()));
+    fillMetadata(content, uploadedFileName || fileNameFromName(name()));
   }
 
   async function readFile(files: FileList | null): Promise<void> {
@@ -98,7 +110,24 @@ function createEditorState(): ThemeEditorState {
 
     setError('');
 
-    if (online()) {
+    if (source() === 'collection') {
+      setBusy(true);
+      try {
+        await themeCatalogs.addCollection(collectionUrl());
+        showToast('Collection added.', 'success');
+        close();
+      } catch (cause) {
+        const message = cause instanceof Error ? cause.message : 'Could not add collection.';
+        console.error('[yapmod] could not add theme collection', cause);
+        setError(message);
+        showToast(message, 'error');
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (source() === 'online') {
       const safe = safeHttpUrl(url().trim());
       if (!safe) {
         setError('Enter a valid http(s) CSS URL.');
@@ -117,13 +146,13 @@ function createEditorState(): ThemeEditorState {
       return;
     }
 
-    const source = css().trim();
-    if (!source) {
+    const content = css().trim();
+    if (!content) {
       setError('Upload a CSS file or paste its contents.');
       return;
     }
 
-    const parsed = createLocalTheme(uploadedFileName || 'pasted-theme.theme.css', source);
+    const parsed = createLocalTheme(uploadedFileName || 'pasted-theme.theme.css', content);
     const theme = {
       ...parsed,
       fileName: uploadedFileName || fileNameFromName(name().trim() || parsed.name),
@@ -138,8 +167,11 @@ function createEditorState(): ThemeEditorState {
   }
 
   return {
-    online,
-    setOnline,
+    source,
+    setSource,
+    collectionUrl,
+    setCollectionUrl,
+    busy,
     url,
     setUrl,
     mode,
@@ -179,117 +211,136 @@ function ThemeEditorFields(props: { state: ThemeEditorState; onClose: () => void
         </p>
       </Show>
 
-      <div class="toggle-row" style={{ 'border-bottom': 'none', padding: '0 0 12px' }}>
-        <div>
-          <div class="toggle-label">Online theme</div>
-          <div class="hint">Fetch a CSS file from a direct link instead of uploading it.</div>
-        </div>
-        <Switch checked={state.online()} aria-label="Online theme" onChange={state.setOnline} />
-      </div>
-
-      <Show
-        when={state.online()}
-        fallback={
-          <>
-            <div class="field">
-              <label for="yp-theme-name">Name</label>
-              <Input
-                id="yp-theme-name"
-                placeholder="Read from the CSS header when left blank"
-                value={state.name()}
-                onChange={state.setName}
-              />
-            </div>
-
-            <div class="field">
-              <label for="yp-theme-author">Author</label>
-              <Input
-                id="yp-theme-author"
-                placeholder="Read from the CSS header when left blank"
-                value={state.author()}
-                onChange={state.setAuthor}
-              />
-            </div>
-
-            <div class="field">
-              <label for="yp-theme-description">Description</label>
-              <Input
-                id="yp-theme-description"
-                placeholder="Read from the CSS header when left blank"
-                value={state.description()}
-                onChange={state.setDescription}
-              />
-            </div>
-
-            <div class="field">
-              <label for="yp-theme-css">CSS</label>
-              <Textarea
-                id="yp-theme-css"
-                rows={10}
-                spellcheck={false}
-                placeholder="Paste a .theme.css file here..."
-                value={state.css()}
-                onChange={state.setCss}
-                onBlur={state.syncMetadata}
-                style={{
-                  'font-family': 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                  'font-size': '12px',
-                  'line-height': '1.5',
-                }}
-              />
-            </div>
-
-            <div class="row-gap" style={{ 'margin-bottom': '8px' }}>
-              <label class="btn small secondary file-pick" style={{ position: 'relative' }}>
-                <Icon name="upload" size={14} />
-                Upload CSS
-                <input
-                  ref={state.setFileInput}
-                  class="file-pick-input"
-                  type="file"
-                  accept=".css"
-                  onChange={(event) => void state.readFile(event.currentTarget.files)}
-                />
-              </label>
-            </div>
-
-            <p class="hint" style={{ margin: '12px 0 0' }}>
-              Theme metadata is read from the CSS header; the fields above override it.
-            </p>
-          </>
-        }
+      <Tabs<ThemeSource>
+        label="Theme source"
+        value={state.source()}
+        onChange={state.setSource}
+        disabled={state.busy()}
+        options={[
+          { value: 'local', label: 'Local' },
+          { value: 'online', label: 'URL' },
+          { value: 'collection', label: 'Collection' },
+        ]}
       >
-        <div class="field">
-          <label for="yp-theme-url">CSS URL</label>
-          <Input
-            id="yp-theme-url"
-            type="text"
-            inputmode="url"
-            placeholder="https://example.com/my-theme.theme.css"
-            value={state.url()}
-            onChange={state.setUrl}
-          />
-        </div>
+        <Show when={state.source() === 'collection'}>
+          <div class="field">
+            <label for="yp-theme-collection">Collection index URL</label>
+            <Input
+              id="yp-theme-collection"
+              inputmode="url"
+              value={state.collectionUrl()}
+              onChange={state.setCollectionUrl}
+              placeholder="https://raw.githubusercontent.com/owner/repo/main/index.json"
+            />
+            <p class="hint">Add the index to browse its themes and choose which ones to install.</p>
+          </div>
+        </Show>
+        <Show when={state.source() !== 'collection'}>
+          <Show
+            when={state.source() === 'online'}
+            fallback={
+              <>
+                <div class="field">
+                  <label for="yp-theme-name">Name</label>
+                  <Input
+                    id="yp-theme-name"
+                    placeholder="Read from the CSS header when left blank"
+                    value={state.name()}
+                    onChange={state.setName}
+                  />
+                </div>
 
-        <div class="field">
-          <label for="yp-theme-mode">Apply to</label>
-          <Select
-            id="yp-theme-mode"
-            options={THEME_MODES}
-            value={state.mode()}
-            onChange={(mode) => state.setMode(mode as OnlineThemeMode)}
-          />
-        </div>
+                <div class="field">
+                  <label for="yp-theme-author">Author</label>
+                  <Input
+                    id="yp-theme-author"
+                    placeholder="Read from the CSS header when left blank"
+                    value={state.author()}
+                    onChange={state.setAuthor}
+                  />
+                </div>
 
-        <p class="hint" style={{ margin: '-6px 0 14px' }}>
-          Use a direct CSS link from a host in Yapin's CSP allowlist. GitHub raw links
-          (raw.githubusercontent.com) work; other hosts may be blocked.
-        </p>
-      </Show>
+                <div class="field">
+                  <label for="yp-theme-description">Description</label>
+                  <Input
+                    id="yp-theme-description"
+                    placeholder="Read from the CSS header when left blank"
+                    value={state.description()}
+                    onChange={state.setDescription}
+                  />
+                </div>
 
-      <p class="hint" style={{ margin: '12px 0 0' }}>
-        Themes can change Yapin's layout and may cause lag. Only install CSS you trust.
-      </p>
+                <div class="field">
+                  <label for="yp-theme-css">CSS</label>
+                  <Textarea
+                    id="yp-theme-css"
+                    rows={10}
+                    spellcheck={false}
+                    placeholder="Paste a .theme.css file here..."
+                    value={state.css()}
+                    onChange={state.setCss}
+                    onBlur={state.syncMetadata}
+                    style={{
+                      'font-family': 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      'font-size': '12px',
+                      'line-height': '1.5',
+                    }}
+                  />
+                </div>
+
+                <div class="row-gap" style={{ 'margin-bottom': '8px' }}>
+                  <label class="btn small secondary file-pick" style={{ position: 'relative' }}>
+                    <Icon name="upload" size={14} />
+                    Upload CSS
+                    <input
+                      ref={state.setFileInput}
+                      class="file-pick-input"
+                      type="file"
+                      accept=".css"
+                      onChange={(event) => void state.readFile(event.currentTarget.files)}
+                    />
+                  </label>
+                </div>
+
+                <p class="hint" style={{ margin: '12px 0 0' }}>
+                  Theme metadata is read from the CSS header; the fields above override it.
+                </p>
+              </>
+            }
+          >
+            <div class="field">
+              <label for="yp-theme-url">CSS URL</label>
+              <Input
+                id="yp-theme-url"
+                type="text"
+                inputmode="url"
+                placeholder="https://example.com/my-theme.theme.css"
+                value={state.url()}
+                onChange={state.setUrl}
+              />
+            </div>
+
+            <div class="field">
+              <label for="yp-theme-mode">Apply to</label>
+              <Select
+                id="yp-theme-mode"
+                options={THEME_MODES}
+                value={state.mode()}
+                onChange={(mode) => state.setMode(mode as OnlineThemeMode)}
+              />
+            </div>
+
+            <p class="hint" style={{ margin: '-6px 0 14px' }}>
+              Use a direct CSS link from a host in Yapin's CSP allowlist. GitHub raw links
+              (raw.githubusercontent.com) work; other hosts may be blocked.
+            </p>
+          </Show>
+
+          <p class="hint" style={{ margin: '12px 0 0' }}>
+            Themes can change Yapin's layout and may cause lag. Only install CSS you trust.
+          </p>
+        </Show>
+      </Tabs>
     </form>
   );
 }
@@ -313,7 +364,7 @@ export function openThemeEditor(): void {
             void state.submit(close);
           }}
         >
-          Add Theme
+          {state.source() === 'collection' ? 'Add Collection' : 'Add Theme'}
         </Button>
       </>
     ),

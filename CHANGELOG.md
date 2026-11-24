@@ -6,6 +6,8 @@ Version headings follow the Yapmod client releases. SDK package versions are ide
 
 ### Added
 
+- Browse CSS theme collections in Themes, install individual themes, and publish your own with the [theme starter](https://github.com/yapmod/theme-starter).
+
 - Plugins can use the shared [Slider](apps/docs/content/docs/development/ui-components.mdx#slider) for labeled numeric settings with a live value readout.
 
 - Add the [Official Yapmod Collection](https://github.com/yapmod/official-collection) directly from an empty Plugins page.

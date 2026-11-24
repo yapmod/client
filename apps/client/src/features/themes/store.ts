@@ -168,8 +168,8 @@ export function setLocalThemeEnabled(fileName: string, enabled: boolean): void {
   });
 }
 
-/** Adds one online theme line and enables it. */
-export function addOnlineTheme(line: string): void {
+/** Adds one online theme line with the requested initial state. */
+export function addOnlineTheme(line: string, enabled = true): void {
   const normalized = line.trim();
   if (!normalized) return;
 
@@ -179,7 +179,7 @@ export function addOnlineTheme(line: string): void {
   commit({
     ...current,
     online: [...current.online, normalized],
-    enabledOnline: [...current.enabledOnline, normalized],
+    enabledOnline: enabled ? [...current.enabledOnline, normalized] : current.enabledOnline,
   });
 }
 
