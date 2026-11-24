@@ -4,6 +4,8 @@ Version headings follow the Yapmod client releases. SDK package versions are ide
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-11-24
+
 ### Added
 
 - Browse CSS theme collections in Themes, install individual themes, and publish your own with the [theme starter](https://github.com/yapmod/theme-starter).
