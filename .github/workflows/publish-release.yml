@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
   id-token: write
 
 concurrency:
@@ -27,16 +28,34 @@ jobs:
     uses: ./.github/workflows/release-client.yml
     with:
       tag: ${{ inputs.client }}
+  # npm trusted publishing validates the workflow that runs `npm publish`, so the batch
+  # dispatches the npm publishers as top-level runs instead of calling them.
   builder:
     if: github.ref == 'refs/heads/main' && inputs.builder != ''
-    uses: ./.github/workflows/publish-npm.yml
-    with:
-      tag: ${{ inputs.builder }}
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.dispatch.outputs.published }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.builder }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch builder publish
+        id: dispatch
+        run: node .github/scripts/release.mjs dispatch builder
   types:
     if: github.ref == 'refs/heads/main' && inputs.types != ''
-    uses: ./.github/workflows/publish-types-npm.yml
-    with:
-      tag: ${{ inputs.types }}
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.dispatch.outputs.published }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.types }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch types publish
+        id: dispatch
+        run: node .github/scripts/release.mjs dispatch types
   announce:
     needs: [client, builder, types]
     if: >-

@@ -50,9 +50,71 @@ export function hasClientBundle(release) {
   );
 }
 
+// npm trusted publishing binds OIDC tokens to the workflow that runs `npm publish`. A
+// `workflow_call` would make the batch workflow the caller, so npm would see the wrong
+// workflow name and reject the token. The batch therefore dispatches these workflows as
+// top-level runs and waits for them instead.
+const publishWorkflows = {
+  builder: 'publish-npm.yml',
+  types: 'publish-types-npm.yml',
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const listRuns = (workflow) =>
+  JSON.parse(
+    run('gh', [
+      'run',
+      'list',
+      '--workflow',
+      workflow,
+      '--event',
+      'workflow_dispatch',
+      '--limit',
+      '20',
+      '--json',
+      'databaseId,createdAt',
+    ]),
+  );
+
+async function dispatchPublish(component, tag) {
+  const workflow = publishWorkflows[component];
+  if (!workflow) throw new Error(`${component} is not published as a top-level npm workflow`);
+  const wasDraft = readRelease(tag).isDraft;
+  const requestedAt = Date.now();
+  run('gh', ['workflow', 'run', workflow, '--ref', 'main', '-f', `tag=${tag}`]);
+
+  let runId;
+  // Dispatch is asynchronous; allow clock skew between the runner and the API.
+  for (let attempt = 0; attempt < 24 && !runId; attempt++) {
+    await sleep(5000);
+    runId = listRuns(workflow)
+      .filter((candidate) => Date.parse(candidate.createdAt) >= requestedAt - 60_000)
+      .toSorted((left, right) => right.databaseId - left.databaseId)[0]?.databaseId;
+  }
+  if (!runId) throw new Error(`No ${workflow} run appeared for ${tag}`);
+
+  try {
+    execFileSync('gh', ['run', 'watch', String(runId), '--exit-status', '--interval', '10'], {
+      stdio: 'inherit',
+    });
+  } catch {
+    throw new Error(`${workflow} run ${runId} failed for ${tag}`);
+  }
+
+  // Only a release this batch took from draft to published should be announced.
+  const published = wasDraft && !readRelease(tag).isDraft;
+  appendFileSync(process.env.GITHUB_OUTPUT, `published=${published}\n`);
+  console.log(`Published ${tag} via ${workflow} run ${runId}`);
+}
+
 async function main(command, component) {
   const tag = process.env.RELEASE_TAG;
   const version = releaseVersion(component, tag);
+  if (command === 'dispatch') {
+    await dispatchPublish(component, tag);
+    return;
+  }
   const pkg = packages[component];
   const manifest = readJson('.release-please-manifest.json');
   const packageJson = readJson(`${pkg.path}/package.json`);
